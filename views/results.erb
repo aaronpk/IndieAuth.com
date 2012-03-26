@@ -1,0 +1,12 @@
+Results
+
+<ul>
+  <% @links.each do |link| %>
+    <li><%= link[:url] %> (<%= link[:links_back] ? 'yes' : 'no' %>)</li>
+    <ul>
+      <% link[:me_links].each do |me| %>
+        <li><%= me %></li>
+      <% end %>
+    </ul>
+  <% end %>
+</ul>

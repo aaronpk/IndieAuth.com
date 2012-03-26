@@ -1,0 +1,2 @@
+development:
+  session_secret: PUT SOMETHING HERE
