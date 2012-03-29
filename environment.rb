@@ -35,7 +35,7 @@ class Controller < Sinatra::Base
     use Rack::Session::Cookie, :key => 'relmeauth',
                                :path => '/',
                                :expire_after => 2592000,
-                               :domain => '.relmeauth.dev',
+                               :domain => '.relmeauth.cc',
                                :secret => SiteConfig.session_secret
 
     set :root, File.dirname(__FILE__)
