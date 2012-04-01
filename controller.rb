@@ -20,6 +20,13 @@ class Controller < Sinatra::Base
       me = params[:me]
       me = "http://#{me}" unless me.start_with?('http')
 
+      # Normalize the URI to ensure it has a "/" at the end
+      meURI = URI.parse me
+      if meURI.path == ""
+        meURI.path = "/" 
+        me = meURI.to_s
+      end
+
       session[:attempted_uri] = me
 
       user = User.first_or_create :href => me
@@ -154,6 +161,10 @@ class Controller < Sinatra::Base
     if login.nil?
       return json_error 404, {:error => "Token not found"}
     end
+
+    login.last_used_at = Time.now
+    login.used_count = login.used_count + 1
+    login.save
 
     json_response 200, {:me => login.user['href']}
   end

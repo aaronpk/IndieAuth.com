@@ -48,8 +48,6 @@ class Controller < Sinatra::Base
       end
     end
 
-    puts "Database: #{SiteConfig.database_url}"
-
     DataMapper.finalize
     DataMapper.setup :default, SiteConfig.database_url
 
