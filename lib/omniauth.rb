@@ -5,6 +5,8 @@ module OmniAuth
       exists = false
     when 'facebook'
       exists = class_exists?('Facebook')
+    when 'flickr'
+      exists = class_exists?('Flickr')
     when 'foursquare'
       exists = class_exists?('Foursquare')
     when 'geoloqi'

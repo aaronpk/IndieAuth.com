@@ -12,14 +12,22 @@ gem 'json'
 gem 'dalli'
 
 gem 'omniauth'
-gem 'omniauth-foursquare'
 gem 'omniauth-facebook'
-gem 'omniauth-twitter'
-gem 'omniauth-github'
+gem 'omniauth-flickr'
 gem 'omniauth-geoloqi'
+gem 'omniauth-github'
 gem 'omniauth-google'
+gem 'omniauth-twitter'
 
 gem 'mechanize'
+
+gem 'mysql2',          '0.3.7'
+gem 'dm-core'
+gem 'dm-timestamps'
+gem 'dm-migrations'
+gem 'dm-aggregates'
+gem 'dm-mysql-adapter'
+gem 'dm-pager'
 
 group :development do
   gem 'shotgun',                :require => nil

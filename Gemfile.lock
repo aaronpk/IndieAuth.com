@@ -5,6 +5,27 @@ GEM
     backports (2.4.0)
     daemons (1.1.8)
     dalli (1.1.5)
+    data_objects (0.10.7)
+      addressable (~> 2.1)
+    dm-aggregates (1.1.0)
+      dm-core (~> 1.1.0)
+    dm-core (1.1.0)
+      addressable (~> 2.2.4)
+    dm-do-adapter (1.1.0)
+      data_objects (~> 0.10.2)
+      dm-core (~> 1.1.0)
+    dm-migrations (1.1.0)
+      dm-core (~> 1.1.0)
+    dm-mysql-adapter (1.1.0)
+      dm-do-adapter (~> 1.1.0)
+      do_mysql (~> 0.10.2)
+    dm-pager (1.1.0)
+      dm-aggregates (>= 0.10.1)
+      dm-core (>= 0.10.1)
+    dm-timestamps (1.1.0)
+      dm-core (~> 1.1.0)
+    do_mysql (0.10.7)
+      data_objects (= 0.10.7)
     domain_name (0.5.2)
       unf (~> 0.0.3)
     erubis (2.7.0)
@@ -27,6 +48,7 @@ GEM
     mime-types (1.18)
     multi_json (1.1.0)
     multipart-post (1.1.5)
+    mysql2 (0.3.7)
     net-http-digest_auth (1.2)
     net-http-persistent (2.5.2)
     nokogiri (1.5.2)
@@ -40,9 +62,8 @@ GEM
       rack
     omniauth-facebook (1.2.0)
       omniauth-oauth2 (~> 1.0.0)
-    omniauth-foursquare (0.0.7)
-      omniauth (~> 1.0)
-      omniauth-oauth2 (~> 1.0)
+    omniauth-flickr (0.0.9)
+      omniauth-oauth (~> 1.0)
     omniauth-geoloqi (0.1.2)
       omniauth-oauth2 (>= 1.0.0)
     omniauth-github (1.0.1)
@@ -107,13 +128,20 @@ PLATFORMS
 
 DEPENDENCIES
   dalli
+  dm-aggregates
+  dm-core
+  dm-migrations
+  dm-mysql-adapter
+  dm-pager
+  dm-timestamps
   erubis
   hashie
   json
   mechanize
+  mysql2 (= 0.3.7)
   omniauth
   omniauth-facebook
-  omniauth-foursquare
+  omniauth-flickr
   omniauth-geoloqi
   omniauth-github
   omniauth-google

@@ -32,10 +32,9 @@ class Controller < Sinatra::Base
 #      require_relative "./#{file}"
     end
 
-    use Rack::Session::Cookie, :key => 'relmeauth',
+    use Rack::Session::Cookie, :key => 'rel.me.auth',
                                :path => '/',
                                :expire_after => 2592000,
-                               :domain => '.relmeauth.cc',
                                :secret => SiteConfig.session_secret
 
     set :root, File.dirname(__FILE__)
@@ -43,13 +42,16 @@ class Controller < Sinatra::Base
     set :raise_errors,    false
 
     use OmniAuth::Builder do
-      provider :twitter,    SiteConfig.twitter.consumer_key,    SiteConfig.twitter.consumer_secret
-      provider :foursquare, SiteConfig.foursquare.client_id,    SiteConfig.foursquare.client_secret
-      provider :facebook,   SiteConfig.facebook.app_id,         SiteConfig.facebook.app_secret
-      provider :geoloqi,    SiteConfig.geoloqi.api_key,         SiteConfig.geoloqi.api_secret
-      provider :github,     SiteConfig.github.client_id,        SiteConfig.github.client_secret
-      provider :google,     SiteConfig.google.client_id,        SiteConfig.google.client_secret
+      Provider.all.each do |p|
+        # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
+        provider p['code'].to_sym, p['client_id'], p['client_secret']
+      end
     end
+
+    puts "Database: #{SiteConfig.database_url}"
+
+    DataMapper.finalize
+    DataMapper.setup :default, SiteConfig.database_url
 
     set :views, 'views'
     set :erubis,          :escape_html => true
