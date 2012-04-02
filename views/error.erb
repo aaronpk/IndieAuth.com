@@ -1,3 +1,24 @@
-<h2>Error</h2>
 
-<%= @message %>
+<div class="hero-unit">
+  <h1>There was a problem!</h1>
+</div>
+
+<div class="container">
+
+  <div class="row" style="margin-bottom: 50px;">
+    <div class="span12">
+      <h2 style="text-align: center;"><%= @message %></h2>
+    </div>
+  </div><!-- row -->
+
+  <div class="section">
+  <div class="row">
+    <div class="span12">
+      <p>If you're having trouble, please see our <a href="/setup">setup instructions</a> for more information.</p>
+    </div>
+  </div><!-- row -->  
+  </div><!-- section -->
+
+</div><!-- container -->
+
+<%= partial :'partials/_footer' %>

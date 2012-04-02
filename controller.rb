@@ -1,12 +1,19 @@
 class Controller < Sinatra::Base
   before do 
-    session[:null] = true   # weird hack to make the session object populate???
+    if request.path != "/session" # don't set sessions for JSON api requests
+      session[:null] = true   # weird hack to make the session object populate???
+    end
     @site = Site.first_or_create :domain => request.host
   end
 
   get '/?' do
-    title "IndieAuth - Own your online identity"
+    title "IndieAuth - Sign in with your domain name"
     erb :index
+  end
+
+  get '/setup/?' do
+    title "IndieAuth Documentation - Sign in with your domain name"
+    erb :setup_instructions
   end
 
   get '/auth' do 
@@ -74,16 +81,31 @@ class Controller < Sinatra::Base
               break
             end
           end
+
+          if @provider.nil?
+            @message = "No valid authentication providers were found at #{me}"
+            title "Error"
+            return erb :error
+          end
           puts "Found valid provider: #{@provider['code']}"
         end
       else
         # If "me" is one of our OAuth providers, use it directly
         @link = me
+        @profile = Profile.first_or_create({
+          :user => user,
+          :provider => @provider
+        }, 
+        {
+          :href => me,
+          :verified => true
+        })
       end
 
       if !@link
+        @message = 'No rel="me" links were found on your website'
         title "Error"
-        erb :error_no_links
+        erb :error
       else
         puts "Provider: #{@provider}"
         puts "Profile: #{@profile}"
@@ -113,10 +135,11 @@ class Controller < Sinatra::Base
     puts session
 
     if session[:attempted_username] != auth['info']['nickname']
-      @attempted_username = session[:attempted_username]
-      @actual_username = auth['info']['nickname']
+      attempted_username = session[:attempted_username]
+      actual_username = auth['info']['nickname']
+      @message = "Your website linked to #{attempted_username}, but you were signed in as #{actual_username}"
       title "Error"
-      erb :error_bad_user
+      erb :error
     else
       session[params[:name]] = auth['info']['nickname']
       session[:domain] = session[:attempted_domain]
@@ -126,14 +149,14 @@ class Controller < Sinatra::Base
 
       token = session[:attempted_token]
       login = Login.first :token => token
-      login.complete = true
-      login.save
 
       if login.nil?
-        @message = "Login attempt not found"
+        @message = "Something went horribly wrong!"
         title "Error"
         erb :error
       else
+        login.complete = true
+        login.save
         if session[:redirect_uri]
           redirect_uri = URI.parse session[:redirect_uri]
           params = Rack::Utils.parse_query redirect_uri.query
@@ -149,24 +172,38 @@ class Controller < Sinatra::Base
 
   get '/auth/failure' do
     @message = params['message']
-    erb :error
     title "Error"
+    erb :error
   end
 
   get '/success' do
-    @domain = session[:domain]
-    title "Error"
+    if params[:token].nil?
+      @message = "Missing 'token' parameter"
+      title "Error"
+      return erb :error
+    end
+
+    login = Login.first :token => params[:token]
+
+    if login.nil?
+      @message = "The token provided was not found"
+      title "Error"
+      return erb :error
+    end
+
+    @domain = login.user['href']
+    title "Successfully Signed In!"
     erb :success
   end
 
-  get '/session/:token' do
+  get '/session' do
     if params[:token].nil?
-      return json_error 400, {:error => "Parameter 'token' is required"}
+      return json_error 400, {:error => "invalid_request", :error_description => "Missing 'token' parameter"}
     end
 
     login = Login.first :token => params[:token]
     if login.nil?
-      return json_error 404, {:error => "Token not found"}
+      return json_error 404, {:error => "invalid_token", :error_description => "The token provided was not found"}
     end
 
     login.last_used_at = Time.now
@@ -176,24 +213,24 @@ class Controller < Sinatra::Base
     json_response 200, {:me => login.user['href']}
   end
 
-  get '/test' do
-    if params[:me].nil?
-      @error = "Parameter 'me' is required"
-      title "Error"
-      erb :error
-    else
-      # Parse the incoming "me" link looking for all rel=me URLs
-      me = params[:me]
-      me = "http://#{me}" unless me.start_with?('http')
+  # get '/test' do
+  #   if params[:me].nil?
+  #     @error = "Parameter 'me' is required"
+  #     title "Error"
+  #     erb :error
+  #   else
+  #     # Parse the incoming "me" link looking for all rel=me URLs
+  #     me = params[:me]
+  #     me = "http://#{me}" unless me.start_with?('http')
 
-      parser = RelParser.new me
-      @links = parser.get_supported_links
-      puts @links
+  #     parser = RelParser.new me
+  #     @links = parser.get_supported_links
+  #     puts @links
 
-      title "Test"
-      erb :results
-    end
-  end
+  #     title "Test"
+  #     erb :results
+  #   end
+  # end
 
   get '/reset' do
     session.clear
@@ -201,19 +238,27 @@ class Controller < Sinatra::Base
     erb :session
   end
 
-  get '/session' do 
-    @session = session
-    puts session
-    title "Session"
-    erb :session
-  end
+  # get '/session' do 
+  #   @session = session
+  #   puts session
+  #   title "Session"
+  #   erb :session
+  # end
 
   def json_error(code, data)
-    halt code, data.to_json
+    return [code, {
+        'Content-Type' => 'application/json;charset=UTF-8',
+        'Cache-Control' => 'no-store'
+      }, 
+      data.to_json]
   end
 
   def json_response(code, data)
-    halt code, data.to_json
+    return [code, {
+        'Content-Type' => 'application/json;charset=UTF-8',
+        'Cache-Control' => 'no-store'
+      }, 
+      data.to_json]
   end
 
 end

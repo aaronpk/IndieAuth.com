@@ -1,0 +1,86 @@
+  <div class="row">
+    <div class="span8">
+      <h2 id="documentation">Using IndieAuth.com to sign users in to your website</h2>
+
+      <h3>1. Create a Web Sign-in form</h3>
+
+      <p><pre><code><%== 
+'<form action="http://indieauth.com/auth" method="get">
+  <label>Web Address:</label>
+  <input type="text" name="me" placeholder="yourdomain.com" />
+  <p><button type="submit">Sign In</button></p>
+  <input type="hidden" name="redirect_uri" value="http://example.com/auth" />
+</form>' %></code></pre></p>
+
+      <p>
+        <h4>Parameters</h4>
+        <ul>
+          <li><b>action</b>: Always set the action of the form to <code>http://indieauth.com/auth</code></li>
+          <li><b>method</b>: The request method of the form should be "get"</li>
+          <li><b>me</b>: The "me" parameter is the website address that the user enters</li>
+          <li><b>redirect_uri</b>: Set the redirect_uri in a hidden field to let indieauth.com know where to redirect back to after authentication is complete</li>
+        </ul>
+      </p>
+
+      <br />
+
+      <h3>2. The user logs in with their domain</h3>
+
+      <p>After the user enters their domain in the sign-in form and submits, indieauth.com goes and scans their domain looking for rel="me" links from providers it knows about (see <a href="#supported-providers">Supported Providers</a> above). It also verifies that the third-party website links back to the user's domain with a rel="me" link as well.</p>
+
+      <br />
+
+      <h3>3. The user is redirected back to your site</h3>
+
+      <p><pre><code>http://example.com/auth?token=gk7n4opsyuUxhvF4</code></pre></p>
+
+      <p>If everything is successful, the user will be redirected back to the redirect_uri you specified in the form. There will be a token in a query string parameter, <code>token</code>.</p>
+
+      <br />
+
+      <h3>4. Verify the token with indieauth.com</h3>
+
+      <p>At this point you need to use the token to find out the domain name of the authenticated user. Simply make a request to indieauth.com/session with the token, and you will get back the domain name of the authenticated user.</p>
+
+      <p><pre><code>POST /session HTTP/1.1
+Host: indieauth.com
+Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+
+token=gk7n4opsyuUxhvF4</code></pre></p>
+
+      <p>An example successful response:</p>
+
+      <p><pre><code>HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+
+{
+  "me": "http://aaronparecki.com/"
+}</code></pre></p>
+
+      <p>An example error response:</p>
+
+      <p><pre><code>HTTP/1.1 404 Not Found
+Content-Type: application/json;charset=UTF-8
+
+{
+  error: "invalid_token",
+  error_description: "The token provided was not found"
+}</code></pre></p>
+
+      <br />
+
+      <h3>5. Done!</h3>
+
+      <p>At this point you know the domain belonging to the authenticated user. You can store the domain and/or the token in a secure session and log the user in with their domain name identity. You don't need to worry about whether they authenticated with Google, Twitter or Github, their identity is their domain name! You won't have to worry about merging duplicate accounts or handling error cases when Twitter is offline.</p>
+
+    </div>
+    <div class="span4" style="padding-top: 63px;">
+      <form action="http://indieauth.com/auth" method="get" class="well">
+        <label>Web Address:</label>
+        <input type="text" name="me" class="span3" placeholder="yourdomain.com" />
+        <p><button type="submit" class="btn">Sign In</button></p>
+        <input type="hidden" name="redirect_uri" value="http://indieauth.com/success" />
+      </form>
+    </div>
+
+  </div><!-- row -->

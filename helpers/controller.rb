@@ -12,10 +12,6 @@ class Controller < Sinatra::Base
     end
     
     def partial(page, options={})
-      erubis page, options.merge!(:layout => false)
-    end
-    
-    def partial(page, options={})
       erb page, options.merge!(:layout => false)
     end
 

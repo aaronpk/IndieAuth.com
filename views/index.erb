@@ -1,7 +1,4 @@
-<div class="hero-unit">
-  <h1>IndieAuth: Sign in with your domain name</h1>
-  <!-- <p><a class="btn btn-primary btn-large">Web Sign-In &raquo;</a></p> -->
-</div>
+<%= partial :'partials/_banner' %>
 
 <div class="container">
 
@@ -18,12 +15,13 @@
     <div class="span6">
 
       <h2>What is IndieAuth?</h2>
-      <p>IndieAuth is a way to use your own domain name to sign in to websites.</p>
+      <p>IndieAuth is a way to use your own domain name to sign in to websites. It works by linking your website to one or more authentication providers such as Twitter or Google, then entering your domain name in the login form on websites that support IndieAuth.</p>
 
       <hr />
 
       <h2>Why IndieAuth?</h2>
-      <p>Blah blah</p>
+      <p>IndieAuth is part of the <a href="http://indiewebcamp.com/why">Indie Web movement</a> to take back control of your online identity. Instead of logging in to websites as "you on Twitter" or "you on Facebook", you should be able to log in as just "you". We should not be relying on Twitter or Facebook to provide our authenticated identities, we should be able to use our own domain names to log in to sites everywhere.</p>
+      <p>IndieAuth was built to make it as easy as possible for users and for developers to start using this new way of signing in on the web.</p>
 
 <!--
       <hr />
@@ -44,17 +42,19 @@
   <div class="section">
   <div class="row">
     <div class="span4">
-      <h3>How it Works</h3>
+      <h3>How to Set Up IndieAuth</h3>
       
       <ul class="thumbnails">
         <li>
-          <a class="thumbnail" href="/documentation">
+          <a class="thumbnail" href="#documentation">
             <img src="/img/code-sample.png" width="370" height="154" />
           </a>
         </li>
       </ul>
 
-      <h4>How to Set Up IndieAuth</h4>
+    </div><!-- span4 -->
+    <div class="span4">
+      <h3>&nbsp;</h3>
       <ul>
         <li>Add a link on your home page to your various social profiles with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
         <li>Ensure your profiles link back to your home page</li>
@@ -63,17 +63,7 @@
 
     </div><!-- span4 -->
     <div class="span4">
-      <h3>Use Cases</h3>
-
-      <ul>  
-        <li>One</li>
-        <li>Two</li>
-        <li>Three</li>
-      </ul>
-
-    </div><!-- span4 -->
-    <div class="span4">
-      <h3>Community</h3>
+      <h3 id="community">Community</h3>
 
       <ul class="thumbnails">
         <li class="span1">
@@ -101,7 +91,7 @@
   <div class="section">
   <div class="row">
     <div class="span12">
-      <h2>Authentication providers currently supported by IndieAuth.com</h2>
+      <h2 id="supported-providers">Authentication providers currently supported by IndieAuth.com</h2>
 
       <ul class="thumbnails">
         <li><a href="https://twitter.com/settings/profile" class="thumbnail">
@@ -131,108 +121,28 @@
   </div><!-- section -->
 
   <div class="section">
-  <div class="row">
-    <div class="span12">
-      <h2 id="">Using IndieAuth.com to sign users in to your website</h2>
-
-
-      <div class="span4">
-        <form class="well">
-          <label>Web Address:</label>
-          <input type="text" class="span3" placeholder="yourdomain.com">
-          <p><button type="submit" class="btn">Sign In</button></p>
-        </form>
-      </div>
-
-    </div>
-  </div><!-- row -->
+    <%= partial :'partials/_documentation' %>
   </div><!-- section -->
 
   <div class="section">
   <div class="row">
     <div class="span8">
-      <h2 id="faq">Frequently Asked Questions</h2>
-
-      <h3 id="how-is-this-different-from-openid">How is this different from OpenID?</h3>
-      <p>The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
-
-      <h3>Does this require users to have their own domain name?</h3>
-      <p>Yes, the assumption is that people are willing to <a href="http://indiewebcamp.com/why">own their online identities</a> in the form of a domain name. It is getting easier and easier to host content on your own domain name. See "<a href="http://indiewebcamp.com/Getting_Started">Getting Started on the Indie Web</a>"" for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like <a href="http://www.dreamhost.com/r.cgi?426455">Dreamhost</a>.</p>
-
-      <h3 id="">But doesn't this make me dependent on your site, indieauth.com?</h3>
-      <p>You are more than welcome to run this software on your own website! We continue to host indieauth.com for convenience, for people who don't want to invest the time to write OAuth code for providers over and over again. However, you are encouraged to run this software on your own site if you would like to support IndieAuth logins! Feel free to run your own IndieAuth server by <a href="https://github.com/aaronpk/IndieAuth">downloading the source code</a>, or you can implement the <a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a> protocol directly.</p>
-
-      <h3 id="">I run an authentication provider, how can I be added to the "supported providers" list?</h3>
-      <p>
-        We gladly welcome new providers! The goal is to support as many as possible so users are not reliant on any one in particular. Here is what you need to do to be supported by IndieAuth.
-        <ul>
-          <li>Ensure your users have a way to enter their website address in the "profile" section of your website.</li>
-          <li>When displaying the HTML rendering of a user's page, ensure the <a href="http://microformats.org/wiki/rel-me">rel="me"</a> attribute is set on the link.</li>
-          <li>Write an <a href="http://www.omniauth.org/">Omniauth</a> plugin to handle authenticating with your API, and submit it to the <a href="https://github.com/intridea/omniauth/wiki/List-of-Strategies">List of Omniauth Strategies</a> page.</li>
-          <li>Integrate the new provider into the <a href="https://github.com/aaronpk/IndieAuth">IndieAuth source code</a>, or just <a href="https://github.com/aaronpk/IndieAuth/issues/new">open an issue</a> with your request.</li>
-        </ul>
-      </p>
-
-    </div><!-- span12 -->
+      <%= partial :'partials/_faq' %>
+    </div><!-- span -->
   </div><!-- row -->
   </div><!-- section -->
 
   <div class="section">
   <div class="row">
     <div class="span8 post">
-
-      <h2 id="history">The History of IndieAuth</h2>
-
-      <p>By <a href="http://aaronparecki.com/" rel="author">Aaron Parecki</a></p>
-
-      <p>IndieAuth is an implementation of <a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a>, originally <a href="http://tantek.com/2010/032/t5/modest-proposal-authentication-oauth-twitter-rel-me">proposed by Tantek Çelik</a> in February 2010. The original algorithm was described <a href="http://tantek.com/2010/032/t6/relmeauth-oauth-rel-me-auto-fallback-authentication">in a short text update</a> on Tantek's website. Later that evening, Jeff Lindsay and Paul Tarjan implemented RelMeAuth in an open source Python library at Hacker Dojo and <a href="http://krijnhoetmer.nl/irc-logs/microformats/20100203">discussed/tested it in IRC</a>. Tantek later launched a RelMeAuth prototype on his domain, which you can try out at <a href="http://tantek.com/relmeauth/">tantek.com/relmeauth</a>.</p>
-
-      <p>In 2011, we held the first <a href="http://indiewebcamp.com/">IndieWebCamp</a> in Portland. The registration process involved setting up OpenID on your own domain (or delegating your domain to an OpenID provider), and signing in to the IndieWebCamp Wiki and adding yourself to the <a href="http://indiewebcamp.com/Guest_List">guest list</a>. Most people were able to successfully complete this <a href="http://indiewebcamp.com/How_to_set_up_OpenID_on_your_own_domain">intentional barrier to entry</a>, but there were still parts that were cumbersome.</p>
-
-      <p>It was suggested that for the 2012 IndieWebCamp, we handle registrations via RelMeAuth instead, to slightly lower the barrier to entry. I shuddered at facing the daunting task of writing multiple OAuth clients as <a href="http://www.mediawiki.org/wiki/AuthPlugin">MediaWiki extensions</a> in order to properly support RelMeAuth. It was then that the idea of IndieAuth.com was born.</p>
-
-      <p>What I needed was to write the RelMeAuth and OAuth client code once and be able to use it on any website needing authentication from here on out. I decided to build IndieAuth.com as a hosted service that anyone can easily use if they want to support RelMeAuth logins. By abstracting our the rel="me" and OAuth client logic into a very simple HTTP+JSON interface, it is now possible to quickly write a web page needing authentication by relying on IndieAuth.com to do the legwork.</p>
-
+      <%= partial :'partials/_history' %>
     </div><!-- span12 -->
   </div><!-- row -->
   </div><!-- section -->
 
 </div><!-- container -->
 
-<div class="footer">
-  <div class="fill">
-    <div class="container">
-      <div class="row">
-        <div class="span4">
-          <h5>IndieWeb</h5>
-          <ul class="unstyled">
-            <li><a href="http://indiewebcamp.com/why">Why the Indie Web?</a></li>
-            <li><a href="http://indiewebcamp.com/Getting_Started">Getting Started</a></li>
-            <li><a href="http://indiewebcamp.com/projects">List of Projects</a></li>
-          </ul>
-        </div>
-        <div class="span4">
-          <h5>Microformats</h5>
-          <ul class="unstyled">
-            <li><a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a></li>
-            <li><a href="http://microformats.org/wiki/web-sign-in">Web Sign-In</a></li>
-            <li><a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
-          </ul>
-        </div>
-        <div class="span4">
-          <h5>Community</h5>
-          <ul class="unstyled">
-            <li><a href="https://twitter.com/indiewebcamp">IndieWebCamp Twitter</a></li>
-            <li><a href="http://indiewebcamp.com/Main_Page">IndieWebCamp Wiki</a></li>
-            <li><a href="http://microformats.org/Main_Page">Microformats Wiki</a></li>
-            <li><a href="http://webchat.freenode.net/?channels=indiewebcamp&amp;nick=webchat<%=rand(400)%>">#indiewebcamp IRC</a></li>
-            <li><a href="http://webchat.freenode.net/?channels=microformats&amp;nick=webchat<%=rand(400)%>">#microformats IRC</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<%= partial :'partials/_footer' %>
 
 <script type="text/javascript">
 $(function(){
