@@ -75,11 +75,11 @@ Content-Type: application/json;charset=UTF-8
 
     </div>
     <div class="span4" style="padding-top: 63px;">
-      <form action="http://indieauth.com/auth" method="get" class="well">
+      <form action="/auth" method="get" class="well">
         <label>Web Address:</label>
         <input type="text" name="me" class="span3" placeholder="yourdomain.com" />
         <p><button type="submit" class="btn">Sign In</button></p>
-        <input type="hidden" name="redirect_uri" value="http://indieauth.com/success" />
+        <input type="hidden" name="redirect_uri" value="http://<%= request.host %>/success" />
       </form>
     </div>
 

@@ -2,8 +2,107 @@
 
 <div class="container">
 
+  <div class="section">
 
+  <h2>Setup Instructions</h2>
+
+  <div class="row">
+    <div class="span8">
+      <h3>1. Link to your various social profiles on your home page</h3>
+
+      <p>On your home page, link to your profiles and add the <code>rel="me"</code> attribute to the links.</p>
+
+      <p>This may look something like the following:
+      <pre><code><%== 
+'<ul>
+  <li><a href="https://twitter.com/aaronpk" rel="me">@aaronpk on Twitter</a></li>
+  <li><a href="https://github.com/aaronpk" rel="me">Github</a></li>
+  <li><a href="http://profiles.google.com/aaron.parecki" rel="me">Google</a></li>
+  <li><a href="http://facebook.com/aaronpk" rel="me">Facebook</a></li>
+  <li><a href="http://www.flickr.com/people/aaronpk/" rel="me">Flickr</a></li>
+</ul>
+' %></code></pre>
+      </p>
+
+    </div><!-- span -->
+    <div class="span4">
+      <ul class="thumbnails">
+        <li><a class="thumbnail" href="#"><img src="/img/social-profiles.png" width="214" height="256" /></a></li>
+      </ul>
+    </div>
+  </div><!-- row -->
+
+  <div class="row">
+    <div class="span8">
+      <h3>2. On each service, ensure there is a link back to your home page</h3>
+
+      <p>
+        You'll need to verify that each service has a link back to your home page. For convenience the "edit profile" links for all the supported services are below.
+
+        <div style="float: right;"><img src="/img/twitter-website-settings.png" width="394" height="102" /></div>
+
+        <ul>
+          <li><a href="https://twitter.com/settings/profile">Twitter</a></li>
+          <li><a href="https://plus.google.com/me/about/edit/d">Google</a></li>
+          <li><a href="https://github.com/settings/profile">Github</a></li>
+          <li><a href="http://www.flickr.com/profile_edit.gne">Flickr</a></li>
+          <li><a href="https://geoloqi.com/account/profile">Geoloqi</a></li>
+        </ul>
+
+      </p>
+
+    </div>
+  </div><!-- row -->
+
+  <div class="row">
+    <div class="span8">
+      <h3>3. You're done!</h3>
+      <p>That's it! You're done! Now you can use your domain to sign in to any sites that support IndieAuth!</p>
+    </div>
+  </div><!-- row -->
+
+
+  </div><!-- section -->
 
 </div><!-- container -->
 
 <%= partial :'partials/_footer' %>
+
+<!-- 
+<ul>
+  <li><a href="https://twitter.com/aaronpk" rel="me">
+    <img src="twitter.png" width="16" height="16" /> <span>@aaronpk on Twitter</span>
+  </a></li>
+  <li><a href="https://github.com/aaronpk" rel="me">
+    <img src="github.png" width="16" height="16" /> <span>Code on Github</span>
+  </a></li>
+  <li><a href="http://profiles.google.com/aaron.parecki" rel="me">
+    <img src="google.png" width="16" height="16" /> <span>Google Profile</span>
+  </a></li>
+  <li><a href="http://facebook.com/aaronpk" rel="me">
+    <img src="facebook.png" width="16" height="16" /> <span>Facebook Profile</span>
+  </a></li>
+  <li><a href="http://www.flickr.com/people/aaronpk/" rel="me">
+    <img src="flickr.png" width="16" height="16" /> <span>Flickr Photos</span>
+  </a></li>
+  <li><a href="http://foursquare.com/aaronpk" rel="me">
+    <img src="foursquare.png" width="16" height="16" /> <span>Foursquare Checkins</span>
+  </a></li>
+  <li><a href="http://geoloqi.com/aaronpk" rel="me">
+    <img src="geoloqi.png" width="16" height="16" /> <span>Geoloqi Profile</span>
+  </a></li>
+</ul>
+
+
+<ul>
+  <li><a href="https://twitter.com/aaronpk" rel="me">@aaronpk on Twitter</a></li>
+  <li><a href="https://github.com/aaronpk" rel="me">Github</a></li>
+  <li><a href="http://profiles.google.com/aaron.parecki" rel="me">Google</a></li>
+  <li><a href="http://facebook.com/aaronpk" rel="me">Facebook</a></li>
+  <li><a href="http://www.flickr.com/people/aaronpk/" rel="me">Flickr</a></li>
+</ul>
+
+
+
+
+ -->
