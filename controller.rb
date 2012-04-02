@@ -45,8 +45,14 @@ class Controller < Sinatra::Base
 
       # If not, find all rel=me links and look for known providers
       if @provider.nil?
-        parser = RelParser.new me
-        links = parser.rel_me_links
+        begin
+          parser = RelParser.new me
+          links = parser.rel_me_links
+        rescue SocketError
+          @message = "Host name not found: #{me}"
+          title 'Error'
+          return erb :error
+        end
 
         # Save the complete list of links to the user object
         user.me_links = links.to_json
@@ -120,6 +126,7 @@ class Controller < Sinatra::Base
 
         session[:attempted_token] = login[:token]
         session[:attempted_username] = @provider.username_for_url @link
+        session[:attempted_provider_uri] = @link
         puts "Attempting authentication for #{session[:attempted_username]} via #{@provider['code']}"
         redirect "/auth/#{@provider['code']}"
       end
@@ -135,7 +142,7 @@ class Controller < Sinatra::Base
     puts session
 
     if session[:attempted_username] != auth['info']['nickname']
-      attempted_username = session[:attempted_username]
+      attempted_username = session[:attempted_provider_uri]
       actual_username = auth['info']['nickname']
       @message = "Your website linked to #{attempted_username}, but you were signed in as #{actual_username}"
       title "Error"
