@@ -18,21 +18,31 @@
     <div class="span6">
 
       <h2>What is IndieAuth?</h2>
-
       <p>IndieAuth is a way to use your own domain name to sign in to websites.</p>
 
       <hr />
 
       <h2>Why IndieAuth?</h2>
-
       <p>Blah blah</p>
+
+<!--
+      <hr />
+
+      <h2>Is My Site Ready?</h2>
+      <form class="well">
+        <label>Web Address:</label>
+        <input type="text" class="span3" placeholder="yourdomain.com">
+        <p><button type="submit" class="btn">Sign In</button></p>
+      </form>
+ -->
 
     </div>
   </div><!-- row -->
 
   <br />
 
-  <div class="row section">
+  <div class="section">
+  <div class="row">
     <div class="span4">
       <h3>How it Works</h3>
       
@@ -86,8 +96,10 @@
 
     </div><!-- span4 -->
   </div><!-- row -->
+  </div><!-- section -->
 
-  <div class="row section">
+  <div class="section">
+  <div class="row">
     <div class="span12">
       <h2>Authentication providers currently supported by IndieAuth.com</h2>
 
@@ -107,25 +119,37 @@
         <li><a href="https://geoloqi.com/account/profile" class="thumbnail">
           <img src="/img/providers/geoloqi.png" alt="Geoloqi" width="57" height="57" />
         </a></li>
-        <li><a href="https://foursquare.com/settings/" class="thumbnail">
+        <li><a href="https://foursquare.com/settings/" class="thumbnail" id="provider-foursquare">
           <img src="/img/providers/foursquare.png" alt="Foursquare" width="57" height="57" />
         </a></li>
-        <li><a href="http://www.facebook.com" class="thumbnail">
+        <li><a href="http://www.facebook.com" class="thumbnail" id="provider-facebook">
           <img src="/img/providers/facebook.png" alt="Facebook" width="57" height="57" />
         </a></li>
       </ul>
     </div>
-  </div>
+  </div><!-- row -->
+  </div><!-- section -->
 
-  <div class="row section">
+  <div class="section">
+  <div class="row">
     <div class="span12">
       <h2 id="">Using IndieAuth.com to sign users in to your website</h2>
 
 
-    </div>
-  </div>
+      <div class="span4">
+        <form class="well">
+          <label>Web Address:</label>
+          <input type="text" class="span3" placeholder="yourdomain.com">
+          <p><button type="submit" class="btn">Sign In</button></p>
+        </form>
+      </div>
 
-  <div class="row section">
+    </div>
+  </div><!-- row -->
+  </div><!-- section -->
+
+  <div class="section">
+  <div class="row">
     <div class="span8">
       <h2 id="faq">Frequently Asked Questions</h2>
 
@@ -133,7 +157,7 @@
       <p>The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
 
       <h3>Does this require users to have their own domain name?</h3>
-      <p>Yes, the assumption is that people are willing to <a href="http://indiewebcamp.com/why">own their online identities</a> in the form of a domain name. It is getting easier and easier to host content on your own domain name. See <a href="http://indiewebcamp.com/Getting_Started">Getting Started on the Indie Web</a> for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like <a href="http://www.dreamhost.com/r.cgi?426455">Dreamhost</a>.</p>
+      <p>Yes, the assumption is that people are willing to <a href="http://indiewebcamp.com/why">own their online identities</a> in the form of a domain name. It is getting easier and easier to host content on your own domain name. See "<a href="http://indiewebcamp.com/Getting_Started">Getting Started on the Indie Web</a>"" for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like <a href="http://www.dreamhost.com/r.cgi?426455">Dreamhost</a>.</p>
 
       <h3 id="">But doesn't this make me dependent on your site, indieauth.com?</h3>
       <p>You can certainly use indieauth.com. We continue to host indieauth.com for convenience, for people who don't want
@@ -152,11 +176,21 @@
         </ul>
       </p>
 
-      <h3 id="">Who is behind IndieAuth? How did this start?</h3>
-      <p>IndieAuth is an implementation of RelMeAuth, originally </p>
+    </div><!-- span12 -->
+  </div><!-- row -->
+  </div><!-- section -->
+
+  <div class="section">
+  <div class="row">
+    <div class="span8">
+
+      <h2 id="history">The History of IndieAuth</h3>
+      <p>IndieAuth is an implementation of <a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a>, originally <a href="http://tantek.com/2010/032/t5/modest-proposal-authentication-oauth-twitter-rel-me">proposed by Tantek Çelik</a> in February 2010. The original algorithm was described <a href="http://tantek.com/2010/032/t6/relmeauth-oauth-rel-me-auto-fallback-authentication">in a short text update</a> on Tantek's website. Later that evening, Jeff Lindsay and Paul Tarjan implemented RelMeAuth in an open source Python library at Hacker Dojo and <a href="http://krijnhoetmer.nl/irc-logs/microformats/20100203">discussed/tested it in IRC</a>. Tantek later launched a RelMeAuth prototype on his domain, which you can try out at <a href="http://tantek.com/relmeauth/">tantek.com/relmeauth</a>.</p>
+
 
     </div><!-- span12 -->
   </div><!-- row -->
+  </div><!-- section -->
 
 </div><!-- container -->
 
@@ -164,7 +198,7 @@
   <div class="fill">
     <div class="container">
       <div class="row">
-        <div class="span2">
+        <div class="span4">
           <h5>IndieWeb</h5>
           <ul class="unstyled">
             <li><a href="http://indiewebcamp.com/why">Why the Indie Web?</a></li>
@@ -172,7 +206,7 @@
             <li><a href="http://indiewebcamp.com/projects">List of Projects</a></li>
           </ul>
         </div>
-        <div class="span2">
+        <div class="span4">
           <h5>Microformats</h5>
           <ul class="unstyled">
             <li><a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a></li>
@@ -180,7 +214,7 @@
             <li><a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
           </ul>
         </div>
-        <div class="span2">
+        <div class="span4">
           <h5>Community</h5>
           <ul class="unstyled">
             <li><a href="https://twitter.com/indiewebcamp">IndieWebCamp Twitter</a></li>
@@ -195,3 +229,15 @@
   </div>
 </div>
 
+<script type="text/javascript">
+$(function(){
+  $("#provider-facebook").popover({
+    title: "Why not Facebook?",
+    content: "Facebook does not return sensible HTML for public profile pages. Facebook needs to change their public profile pages to return users' website addresses in rel=\"me\" tags."
+  });
+  $("#provider-foursquare").popover({
+    title: "Why not Foursquare?",
+    content: "Foursquare does not provide the ability to link to your own web page from your profile."
+  });
+});
+</script>

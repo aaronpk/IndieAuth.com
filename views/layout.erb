@@ -15,8 +15,11 @@
     <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css" />
+    <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
   </head>
-
   <body class="<%= browser.body_class %> <%= path_class %>">
 
     <div class="navbar navbar-fixed-top">
@@ -44,11 +47,6 @@
     </div>
 
     <%= yield %>
-
-  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="js/jquery-1.7.1.min.js"><\/script>')</script>
-  <script src="/bootstrap/js/bootstrap.min.js"></script>
 
   </body>
 </html>
