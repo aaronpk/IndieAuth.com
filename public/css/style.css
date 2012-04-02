@@ -19,7 +19,7 @@ body {
 }
 .hero-unit h1 {
   color: #eee;
-  margin-top: 20px;
+  margin-top: 40px;
   font-size: 36pt;
   border-bottom: none;
   font-weight: normal;
@@ -34,6 +34,27 @@ body {
 .section.row {
   margin-left: -30px;
 }
+
+.footer {
+  background: url(/img/bkg-dark.png) repeat center top #151515;
+  padding: 20px 0 10px 0;
+}
+.footer .fill {
+  display: block;
+}
+.footer li {
+  line-height: 24px;
+}
+.footer h5 {
+  color: #ddd;
+}
+.footer li, .footer h5 {
+  font-size: 13px;
+}
+.footer a {
+  color: gray;
+}
+
 
 /**
  * Headers

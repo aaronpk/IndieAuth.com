@@ -1,7 +1,6 @@
 <div class="hero-unit">
-  <h1>IndieAuth: Own your online identity</h1>
-  <p></p>
-  <p><a class="btn btn-primary btn-large">Web Sign-In &raquo;</a></p>
+  <h1>IndieAuth: Sign in with your domain name</h1>
+  <!-- <p><a class="btn btn-primary btn-large">Web Sign-In &raquo;</a></p> -->
 </div>
 
 <div class="container">
@@ -9,14 +8,18 @@
   <div class="row">
     <div class="span6">
 
-      <img src="" width="570" height="300" />
+      <ul class="thumbnails">
+        <li>
+          <a class="thumbnail" href="#"><img src="/img/web-signin-splash.jpg" width="550" height="350" /></a>
+        </li>
+      </ul>
 
     </div>
     <div class="span6">
 
       <h2>What is IndieAuth?</h2>
 
-      <p>IndieAuth is lorem ipsum...</p>
+      <p>IndieAuth is a way to use your own domain name to sign in to websites.</p>
 
       <hr />
 
@@ -27,9 +30,11 @@
     </div>
   </div><!-- row -->
 
+  <br />
+
   <div class="row section">
     <div class="span4">
-      <h3>Documentation</h3>
+      <h3>How it Works</h3>
       
       <ul class="thumbnails">
         <li>
@@ -39,9 +44,11 @@
         </li>
       </ul>
 
-      <h4>How to Use IndieAuth</h4>
+      <h4>How to Set Up IndieAuth</h4>
       <ul>
-        <li><a href="">One</a></li>
+        <li>Add a link on your home page to your various social profiles with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
+        <li>Ensure your profiles link back to your home page</li>
+        <li>Enter your domain in a "<a href="http://microformats.org/wiki/web-sign-in">Web Sign-In</a>" box to being using your own domain as your online identity!</li>
       </ul>
 
     </div><!-- span4 -->
@@ -72,12 +79,119 @@
 
       <h4>Join Us</h4>
       <ul>
-        <li>Add yourself to the <a href="http://indiewebcamp.com/Guest_List">Guest List</a> after logging in with your own domain</li>
+        <li>Attend <a href="http://indiewebcamp.com/Main_Page">IndieWebCamp 2012</a> in Portland, Oregon<br />(June 30 to July 1, 2012)</li>
+        <li>Add yourself to the <a href="http://indiewebcamp.com/Guest_List">IndieWebCamp 2012 Guest List</a> after signing in with your own domain</li>
         <li>Add your own IndieWeb projects to the <a href="http://indiewebcamp.com/Projects">Project List</a></li>
-        <li>Attend IndieWebCamp 2012 in Portland, Oregon from <a href="http://indiewebcamp.com/Main_Page">June 30 to July 1, 2012</a>.</li>
       </ul>
 
     </div><!-- span4 -->
   </div><!-- row -->
 
+  <div class="row section">
+    <div class="span12">
+      <h2>Authentication providers currently supported by IndieAuth.com</h2>
+
+      <ul class="thumbnails">
+        <li><a href="https://twitter.com/settings/profile" class="thumbnail">
+          <img src="/img/providers/twitter.png" alt="Twitter" width="57" height="57" />
+        </a></li>
+        <li><a href="https://plus.google.com/me/about/edit/d" class="thumbnail">
+          <img src="/img/providers/google.png" alt="Google" width="57" height="57" />
+        </a></li>
+        <li><a href="https://github.com/settings/profile" class="thumbnail">
+          <img src="/img/providers/github.png" alt="Github" width="57" height="57" />
+        </a></li>
+        <li><a href="http://www.flickr.com/profile_edit.gne" class="thumbnail">
+          <img src="/img/providers/flickr.png" alt="Flickr" width="57" height="57" />
+        </a></li>
+        <li><a href="https://geoloqi.com/account/profile" class="thumbnail">
+          <img src="/img/providers/geoloqi.png" alt="Geoloqi" width="57" height="57" />
+        </a></li>
+        <li><a href="https://foursquare.com/settings/" class="thumbnail">
+          <img src="/img/providers/foursquare.png" alt="Foursquare" width="57" height="57" />
+        </a></li>
+        <li><a href="http://www.facebook.com" class="thumbnail">
+          <img src="/img/providers/facebook.png" alt="Facebook" width="57" height="57" />
+        </a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row section">
+    <div class="span12">
+      <h2 id="">Using IndieAuth.com to sign users in to your website</h2>
+
+
+    </div>
+  </div>
+
+  <div class="row section">
+    <div class="span8">
+      <h2 id="faq">Frequently Asked Questions</h2>
+
+      <h3 id="how-is-this-different-from-openid">How is this different from OpenID?</h3>
+      <p>The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
+
+      <h3>Does this require users to have their own domain name?</h3>
+      <p>Yes, the assumption is that people are willing to <a href="http://indiewebcamp.com/why">own their online identities</a> in the form of a domain name. It is getting easier and easier to host content on your own domain name. See <a href="http://indiewebcamp.com/Getting_Started">Getting Started on the Indie Web</a> for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like <a href="http://www.dreamhost.com/r.cgi?426455">Dreamhost</a>.</p>
+
+      <h3 id="">But doesn't this make me dependent on your site, indieauth.com?</h3>
+      <p>You can certainly use indieauth.com. We continue to host indieauth.com for convenience, for people who don't want
+      to invest the time to write OAuth code for providers over and over again. However, you are encouraged to run
+      this software on your own site if you would like to support IndieAuth logins! Feel free to run your
+      own IndieAuth server by <a href="https://github.com/aaronpk/IndieAuth">downloading the source code</a>!</p>
+
+      <h3 id="">I run an authentication provider, how can I be added to the "supported providers" list?</h3>
+      <p>
+        We gladly welcome new providers! The goal is to support as many as possible so users are not reliant on any one in particular. Here is what you need to do to be supported by IndieAuth.
+        <ul>
+          <li>Ensure your users have a way to enter their website address in the "profile" section of your website.</li>
+          <li>When displaying the HTML rendering of a user's page, ensure the <a href="http://microformats.org/wiki/rel-me">rel="me"</a> attribute is set on the link.</li>
+          <li>Write an <a href="http://www.omniauth.org/">Omniauth</a> plugin to handle authenticating with your API, and submit it to the <a href="https://github.com/intridea/omniauth/wiki/List-of-Strategies">List of Omniauth Strategies</a> page.</li>
+          <li>Integrate the new provider into the <a href="https://github.com/aaronpk/IndieAuth">IndieAuth source code</a>, or just <a href="https://github.com/aaronpk/IndieAuth/issues/new">open an issue</a> with your request.</li>
+        </ul>
+      </p>
+
+      <h3 id="">Who is behind IndieAuth? How did this start?</h3>
+      <p>IndieAuth is an implementation of RelMeAuth, originally </p>
+
+    </div><!-- span12 -->
+  </div><!-- row -->
+
 </div><!-- container -->
+
+<div class="footer">
+  <div class="fill">
+    <div class="container">
+      <div class="row">
+        <div class="span2">
+          <h5>IndieWeb</h5>
+          <ul class="unstyled">
+            <li><a href="http://indiewebcamp.com/why">Why the Indie Web?</a></li>
+            <li><a href="http://indiewebcamp.com/Getting_Started">Getting Started</a></li>
+            <li><a href="http://indiewebcamp.com/projects">List of Projects</a></li>
+          </ul>
+        </div>
+        <div class="span2">
+          <h5>Microformats</h5>
+          <ul class="unstyled">
+            <li><a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a></li>
+            <li><a href="http://microformats.org/wiki/web-sign-in">Web Sign-In</a></li>
+            <li><a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
+          </ul>
+        </div>
+        <div class="span2">
+          <h5>Community</h5>
+          <ul class="unstyled">
+            <li><a href="https://twitter.com/indiewebcamp">IndieWebCamp Twitter</a></li>
+            <li><a href="http://indiewebcamp.com/Main_Page">IndieWebCamp Wiki</a></li>
+            <li><a href="http://microformats.org/Main_Page">Microformats Wiki</a></li>
+            <li><a href="http://webchat.freenode.net/?channels=indiewebcamp&amp;nick=webchat<%=rand(400)%>">#indiewebcamp IRC</a></li>
+            <li><a href="http://webchat.freenode.net/?channels=microformats&amp;nick=webchat<%=rand(400)%>">#microformats IRC</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
