@@ -5,6 +5,7 @@ class Controller < Sinatra::Base
   end
 
   get '/?' do
+    title "IndieAuth - Own your online identity"
     erb :index
   end
 
@@ -13,6 +14,7 @@ class Controller < Sinatra::Base
     session[:redirect_uri] = params[:redirect_uri]
 
     if params[:me].nil?
+      title "Error"
       @message = "Parameter 'me' should be set to your domain name"
       erb :error
     else
@@ -80,6 +82,7 @@ class Controller < Sinatra::Base
       end
 
       if !@link
+        title "Error"
         erb :error_no_links
       else
         puts "Provider: #{@provider}"
@@ -112,6 +115,7 @@ class Controller < Sinatra::Base
     if session[:attempted_username] != auth['info']['nickname']
       @attempted_username = session[:attempted_username]
       @actual_username = auth['info']['nickname']
+      title "Error"
       erb :error_bad_user
     else
       session[params[:name]] = auth['info']['nickname']
@@ -127,6 +131,7 @@ class Controller < Sinatra::Base
 
       if login.nil?
         @message = "Login attempt not found"
+        title "Error"
         erb :error
       else
         if session[:redirect_uri]
@@ -145,10 +150,12 @@ class Controller < Sinatra::Base
   get '/auth/failure' do
     @message = params['message']
     erb :error
+    title "Error"
   end
 
   get '/success' do
     @domain = session[:domain]
+    title "Error"
     erb :success
   end
 
@@ -172,6 +179,7 @@ class Controller < Sinatra::Base
   get '/test' do
     if params[:me].nil?
       @error = "Parameter 'me' is required"
+      title "Error"
       erb :error
     else
       # Parse the incoming "me" link looking for all rel=me URLs
@@ -182,18 +190,21 @@ class Controller < Sinatra::Base
       @links = parser.get_supported_links
       puts @links
 
+      title "Test"
       erb :results
     end
   end
 
   get '/reset' do
     session.clear
+    title "Session"
     erb :session
   end
 
   get '/session' do 
     @session = session
     puts session
+    title "Session"
     erb :session
   end
 
