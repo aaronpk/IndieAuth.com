@@ -53,6 +53,10 @@ body {
 }
 
 
+.intro p {
+  font-size: 1.12em;
+}
+
 /**
  * Headers
  */
