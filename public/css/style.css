@@ -3,15 +3,41 @@ body {
   background: url(/img/noise.jpg);
 }
 
+@media (max-width: 767px) {
+  body {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  .navbar-fixed-top {
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+  }  
+}
+@media (max-width: 979px) {
+  body {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  .navbar-fixed-top {
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+  }  
+}
+
+.container {
+  padding: 0 10px;
+}
+
 .navbar {
   position: relative;
 }
 
 
 .hero-unit {
-  background: url(/img/title-bkg.png) top center no-repeat;
-  height: 150px;
-  padding: 10px;
+  background: url(/img/title-bkg.jpg) top center no-repeat;
+  padding: 20px 10px;
   text-align: center;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
@@ -20,6 +46,7 @@ body {
 .hero-unit h1 {
   color: #eee;
   margin-top: 40px;
+  margin-bottom: 30px;
   font-size: 36pt;
   border-bottom: none;
   font-weight: normal;

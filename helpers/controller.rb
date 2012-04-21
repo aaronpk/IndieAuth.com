@@ -3,8 +3,7 @@ class Controller < Sinatra::Base
 
     def title(value=nil)
       return @_title if value.nil?
-      # TODO: set wiki name in the config file
-      @_title = "#{value} - pkwiki"
+      @_title = value
     end
 
     def viewport

@@ -15,13 +15,13 @@
     <div class="span6 intro">
 
       <h2>What is IndieAuth?</h2>
-      <p>IndieAuth is a way to <b>use your own domain name</b> to sign in to websites. It works by linking your website to one or more authentication providers such as Twitter or Google, then entering your domain name in the login form on websites that support IndieAuth.</p>
+      <p>IndieAuth is a way to <b>use your own domain name</b> to sign in to websites. It's like OpenID, but simpler! It works by linking your website to one or more authentication providers such as Twitter or Google, then entering your domain name in the login form on websites that support IndieAuth.</p>
 
       <hr />
 
       <h2>Why IndieAuth?</h2>
       <p>IndieAuth is part of the <a href="http://indiewebcamp.com/why">Indie Web movement</a> to take back control of your online identity. Instead of logging in to websites as "you on Twitter" or "you on Facebook", <b>you should be able to log in as just "you".</b> We should not be relying on Twitter or Facebook to provide our authenticated identities, we should be able to use our own domain names to log in to sites everywhere.</p>
-      <p>IndieAuth was built to make it as easy as possible for users and for developers to start using this new way of signing in on the web.</p>
+      <p>IndieAuth was built to make it as easy as possible for users and for developers to start using this new way of signing in on the web, without the complexities of OpenID.</p>
 
 <!--
       <hr />
@@ -149,7 +149,7 @@
 $(function(){
   $("#provider-facebook").popover({
     title: "Why not Facebook?",
-    content: "Facebook does not return sensible HTML for public profile pages. Facebook needs to change their public profile pages to return users' website addresses in rel=\"me\" tags."
+    content: "Facebook does not return sensible HTML for public profile pages. Facebook needs to change their public profile pages to return users' website addresses in a rel=\"me\" tag."
   });
   $("#provider-foursquare").popover({
     title: "Why not Foursquare?",
