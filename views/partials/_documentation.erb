@@ -42,11 +42,7 @@
 
       <p>At this point you need to use the token to find out the domain name of the authenticated user. Simply make a request to indieauth.com/session with the token, and you will get back the domain name of the authenticated user.</p>
 
-      <p><pre><code>POST /session HTTP/1.1
-Host: indieauth.com
-Content-Type: application/x-www-form-urlencoded;charset=UTF-8
-
-token=gk7n4opsyuUxhvF4</code></pre></p>
+      <p><pre><code>http://indieauth.com/session?token=gk7n4opsyuUxhvF4</code></pre></p>
 
       <p>An example successful response:</p>
 
