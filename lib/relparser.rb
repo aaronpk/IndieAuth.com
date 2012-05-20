@@ -39,24 +39,43 @@ class RelParser
   def get_supported_links
     supported = []
     self.rel_me_links.each do |link|
-      if provider_supported_by_url? link
+      parser = RelParser.new link
+      if parser.is_supported_provider?
         supported << link
       end
     end
     supported
   end
 
-  def provider_supported_by_url?(url)
-    provider = Provider.provider_for_url url
+  def get_provider
+    return nil if @url.nil?
+    Provider.all.each do |provider|
+      if provider['regex_username'] && @url.match(Regexp.new provider['regex_username'])
+        # puts "Provider name for #{url} is #{provider['code']}"
+        return provider
+      else
+        # Check if the URL is an OpenID endpoint
+        
+      end
+    end
+    return nil
+  end
+
+  def is_supported_provider?
+    provider = self.get_provider
     return false if provider.nil?
     return OmniAuth.provider_supported? provider['code']
   end
 
-  def verify_link(link)
+  def verify_link(link, site_parser=nil)
     # Scan the external site for rel="me" links
-    site_parser = RelParser.new link
-    links_to = site_parser.get "me"
-    
+    site_parser = RelParser.new link if site_parser.nil?
+    begin
+      links_to = site_parser.get "me"
+    rescue SocketError
+      return false
+    end
+
     puts "==========="
     puts link
     puts links_to

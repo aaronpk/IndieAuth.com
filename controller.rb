@@ -44,15 +44,22 @@ class Controller < Sinatra::Base
       user = User.first_or_create :href => me.sub(/(\/)+$/,'')
 
       # Check if the entered URL is a known auth provider
-      @provider = Provider.provider_for_url me
+      # This will do an HTTP lookup to find OpenID delegate links
+      parser = RelParser.new me
+      begin
+        @provider = parser.get_provider
+      rescue SocketError
+        @message = "Error retrieving: #{me}"
+        title 'Error'
+        return erb :error
+      end
 
       # If not, find all rel=me links and look for known providers
       if @provider.nil?
         begin
-          parser = RelParser.new me
           links = parser.rel_me_links
         rescue SocketError
-          @message = "Host name not found: #{me}"
+          @message = "Error retrieving: #{me}"
           title 'Error'
           return erb :error
         end
@@ -68,34 +75,31 @@ class Controller < Sinatra::Base
           links = parser.get_supported_links
           puts "Supported links: #{links}"
           links.each do |link|
-            provider = Provider.provider_for_url(link)
-            profile = Profile.first_or_create({ 
-              :user => user, 
-              :provider => provider 
-            }, 
-            { 
-              :href => link 
-            })
-          end
-          # Find a provider that has a rel="me" link back to the user's profile
-          links.each do |link|
-            provider = Provider.provider_for_url(link)
-            verified = parser.verify_link link
-            if verified
-              @profile = Profile.first :user => user, :provider => provider
-              @profile.verified = true
-              @profile.save
-              @provider = provider
-              @link = link
-              break
+            linkParser = RelParser.new link
+            provider = linkParser.get_provider
+            verified = parser.verify_link link, linkParser
+            if provider
+              profile = Profile.first_or_create({ 
+                :user => user, 
+                :provider => provider 
+              }, 
+              { 
+                :href => link,
+                :verified => verified
+              })
             end
           end
 
-          if @provider.nil?
+          @profile = user.profiles.first(:verified => 1)
+          if @profile.nil?
             @message = "No valid authentication providers were found at #{me}"
             title "Error"
             return erb :error
           end
+
+          @provider = @profile.provider
+          @link = @profile.href
+
           puts "Found valid provider: #{@provider['code']}"
         end
       else
