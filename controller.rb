@@ -133,7 +133,8 @@ class Controller < Sinatra::Base
     end
   end
 
-  get '/auth/:name/callback' do
+  %w(get post).each do |method|
+  send(method, '/auth/:name/callback') do
     auth = request.env['omniauth.auth']
     puts "Auth complete!"
     puts "Provider: #{auth['provider']}"
@@ -175,6 +176,7 @@ class Controller < Sinatra::Base
         end
       end
     end
+  end
   end
 
   get '/auth/failure' do

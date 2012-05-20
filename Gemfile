@@ -18,6 +18,7 @@ gem 'omniauth-geoloqi'
 gem 'omniauth-github'
 gem 'omniauth-google'
 gem 'omniauth-twitter'
+gem 'omniauth-openid'
 
 gem 'mechanize'
 

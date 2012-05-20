@@ -23,9 +23,11 @@ class Provider
     # puts "provider_for_url #{url}"
     return nil if url.nil?
     Provider.all.each do |provider|
-      if url.match(Regexp.new provider['regex_username'])
+      if provider['regex_username'] && url.match(Regexp.new provider['regex_username'])
         # puts "Provider name for #{url} is #{provider['code']}"
         return provider
+      else
+        # Check if the URL is an OpenID endpoint
       end
     end
     return nil

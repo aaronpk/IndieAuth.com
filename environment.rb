@@ -44,8 +44,9 @@ class Controller < Sinatra::Base
     use OmniAuth::Builder do
       Provider.all.each do |p|
         # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
-        provider p['code'].to_sym, p['client_id'], p['client_secret']
+        provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
       end
+      provider :open_id, :store => nil
     end
 
     DataMapper.finalize
