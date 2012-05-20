@@ -27,20 +27,23 @@ class Controller < Sinatra::Base
     else
       # Parse the incoming "me" link looking for all rel=me URLs
       me = params[:me]
+
+      # Prepend "http" unless it's already there
       me = "http://#{me}" unless me.start_with?('http')
 
-      # Normalize the URI to ensure it has a "/" at the end
-      meURI = URI.parse me
-      if meURI.path == ""
-        meURI.path = "/" 
-        me = meURI.to_s
-      end
+      # Add trailing "/"
+      # meURI = URI.parse me
+      # if meURI.path == ""
+      #   meURI.path = "/" 
+      #   me = meURI.to_s
+      # end
 
       session[:attempted_uri] = me
 
-      user = User.first_or_create :href => me
+      # Remove trailing "/" when storing and looking up the user
+      user = User.first_or_create :href => me.sub(/(\/)+$/,'')
 
-      # Check if the entered URL is a known OAuth provider
+      # Check if the entered URL is a known auth provider
       @provider = Provider.provider_for_url me
 
       # If not, find all rel=me links and look for known providers
@@ -113,6 +116,8 @@ class Controller < Sinatra::Base
         title "Error"
         erb :error
       else
+        # Now that we got here, we have verified the two sites link to each other. Now we just need
+        # to authenticate the user with the provider to make sure they are who they say they are.
         puts "Provider: #{@provider}"
         puts "Profile: #{@profile}"
         puts "User: #{user}"
@@ -145,7 +150,7 @@ class Controller < Sinatra::Base
     if session[:attempted_username] != auth['info']['nickname']
       attempted_username = session[:attempted_provider_uri]
       actual_username = auth['info']['nickname']
-      @message = "Your website linked to #{attempted_username}, but you were signed in as #{actual_username}"
+      @message = "You just authenticated as #{actual_username} but your website linked to #{attempted_username}"
       title "Error"
       erb :error
     else
