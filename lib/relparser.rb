@@ -24,6 +24,7 @@ class RelParser
   def get(tag)
     links = []
     if @page.nil?
+      puts "<<<<<<< FETCHING #{@url} >>>>>>>"
       @page = @agent.get @url
     end
     @page.links.each do |link|
@@ -41,7 +42,10 @@ class RelParser
     self.rel_me_links.each do |link|
       parser = RelParser.new link
       if parser.is_supported_provider?
-        supported << link
+        supported << {
+          :link => link,
+          :parser => parser
+        }
       end
     end
     supported
@@ -55,7 +59,11 @@ class RelParser
         return provider
       else
         # Check if the URL is an OpenID endpoint
-        
+        rel_me_links # fetch the page contents now which populates @page
+        # If the page contains an openID tag, use it!
+        if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
+          return Provider.first(:code => 'open_id')
+        end
       end
     end
     return nil
@@ -77,8 +85,8 @@ class RelParser
     end
 
     puts "==========="
-    puts link
-    puts links_to
+    puts "Page: #{link}"
+    puts "Links to: #{links_to}"
     puts
     
     links_back = false

@@ -44,7 +44,7 @@ class Controller < Sinatra::Base
       user = User.first_or_create :href => me.sub(/(\/)+$/,'')
 
       # Check if the entered URL is a known auth provider
-      # This will do an HTTP lookup to find OpenID delegate links
+      # This will also do an HTTP lookup to find OpenID delegate links
       parser = RelParser.new me
       begin
         @provider = parser.get_provider
@@ -73,24 +73,34 @@ class Controller < Sinatra::Base
         else
           # Filter only the links we support, and save unverified "profile" records for them
           links = parser.get_supported_links
-          puts "Supported links: #{links}"
+          puts "Supported links: "
+          puts links.collect {|c| c[:link]}
+
+          selected_profile = nil
+
           links.each do |link|
-            linkParser = RelParser.new link
-            provider = linkParser.get_provider
-            verified = parser.verify_link link, linkParser
+            provider = link[:parser].get_provider
+            verified = parser.verify_link link[:link], link[:parser]
             if provider
               profile = Profile.first_or_create({ 
                 :user => user, 
                 :provider => provider 
               }, 
               { 
-                :href => link,
+                :href => link[:link],
                 :verified => verified
               })
+
+              # Use the first verified profile as the selected profile for auth
+              if verified
+                if selected_profile.nil?
+                  selected_profile = profile
+                end
+              end
             end
           end
 
-          @profile = user.profiles.first(:verified => 1)
+          @profile = selected_profile
           if @profile.nil?
             @message = "No valid authentication providers were found at #{me}"
             title "Error"
@@ -133,11 +143,17 @@ class Controller < Sinatra::Base
           :token => Login.generate_token,
           :redirect_uri => params[:redirect_uri]
 
+        session[:attempted_userid] = user[:id]
         session[:attempted_token] = login[:token]
         session[:attempted_username] = @provider.username_for_url @link
         session[:attempted_provider_uri] = @link
         puts "Attempting authentication for #{session[:attempted_username]} via #{@provider['code']}"
-        redirect "/auth/#{@provider['code']}"
+
+        if @provider['code'] == 'open_id'
+          redirect "/auth/#{@provider['code']}?openid_url=#{@profile[:href]}"
+        else
+          redirect "/auth/#{@provider['code']}"
+        end
       end
     end
   end
@@ -151,14 +167,20 @@ class Controller < Sinatra::Base
     puts "Username: #{auth['info']['nickname']}"
     puts session
 
-    if session[:attempted_username] != auth['info']['nickname']
-      attempted_username = session[:attempted_provider_uri]
+    profile = Profile.first :user_id => session[:attempted_userid], :href => session[:attempted_provider_uri]
+    if profile.provider[:code] == 'open_id'
+      actual_username = params['openid_url']
+    else
       actual_username = auth['info']['nickname']
+    end
+
+    if session[:attempted_username] != actual_username
+      attempted_username = session[:attempted_provider_uri]
       @message = "You just authenticated as #{actual_username} but your website linked to #{attempted_username}"
       title "Error"
       erb :error
     else
-      session[params[:name]] = auth['info']['nickname']
+      session[params[:name]] = actual_username
       session[:domain] = session[:attempted_domain]
       session[:attempted_username] = nil
       session[:attempted_domain] = nil
@@ -189,7 +211,7 @@ class Controller < Sinatra::Base
   end
 
   get '/auth/failure' do
-    @message = params['message']
+    @message = "The authentication provider replied with an error: #{params['message']}"
     title "Error"
     erb :error
   end
@@ -230,25 +252,6 @@ class Controller < Sinatra::Base
 
     json_response 200, {:me => login.user['href']}
   end
-
-  # get '/test' do
-  #   if params[:me].nil?
-  #     @error = "Parameter 'me' is required"
-  #     title "Error"
-  #     erb :error
-  #   else
-  #     # Parse the incoming "me" link looking for all rel=me URLs
-  #     me = params[:me]
-  #     me = "http://#{me}" unless me.start_with?('http')
-
-  #     parser = RelParser.new me
-  #     @links = parser.get_supported_links
-  #     puts @links
-
-  #     title "Test"
-  #     erb :results
-  #   end
-  # end
 
   get '/reset' do
     session.clear

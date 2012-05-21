@@ -15,7 +15,7 @@ class Provider
     parser = RelParser.new url
     provider = parser.get_provider
     return nil if provider.nil?
-    return url if provider['code'] == 'openid'
+    return url if provider['code'] == 'open_id'
     url.match provider['regex_username']
     #puts "Username for #{url} is #{$1}"
     return $1

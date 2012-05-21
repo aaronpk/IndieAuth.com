@@ -2,6 +2,7 @@ Encoding.default_internal = 'UTF-8'
 require 'rubygems'
 require 'bundler/setup'
 require 'cgi'
+require 'openid/store/filesystem'
 
 Bundler.require
 Dir.glob(['lib', 'models', 'helpers'].map! {|d| File.join File.expand_path(File.dirname(__FILE__)), d, '*.rb'}).each {|f| require f}
@@ -46,7 +47,7 @@ class Controller < Sinatra::Base
         # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
         provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
       end
-      provider :open_id, :store => nil
+      provider :open_id, :store => OpenID::Store::Filesystem.new('/tmp')
     end
 
     DataMapper.finalize
