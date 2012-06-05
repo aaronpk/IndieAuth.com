@@ -174,9 +174,8 @@ class Controller < Sinatra::Base
       actual_username = auth['info']['nickname']
     end
 
-    if session[:attempted_username] != actual_username
-      attempted_username = session[:attempted_provider_uri]
-      @message = "You just authenticated as #{actual_username} but your website linked to #{attempted_username}"
+    if session[:attempted_username].downcase != actual_username.downcase  # case in-sensitive compare
+      @message = "You just authenticated as #{actual_username} but your website linked to #{session[:attempted_provider_uri]}"
       title "Error"
       erb :error
     else
