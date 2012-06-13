@@ -64,6 +64,12 @@ class Controller < Sinatra::Base
           return erb :error
         end
 
+        if links.nil?
+          @message = "No links found on #{me} or could not parse the page"
+          title 'Error'
+          return erb :error
+        end
+
         # Save the complete list of links to the user object
         user.me_links = links.to_json
         user.save

@@ -25,8 +25,18 @@ class RelParser
     links = []
     if @page.nil?
       puts "<<<<<<< FETCHING #{@url} >>>>>>>"
-      @page = @agent.get @url
+      begin
+        @page = @agent.get @url
+      rescue Mechanize::ResponseCodeError
+        return []
+      end
+      if @page.class != Mechanize::Page
+        # Server didn't return content-type: html, so mechanize can't turn it into a Page class.
+        # Can't parse it, so return nil
+        return []
+      end
     end
+
     @page.links.each do |link|
       links << link.href if link.rel?("me")
     end
@@ -57,14 +67,15 @@ class RelParser
       if provider['regex_username'] && @url.match(Regexp.new provider['regex_username'])
         # puts "Provider name for #{url} is #{provider['code']}"
         return provider
-      else
-        # Check if the URL is an OpenID endpoint
-        rel_me_links # fetch the page contents now which populates @page
-        # If the page contains an openID tag, use it!
-        if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
-          return Provider.first(:code => 'open_id')
-        end
       end
+    end
+    # Check if the URL is an OpenID endpoint
+    rel_me_links # fetch the page contents now which populates @page
+    # If the page contains an openID tag, use it!
+    return nil if @page.class != Mechanize::Page
+
+    if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
+      return Provider.first(:code => 'open_id')
     end
     return nil
   end
