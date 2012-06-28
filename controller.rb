@@ -90,10 +90,10 @@ class Controller < Sinatra::Base
             if provider
               profile = Profile.first_or_create({ 
                 :user => user, 
-                :provider => provider 
+                :href => link[:link]
               }, 
               { 
-                :href => link[:link],
+                :provider => provider,
                 :verified => verified
               })
 
