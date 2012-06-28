@@ -27,7 +27,7 @@ class RelParser
       puts "<<<<<<< FETCHING #{@url} >>>>>>>"
       begin
         @page = @agent.get @url
-      rescue Mechanize::ResponseCodeError
+      rescue # catch all errors and return a blank list
         return []
       end
       if @page.class != Mechanize::Page
