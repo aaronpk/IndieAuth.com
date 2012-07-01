@@ -11,6 +11,8 @@
       <h3>1. Link to your various social profiles on your home page</h3>
 
       <p>On your home page, link to your profiles and add the <code>rel="me"</code> attribute to the links.</p>
+      <p>You'll want to make sure that your input formats are set to Full HTML or another format that
+      will accept attributes if you're using a CMS.</p>
 
       <p>This may look something like the following:
       <pre><code><%== 
@@ -50,7 +52,6 @@
         </ul>
 
       </p>
-
     </div>
   </div><!-- row -->
 
@@ -58,6 +59,10 @@
     <div class="span8">
       <h3>3. You're done!</h3>
       <p>That's it! You're done! Now you can use your domain to sign in to any sites that support IndieAuth!</p>
+      
+      <p> Github seems to be the most reliable service at this point in time. (July 2012) Twitter, Google and Flickr's APIs have changed, we're working on resolving those issues.</p>
+      <p> If you're getting errors with 'No Valid Authentication Provider found', try using a different service.</p>
+  
     </div>
   </div><!-- row -->
 
