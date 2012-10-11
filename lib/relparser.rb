@@ -11,6 +11,7 @@ class RelParser
     # Normalize
     @meURI.scheme = "http" if @meURI.scheme == "https"
     @meURI.path = "/" if @meURI.path == ""  
+    @meURI.normalize!
   end
 
   def agent 
@@ -40,7 +41,7 @@ class RelParser
     @page.links.each do |link|
       links << link.href if link.rel?("me")
     end
-    links
+    links.map {|u| URI::parse(u).normalize}.uniq.reject {|u| u == @meURI}.map(&:to_s)
   end
 
   def rel_me_links
