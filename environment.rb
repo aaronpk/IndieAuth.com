@@ -47,7 +47,7 @@ class Controller < Sinatra::Base
         # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
         provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
       end
-      provider :open_id, :store => OpenID::Store::Filesystem.new('/tmp')
+      provider :open_id, :required => [], :optional => [], :store => OpenID::Store::Filesystem.new('/tmp')
     end
 
     DataMapper.finalize
