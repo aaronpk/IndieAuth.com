@@ -48,6 +48,10 @@ namespace :db do
           :regex_username => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'
         })
 
+    openid = Provider.create ({
+          :code => 'open_id'
+        })
+
   end
   task :migrate do
     init

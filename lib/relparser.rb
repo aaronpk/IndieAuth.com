@@ -11,6 +11,7 @@ class RelParser
     # Normalize
     @meURI.scheme = "http" if @meURI.scheme == "https"
     @meURI.path = "/" if @meURI.path == ""  
+    @meURI.normalize!
   end
 
   def agent 
@@ -40,7 +41,7 @@ class RelParser
     @page.links.each do |link|
       links << link.href if link.rel?("me")
     end
-    links
+    links.map {|u| URI::parse(u).normalize}.uniq.reject {|u| u == @meURI}.map(&:to_s)
   end
 
   def rel_me_links
@@ -74,7 +75,7 @@ class RelParser
     # If the page contains an openID tag, use it!
     return nil if @page.class != Mechanize::Page
 
-    if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
+    if @page.at('link[rel~="openid.server"]') || @page.at('link[rel~="openid2.provider"]')
       return Provider.first(:code => 'open_id')
     end
     return nil
