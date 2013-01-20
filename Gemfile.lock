@@ -73,10 +73,9 @@ GEM
     omniauth-github (1.0.3)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.1)
-    omniauth-google (1.0.2)
-      multi_json
+    omniauth-google-oauth2 (0.1.13)
       omniauth (~> 1.0)
-      omniauth-oauth
+      omniauth-oauth2
     omniauth-oauth (1.0.1)
       oauth
       omniauth (~> 1.0)
@@ -156,7 +155,7 @@ DEPENDENCIES
   omniauth-flickr
   omniauth-geoloqi
   omniauth-github
-  omniauth-google
+  omniauth-google-oauth2
   omniauth-openid
   omniauth-twitter
   rainbows

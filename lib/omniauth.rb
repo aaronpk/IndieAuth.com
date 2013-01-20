@@ -13,8 +13,8 @@ module OmniAuth
       exists = class_exists?('Geoloqi')
     when 'github'
       exists = class_exists?('GitHub')
-    when 'google'
-      exists = class_exists?('Google')
+    when 'google_oauth2'
+      exists = class_exists?('GoogleOauth2')
     when 'twitter'
       exists = class_exists?('Twitter')
     when 'open_id'

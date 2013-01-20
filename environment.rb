@@ -3,6 +3,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'cgi'
 require 'openid/store/filesystem'
+require 'openid/store/memcache'
 
 Bundler.require
 Dir.glob(['lib', 'models', 'helpers'].map! {|d| File.join File.expand_path(File.dirname(__FILE__)), d, '*.rb'}).each {|f| require f}
@@ -45,9 +46,15 @@ class Controller < Sinatra::Base
     use OmniAuth::Builder do
       Provider.all.each do |p|
         # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
-        provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
+        #if p['code'] == 
+        if p['code'] == 'google_oauth2'
+          provider p['code'].to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'userinfo.profile,plus.me'} if p['client_id']
+        else
+          provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
+        end
       end
       provider :open_id, :store => OpenID::Store::Filesystem.new('/tmp')
+      #provider :open_id, :store => OpenID::Store::Memcache.new(Dalli::Client.new)
     end
 
     DataMapper.finalize

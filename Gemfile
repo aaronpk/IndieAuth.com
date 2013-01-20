@@ -16,7 +16,7 @@ gem 'omniauth-facebook'
 gem 'omniauth-flickr'
 gem 'omniauth-geoloqi'
 gem 'omniauth-github'
-gem 'omniauth-google'
+gem 'omniauth-google-oauth2'
 gem 'omniauth-twitter'
 gem 'omniauth-openid'
 

@@ -167,27 +167,37 @@ class Controller < Sinatra::Base
   %w(get post).each do |method|
   send(method, '/auth/:name/callback') do
     auth = request.env['omniauth.auth']
-    puts "Auth complete!"
-    puts "Provider: #{auth['provider']}"
-    puts "UID: #{auth['uid']}"
-    puts "Username: #{auth['info']['nickname']}"
-    puts session
 
     profile = Profile.first :user_id => session[:attempted_userid], :href => session[:attempted_provider_uri]
     if profile.provider[:code] == 'open_id'
+      attempted_username = session[:attempted_username]
       actual_username = params['openid_url']
+    elsif profile.provider[:code] == 'google_oauth2'
+      attempted_username = session[:attempted_provider_uri]
+      actual_username = auth['extra']['raw_info']['link']
     else
+      attempted_username = session[:attempted_username]
       actual_username = auth['info']['nickname']
     end
 
-    if session[:attempted_username].downcase != actual_username.downcase  # case in-sensitive compare
-      @message = "You just authenticated as #{actual_username} but your website linked to #{session[:attempted_provider_uri]}"
+    puts "Auth complete!"
+    puts "Provider: #{auth['provider']}"
+    puts "UID: #{auth['uid']}"
+    puts "Username: #{actual_username}"
+    puts "Auth info:"
+    puts auth.inspect
+    puts "Session:"
+    puts session
+
+    if !actual_username || !attempted_username || attempted_username.downcase != actual_username.downcase  # case in-sensitive compare
+      @message = "You just authenticated as '#{actual_username}' but your website linked to '#{attempted_username}'"
       title "Error"
       erb :error
     else
       session[params[:name]] = actual_username
       session[:domain] = session[:attempted_domain]
       session[:attempted_username] = nil
+      session[:attempted_provider_uri] = nil
       session[:attempted_domain] = nil
       session[:logged_in] = 1
 
