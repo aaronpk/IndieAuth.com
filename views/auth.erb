@@ -5,50 +5,133 @@ var redirect_uri = "<%= @redirect_uri %>";
 var profiles = [];
 
 function set_provider_status(index, status, error) {
-  $("#profile_"+index+" .status_img").addClass(status);
+  $("#profile_"+index+" .status_img").addClass(status).removeClass("loading");
   if(error) {
     $("#profile_"+index+" .status").html(error);
   }
 }
 
+function update_progress_bar() {
+
+  // The "success" bar starts out at 15% because 5% is reserved for starting the page and 10% is reserved for loading the links
+  var success = ($("#profiles .status_img.verified").length / profiles.length) * 0.85;
+  var warning = ($("#profiles .status_img.unsupported").length / profiles.length) * 0.85;
+  var error = ($("#profiles .status_img.error").length / profiles.length) * 0.85;
+
+  success = Math.round(success*100);
+  warning = Math.round(warning*100);
+  error = Math.round(error*100)
+
+  while(success + warning + error > 100) {
+    success = success - 1;
+  }
+
+  $("#progress_bar .bar-verified").css("width", success+"%");
+  $("#progress_bar .bar-info").css("width", warning+"%");
+  $("#progress_bar .bar-danger").css("width", error+"%");
+}
+
+function complete_progress_bar() {
+  $("#progress_bar").removeClass("active progress-striped");
+}
+
 $(function(){
   $.get("/auth/relme_links.json", {me: me}, function(data){
     if(data && data.links && data.links.length > 0) {
+      $("#progress_bar .bar-loading").css("width", "15%");
       var template = $('#profile_link_template').html();
       $(data.links).each(function(i, link){
         profiles[i] = link;
         var index = i;
-        $("#profiles").append(Mustache.to_html(template, {link: link, index: i}));
+        $("#profiles").append(Mustache.to_html(template, {link: link.replace(/^https?:\/\//, ""), index: i}));
+
         // Verify the url links back to the rel="me" link specified
         $.get("/auth/verify_link.json", {me: me, profile: link}, function(data){
           if(data.error == "unsupported_provider") {
             set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
           } else if(data.verified) {
             set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
-            $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'">'+link+'</a>');
+            $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.replace(/^https?:\/\//, "")+'</a>');
           } else if(data.verified == false) {
             set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
           } else {
             set_provider_status(i, 'error', 'An unknown error occurred with this provider.');
           }
+
+          // Check if all the providers are done being checked, if so, verify there is at least one valid one
+          if($("#profiles .status_img.loading").length == 0) {
+            update_progress_bar();
+            complete_progress_bar();
+
+            if($("#profiles .status_img.verified").length == 0) {
+              $(".loading_message").hide();
+              $(".unsupported_links_error").show();
+            } else {
+              $("#num_providers").html($("#profiles .status_img.verified").length);
+              $(".loading_message").hide();
+              $(".continue_message").show();
+            }
+          } else {
+            update_progress_bar();
+          }
+
         });
       });
     } else {
-      $("#no_links_error").show();
+      $("#progress_bar").hide();
+      $(".loading_message").hide();
+      $(".no_links_error").show();
     }
   });
+
+  $("#progress_bar .bar").tooltip({placement: "bottom"});
 });
 </script>
 
 <div class="wrapper">
-  <h3>Finding rel="me" links on <%= @me %></h3>
+
+  <div class="loading_message">
+    <div class="alert alert-info">Finding rel="me" links on <%= @me %></div>
+  </div>
   
+  <div class="no_links_error" style="display: none;">
+    <div class="alert alert-error">No rel="me" links were found on your site!</div>
+  </div>
+  <div class="unsupported_links_error" style="display: none;">
+    <div class="alert alert-error">No supported rel="me" links were found on your site!</div>
+  </div>
+  <div class="continue_message" style="display: none;">
+    <div class="alert alert-success"><span id="num_providers">1</span> supported and verified providers were found!</div>
+  </div>
+
+  <div id="progress_bar" class="progress progress-striped active">
+    <div class="bar bar-success bar-loading" style="width: 5%;" rel="tooltip" title="Loaded links from your site"></div>
+    <div class="bar bar-success bar-verified" style="width: 0%;" rel="tooltip" title="Verified profiles"></div>
+    <div class="bar bar-info" style="width: 0;" rel="tooltip" title="Unsupported providers"></div>
+    <div class="bar bar-danger" style="width: 0;" rel="tooltip" title="Error verifying provider"></div>
+  </div>
+
   <ul id="profiles"></ul>
 
-  <div id="no_links_error" style="display: none;">
-    <p>No rel="me" links were found on your site!</p>
+  <div class="no_links_error" style="display: none;">
     <p>Add links on your home page to your various social profiles (Twitter, Github, etc) with the attribute rel="me"</p>
     <p>Ensure your profiles link back to your home page.</p>
+    <p><a href="https://indieauth.com/setup">Full Setup Instructions</a></p>
+  </div>
+  <div class="unsupported_links_error" style="display: none;">
+    <p>Currently only the following providers are supported:
+      <ul>
+        <% @providers.each do |provider| %>
+          <li><a href="<%= provider[:home_page] %>"><%= provider[:name] %></a></li>
+        <% end %>
+      </ul>
+    </p>
+    <p>Add links on your home page to your various social profiles (Twitter, Github, etc) with the attribute rel="me"</p>
+    <p>Ensure your profiles link back to your home page.</p>
+    <p><a href="/setup">Full Setup Instructions</a></p>
+  </div>
+  <div class="continue_message" style="display: none;">
+    <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account.</p>
   </div>
 </div>
 
@@ -60,7 +143,7 @@ $(function(){
 
 <script id="profile_link_template" type="text/template">
 <li id="profile_{{index}}">
-  <span class="status_img"></span>
+  <span class="status_img loading"></span>
   <span class="link">{{link}}</span>
   <div class="status">Verifying...</div>
 </li>
@@ -80,6 +163,8 @@ $(function(){
     width: 16px;
     height: 16px;
     display: inline-block;
+  }
+  .status_img.loading {
     background-image: url(/img/loading.gif);
   }
   .status_img.verified {
