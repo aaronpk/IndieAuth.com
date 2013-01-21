@@ -1,0 +1,57 @@
+<script>
+var me = "<%= @me %>";
+var redirect_uri = "<%= @redirect_uri %>";
+
+var profiles = [];
+
+function set_provider_status(index, status, error) {
+  $("#profile_"+index+" img").attr("src", "/img/profile-"+status+".png");
+  if(error) {
+    $("#profile_"+index+" .status").html(error);
+  }
+}
+
+$(function(){
+  $.get("/auth/relme_links.json", {me: me}, function(data){
+    if(data && data.links) {
+      var template = $('#profile_link_template').html();
+      $(data.links).each(function(i, link){
+        profiles[i] = link;
+        var index = i;
+        $("#profiles").append(Mustache.to_html(template, {link: link, index: i}));
+        // Verify the url links back to the rel="me" link specified
+        $.get("/auth/verify_link.json", {me: me, profile: link}, function(data){
+          if(data.error == "unsupported_provider") {
+            set_provider_status(i, 'unsupported', 'This link is not a supported authentication provider');
+          } else if(data.verified) {
+            set_provider_status(i, 'verified');
+            $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&origin='+encodeURIComponent(redirect_uri)+'">'+link+'</a>');
+          } else if(data.verified == false) {
+            set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website');
+          } else {
+            set_provider_status(i, 'error', 'An unknown error occurred with this provider');
+          }
+        });
+      });
+    }
+  });
+});
+</script>
+
+
+<ul id="profiles">
+</ul>
+
+<script id="profile_link_template" type="text/template">
+<li id="profile_{{index}}">
+  <span><img src="/img/loading.gif" width="16" height="16" /></span>
+  <span class="link">{{link}}</span>
+  <div class="status"></div>
+</li>
+</script>
+<style type="text/css">
+  #profiles .status {
+    margin-left: 20px;
+    color: #999;
+  }
+</style>
