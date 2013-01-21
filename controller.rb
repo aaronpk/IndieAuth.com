@@ -16,7 +16,119 @@ class Controller < Sinatra::Base
     erb :setup_instructions
   end
 
-  get '/auth' do 
+  # 1. Begin the auth process
+  get '/auth' do
+    title "IndieAuth - Sign in with your domain name"
+    erb :auth
+  end
+
+  # 2. Return all rel=me links on the given page
+  # Params: 
+  #  * me=example.com
+  get '/auth/relme_links.json' do
+    me = params[:me]
+
+    # Prepend "http" unless it's already there
+    me = "http://#{me}" unless me.start_with?('http')
+
+    # Remove trailing "/" when storing and looking up the user
+    user = User.first_or_create :href => me.sub(/(\/)+$/,'')
+    parser = RelParser.new me
+
+    begin
+      links = parser.rel_me_links
+    rescue SocketError
+      return json_error 200, {error: 'connection_error', error_description: "Error retrieving: #{me}"}
+    end
+
+    if links.nil?
+      return json_error 200, {error: 'no_links_found', error_description: "No links found on #{me} or could not parse the page"}
+    end
+
+    # Save the complete list of links to the user object
+    user.me_links = links.to_json
+    user.save
+
+    json_response 200, {links: links}
+  end
+
+  # 3. Verify a link has a rel=me relation back to the specified site
+  # Params:
+  #  * me=example.com
+  #  * profile=provider.com/user/xxxxx
+  get '/auth/verify_link.json' do
+    me = params[:me]
+    profile = params[:profile]
+
+    return json_error(400, {error: 'missing_param', error_description: 'parameter "profile" is required'}) if params[:profile].nil?
+
+    # Prepend "http" unless it's already there
+    me = "http://#{me}" unless me.start_with?('http')
+
+    # Remove trailing "/" when storing and looking up the user
+    user = User.first_or_create :href => me.sub(/(\/)+$/,'')
+
+    parser = RelParser.new me
+
+    # Find all the rel=me links on the specified page
+    begin
+      links = parser.rel_me_links
+    rescue SocketError
+      return json_error 200, {error: 'connection_error', error_description: "Error retrieving: #{me}"}
+    end
+
+    if links.nil?
+      return json_error 200, {error: 'no_links_found', error_description: "No links found on #{me} or could not parse the page"}
+    end
+
+    if !links.include?(profile)
+      return json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'}
+    end
+
+    # Search the "profile" page for a rel=me link back to "me"
+    profile_parser = RelParser.new profile
+
+    provider = profile_parser.get_provider
+
+    if provider.nil?
+      return json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
+    end
+
+    # Save the profile entry in the DB as "unverified"
+    user_profile = Profile.first_or_create({ 
+      :user => user, 
+      :href => profile
+    }, 
+    { 
+      :provider => provider,
+      :verified => false
+    })
+
+    verified = parser.verify_link profile, profile_parser
+
+    if verified
+      user_profile.verified = true
+      user_profile.save
+    end
+
+    puts verified.inspect
+
+    if false # TODO: if provider is openid
+      auth_path = "/auth/open_id?openid_url=#{profile}"
+    else
+      auth_path = "/auth/#{provider.code}"
+    end
+
+    json_response 200, {
+      me: me, 
+      profile: profile, 
+      provider: provider.code, 
+      verified: verified,
+      auth_path: auth_path
+    }
+  end
+
+  get '/auth-old' do 
     session.clear
     session[:redirect_uri] = params[:redirect_uri]
 
@@ -253,12 +365,12 @@ class Controller < Sinatra::Base
 
   get '/session' do
     if params[:token].nil?
-      return json_error 400, {:error => "invalid_request", :error_description => "Missing 'token' parameter"}
+      return json_error 400, {error: "invalid_request", error_description: "Missing 'token' parameter"}
     end
 
     login = Login.first :token => params[:token]
     if login.nil?
-      return json_error 404, {:error => "invalid_token", :error_description => "The token provided was not found"}
+      return json_error 404, {error: "invalid_token", error_description: "The token provided was not found"}
     end
 
     login.last_used_at = Time.now

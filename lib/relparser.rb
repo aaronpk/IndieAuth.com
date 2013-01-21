@@ -69,6 +69,10 @@ class RelParser
         return provider
       end
     end
+
+    # TODO: Remove this to enable OpenID
+    return nil
+
     # Check if the URL is an OpenID endpoint
     rel_me_links # fetch the page contents now which populates @page
     # If the page contains an openID tag, use it!
