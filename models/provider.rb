@@ -6,6 +6,7 @@ class Provider
   property :client_id, String, :length => 255
   property :client_secret, String, :length => 255
   property :regex_username, String, :length => 255
+  property :profile_url_template, String, :length => 255
 
   property :created_at, DateTime
   property :updated_at, DateTime

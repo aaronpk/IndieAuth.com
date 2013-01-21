@@ -5,7 +5,7 @@ var redirect_uri = "<%= @redirect_uri %>";
 var profiles = [];
 
 function set_provider_status(index, status, error) {
-  $("#profile_"+index+" img").attr("src", "/img/profile-"+status+".png");
+  $("#profile_"+index+" .status_img").addClass(status);
   if(error) {
     $("#profile_"+index+" .status").html(error);
   }
@@ -25,7 +25,7 @@ $(function(){
             set_provider_status(i, 'unsupported', 'This link is not a supported authentication provider');
           } else if(data.verified) {
             set_provider_status(i, 'verified');
-            $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&origin='+encodeURIComponent(redirect_uri)+'">'+link+'</a>');
+            $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'">'+link+'</a>');
           } else if(data.verified == false) {
             set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website');
           } else {
@@ -42,14 +42,36 @@ $(function(){
 <ul id="profiles">
 </ul>
 
+<div style="display:none;">
+<img src="/img/profile-verified.png") />
+<img src="/img/profile-unsupported.png") />
+<img src="/img/profile-error.png") />
+</div>
+
 <script id="profile_link_template" type="text/template">
 <li id="profile_{{index}}">
-  <span><img src="/img/loading.gif" width="16" height="16" /></span>
+  <span class="status_img"></span>
   <span class="link">{{link}}</span>
   <div class="status"></div>
 </li>
 </script>
 <style type="text/css">
+  .status_img {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-image: url(/img/loading.gif);
+  }
+  .status_img.verified {
+    background-image: url(/img/profile-verified.png);
+  }
+  .status_img.unsupported {
+    background-image: url(/img/profile-unsupported.png);
+  }
+  .status_img.error {
+    background-image: url(/img/profile-error.png);
+  }
+
   #profiles .status {
     margin-left: 20px;
     color: #999;
