@@ -136,9 +136,9 @@ class Controller < Sinatra::Base
     provider, profile_record, verified = verify_user_profile me_parser, profile, user
 
     if false # TODO: if provider is openid
-      auth_path = "/auth/start/open_id?openid_url=#{profile}&me=#{me}"
+      auth_path = "/auth/start?openid_url=#{profile}&me=#{me}"
     else
-      auth_path = "/auth/start/#{provider.code}?me=#{URI.encode_www_form_component me}&profile=#{URI.encode_www_form_component profile}"
+      auth_path = "/auth/start?me=#{URI.encode_www_form_component me}&profile=#{URI.encode_www_form_component profile}"
     end
 
     json_response 200, {
