@@ -93,6 +93,7 @@ class Controller < Sinatra::Base
     title "IndieAuth - Sign in with your domain name"
     @me = params[:me]
     @redirect_uri = params[:redirect_uri]
+    @providers = Provider.all(:home_page.not => '')
     erb :auth
   end
 

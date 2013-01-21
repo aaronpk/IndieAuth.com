@@ -2,6 +2,8 @@ class Provider
   include DataMapper::Resource
   property :id, Serial
 
+  property :name, String, :length => 50
+  property :home_page, String, :length => 100
   property :code, String, :length => 20
   property :client_id, String, :length => 255
   property :client_secret, String, :length => 255

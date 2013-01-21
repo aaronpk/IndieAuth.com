@@ -27,7 +27,8 @@ class RelParser
       puts "<<<<<<< FETCHING #{@url} >>>>>>>"
       begin
         @page = @agent.get @url
-      rescue # catch all errors and return a blank list
+      rescue => e # catch all errors and return a blank list
+        puts e
         return []
       end
       if @page.class != Mechanize::Page
@@ -38,9 +39,10 @@ class RelParser
     end
 
     @page.links.each do |link|
-      links << link.href if link.rel?("me")
+      links << link.href if link.rel?(tag)
     end
-    links
+
+    links.uniq
   end
 
   def rel_me_links
