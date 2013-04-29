@@ -19,6 +19,8 @@ module OmniAuth
       exists = class_exists?('Twitter')
     when 'open_id'
       exists = class_exists?('OpenID')
+    when 'appnet'
+      exists = class_exists?('Appnet')
     else
       exists = false
     end
