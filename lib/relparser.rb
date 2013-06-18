@@ -4,6 +4,7 @@ class RelParser
     @agent = Mechanize.new {|agent|
       agent.user_agent_alias = "Mac Safari"
     }
+    @agent.agent.http.ca_file = './lib/ca-bundle.crt'
     @url = opts
     @page = nil
     @meURI = URI.parse @url
