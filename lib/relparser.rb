@@ -65,18 +65,20 @@ class RelParser
             end
 
             if original.scheme == actual.scheme
+              puts " Found URL: #{actual}"
               links << actual.to_s
             else
               # TODO: Figure out how to surface this error to the user
-              # puts "     skipping redirect due to protocol mismatch"
+              puts "     skipping redirect due to protocol mismatch"
             end
           rescue => e
             # Ignore exceptions parsing the URL
+            puts "Error parsing #{unshortened}"
           end
 
         rescue => e
-          # Ignore exceptions on invalid 
-          return
+          # Ignore exceptions on invalid urls
+          puts "Error parsing #{link.href}"
         end
       end
     end
