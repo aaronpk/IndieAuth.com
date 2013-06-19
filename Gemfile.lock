@@ -1,8 +1,3 @@
-PATH
-  remote: /Users/aaronpk/Code/unshorten
-  specs:
-    unshorten (0.2.1)
-
 GEM
   remote: http://rubygems.org/
   specs:
@@ -137,6 +132,7 @@ GEM
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
+    unshorten (0.2.1)
     webrobots (0.0.13)
 
 PLATFORMS
@@ -170,4 +166,4 @@ DEPENDENCIES
   sinatra-namespace
   sinatra-support
   thin
-  unshorten!
+  unshorten (>= 0.2.1)
