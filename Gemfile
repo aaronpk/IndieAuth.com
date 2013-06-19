@@ -21,6 +21,7 @@ gem 'omniauth-twitter'
 gem 'omniauth-openid'
 
 gem 'mechanize'
+gem 'unshorten'
 
 gem 'mysql2',          '0.3.7'
 gem 'dm-core'

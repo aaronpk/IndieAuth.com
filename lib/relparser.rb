@@ -40,7 +40,45 @@ class RelParser
     end
 
     @page.links.each do |link|
-      links << link.href if link.rel?(tag)
+      if link.rel?(tag)
+        # puts " --> #{link.href.inspect}"
+
+        begin
+          original = URI.parse link.href
+
+          # Follow redirects (un-shorten links) 
+          # Mostly to follow twitter's profile links wrapped in t.co
+          unshortened = Unshorten.unshorten link.href, {:short_hosts => false, :use_cache => true}
+
+          # If the original link is http but the redirect is to an https link, use the original.
+          # This is to avoid introducing a trust hole, since if someone is using https we are assuming they are using https everywhere.
+          begin
+            actual = URI.parse unshortened
+
+            # If there is no host in the un-shortened version, assume it's the same host as the original link.
+            # Some servers return an absolute path in the 301 redirect. For example:
+            #
+            # http://picasaweb.google.com/wnorris
+            # Location: /111832530347449196055?gsessionid=6SZtIqXiPEW45p_gwXf2Xw
+            if actual.host == nil
+              actual.host = original.host
+            end
+
+            if original.scheme == actual.scheme
+              links << actual.to_s
+            else
+              # TODO: Figure out how to surface this error to the user
+              # puts "     skipping redirect due to protocol mismatch"
+            end
+          rescue => e
+            # Ignore exceptions parsing the URL
+          end
+
+        rescue => e
+          # Ignore exceptions on invalid 
+          return
+        end
+      end
     end
 
     links.uniq

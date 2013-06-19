@@ -1,3 +1,8 @@
+PATH
+  remote: /Users/aaronpk/Code/unshorten
+  specs:
+    unshorten (0.2.1)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -165,3 +170,4 @@ DEPENDENCIES
   sinatra-namespace
   sinatra-support
   thin
+  unshorten!
