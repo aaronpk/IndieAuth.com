@@ -254,7 +254,7 @@ class Controller < Sinatra::Base
       user = User.first :href => me
       profile = user.profiles.first :href => "mailto:#{response['email']}"
       if profile.nil?
-        json_error 400, {
+        json_error 200, {
           status: 'mismatch',
           reason: 'logged in as a different user'
         }
@@ -284,7 +284,7 @@ class Controller < Sinatra::Base
         }
       end
     else
-      json_error 400, {
+      json_error 200, {
         status: response['status'],
         reason: response['reason']
       }
