@@ -64,7 +64,7 @@ function set_up_sms_auth() {
 
       $.get("/auth/send_sms.json", {
         me: me,
-        profile: $(this).attr('href'),
+        profile: btn.attr('href'),
         redirect_uri: redirect_uri
       }, function(data){
         if(data.result == "sent") {
@@ -76,6 +76,41 @@ function set_up_sms_auth() {
       });
     }
     return false;
+  });
+}
+
+function set_up_email_auth() {
+  $(".persona-login").click(function(){
+    var img = $(this);
+    var status = $(this).parents('li').children('.status');
+
+    img.attr("src", "/img/email_sign_in_disabled.png");
+    status.text("Launching Persona login");
+
+    navigator.id.get(function(assertion){
+
+      if(assertion == null) {
+        img.attr("src", "/img/email_sign_in_blue.png");
+        status.text("Ok! Click to authenticate using this provider.");
+      } else {
+        console.log(assertion);
+        status.text("Verifying login...");
+
+        $.post("/auth/verify_email.json", {
+          me: me,
+          profile: img.data('email'),
+          redirect_uri: redirect_uri,
+          assertion: assertion
+        }, function(data) {
+          if(data.status == "okay") {
+            status.text("Login succeeded! Redirecting...");
+            window.location = data.redirect;
+          } else {
+            status.text("Auth failed: " + data.reason);
+          }
+        });
+      }
+    });
   });
 }
 
@@ -111,6 +146,9 @@ $(function(){
             if(data.provider == "sms") {
               $("#profile_"+i+" .link").html('<a href="'+link+'" class="btn btn-success sms-auth">'+format_sms_number(link)+'</a>');
               set_up_sms_auth();
+            } else if(data.provider == "email") {
+              $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login" data-email="'+link+'" />');
+              set_up_email_auth();
             } else {
               $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.replace(/^(https|http|sms):\/\//, "")+'</a>');              
             }

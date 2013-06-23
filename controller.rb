@@ -62,6 +62,8 @@ class Controller < Sinatra::Base
 
     if profile.match RelParser.sms_regex
       provider = Provider.first :code => 'sms'
+    elsif profile.match RelParser.email_regex
+      provider = Provider.first :code => 'email'
     else
       # Search the "profile" page for a rel=me link back to "me"
       profile_parser = RelParser.new profile
@@ -83,7 +85,7 @@ class Controller < Sinatra::Base
       :verified => false
     })
 
-    if provider.code == 'sms'
+    if provider.code == 'sms' or provider.code == 'email'
       verified = true
     else
       verified = me_parser.verify_link profile, profile_parser
@@ -236,6 +238,57 @@ class Controller < Sinatra::Base
       result: 'verified',
       redirect: redirect_uri
     }
+  end
+
+  post '/auth/verify_email.json' do
+    data = RestClient.post 'https://verifier.login.persona.org/verify', {
+      :audience => SiteConfig.base_uri,
+      :assertion => params[:assertion]
+    }
+    response = JSON.parse data
+    if response and response['status'] == 'okay'
+
+      me = params[:me].sub(/(\/)+$/,'')
+      me = "http://#{me}" unless me.match /^https?:\/\//
+
+      user = User.first :href => me
+      profile = user.profiles.first :href => "mailto:#{response['email']}"
+      if profile.nil?
+        json_error 400, {
+          status: 'mismatch',
+          reason: 'logged in as a different user'
+        }
+      else
+
+        login = Login.create :user => user,
+          :provider => Provider.first(:code => 'email'),
+          :profile => profile,
+          :complete => true,
+          :token => Login.generate_token,
+          :redirect_uri => params[:redirect_uri]
+
+        if login.redirect_uri
+          redirect_uri = URI.parse login.redirect_uri
+          p = Rack::Utils.parse_query redirect_uri.query
+          p['token'] = login.token
+          redirect_uri.query = Rack::Utils.build_query p
+          redirect_uri = redirect_uri.to_s 
+        else
+          redirect_uri = "/success?token=#{login.token}"
+        end
+
+        json_response 200, {
+          status: response['status'],
+          email: response['email'],
+          redirect: redirect_uri
+        }
+      end
+    else
+      json_error 400, {
+        status: response['status'],
+        reason: response['reason']
+      }
+    end
   end
 
   get '/auth/start' do

@@ -4,6 +4,10 @@ class RelParser
     /sms:\/?\/?([0-9\-+]+)/
   end
 
+  def self.email_regex
+    /mailto:\/?\/?(.+@.+\..+)/
+  end
+
   attr_accessor :url
 
   def initialize(opts={})
@@ -54,7 +58,7 @@ class RelParser
       if link.rel?(tag)
         # puts " --> #{link.href.inspect}"
 
-        if link.href.match RelParser.sms_regex
+        if link.href.match RelParser.sms_regex or link.href.match RelParser.email_regex
           links << link.href
         else
           begin

@@ -22,6 +22,7 @@ gem 'omniauth-openid'
 
 gem 'mechanize'
 gem 'unshorten',	">=0.2.1"
+gem 'rest-client'
 gem 'twilio-ruby'
 
 gem 'mysql2',          '0.3.7'

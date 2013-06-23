@@ -103,6 +103,8 @@ GEM
       unicorn (~> 4.1)
     raindrops (0.10.0)
     rake (10.0.3)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
     ruby-openid (2.2.2)
     shotgun (0.9)
       rack (>= 1.0)
@@ -166,6 +168,7 @@ DEPENDENCIES
   omniauth-twitter
   rainbows
   rake
+  rest-client
   shotgun
   sinatra
   sinatra-namespace
