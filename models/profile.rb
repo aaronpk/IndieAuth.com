@@ -10,4 +10,10 @@ class Profile
 
   property :created_at, DateTime
   property :updated_at, DateTime
+
+  def sms_number
+    if provider.code == 'sms'
+      href.gsub /sms:\/?\/?/, ''
+    end
+  end
 end

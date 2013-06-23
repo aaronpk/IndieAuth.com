@@ -1,5 +1,11 @@
 class RelParser
 
+  def self.sms_regex
+    /sms:\/?\/?([0-9\-+]+)/
+  end
+
+  attr_accessor :url
+
   def initialize(opts={})
     @agent = Mechanize.new {|agent|
       agent.user_agent_alias = "Mac Safari"
@@ -7,7 +13,12 @@ class RelParser
     @agent.agent.http.ca_file = './lib/ca-bundle.crt'
     @url = opts
     @page = nil
-    @meURI = URI.parse @url
+    begin
+      @meURI = URI.parse @url
+    rescue => e
+      # Could not parse URI
+      return nil
+    end
   
     # Normalize
     @meURI.scheme = "http" if @meURI.scheme == "https"
@@ -43,42 +54,46 @@ class RelParser
       if link.rel?(tag)
         # puts " --> #{link.href.inspect}"
 
-        begin
-          original = URI.parse link.href
-
-          # Follow redirects (un-shorten links) 
-          # Mostly to follow twitter's profile links wrapped in t.co
-          unshortened = Unshorten.unshorten link.href, {:short_hosts => false, :use_cache => true}
-
-          # If the original link is http but the redirect is to an https link, use the original.
-          # This is to avoid introducing a trust hole, since if someone is using https we are assuming they are using https everywhere.
+        if link.href.match RelParser.sms_regex
+          links << link.href
+        else
           begin
-            actual = URI.parse unshortened
+            original = URI.parse link.href
 
-            # If there is no host in the un-shortened version, assume it's the same host as the original link.
-            # Some servers return an absolute path in the 301 redirect. For example:
-            #
-            # http://picasaweb.google.com/wnorris
-            # Location: /111832530347449196055?gsessionid=6SZtIqXiPEW45p_gwXf2Xw
-            if actual.host == nil
-              actual.host = original.host
+            # Follow redirects (un-shorten links) 
+            # Mostly to follow twitter's profile links wrapped in t.co
+            unshortened = Unshorten.unshorten link.href, {:short_hosts => false, :use_cache => true}
+
+            # If the original link is http but the redirect is to an https link, use the original.
+            # This is to avoid introducing a trust hole, since if someone is using https we are assuming they are using https everywhere.
+            begin
+              actual = URI.parse unshortened
+
+              # If there is no host in the un-shortened version, assume it's the same host as the original link.
+              # Some servers return an absolute path in the 301 redirect. For example:
+              #
+              # http://picasaweb.google.com/wnorris
+              # Location: /111832530347449196055?gsessionid=6SZtIqXiPEW45p_gwXf2Xw
+              if actual.host == nil
+                actual.host = original.host
+              end
+
+              if original.scheme == actual.scheme
+                puts " Found URL: #{actual}"
+                links << actual.to_s
+              else
+                # TODO: Figure out how to surface this error to the user
+                puts "     skipping redirect due to protocol mismatch"
+              end
+            rescue => e
+              # Ignore exceptions parsing the URL
+              puts "Error parsing #{unshortened}"
             end
 
-            if original.scheme == actual.scheme
-              puts " Found URL: #{actual}"
-              links << actual.to_s
-            else
-              # TODO: Figure out how to surface this error to the user
-              puts "     skipping redirect due to protocol mismatch"
-            end
           rescue => e
-            # Ignore exceptions parsing the URL
-            puts "Error parsing #{unshortened}"
+            # Ignore exceptions on invalid urls
+            puts "Error parsing #{link.href}"
           end
-
-        rescue => e
-          # Ignore exceptions on invalid urls
-          puts "Error parsing #{link.href}"
         end
       end
     end

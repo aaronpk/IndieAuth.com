@@ -35,6 +35,58 @@ function complete_progress_bar() {
   $("#progress_bar").removeClass("active progress-striped");
 }
 
+function set_up_sms_auth() {
+  $(".sms-auth").click(function(){
+    var btn = $(this);
+    var status = $(this).parents('li').children('.status');
+
+    if(btn.text() == "Verify") {
+      btn.attr("disabled","disabled");
+      status.text("Verifying...");
+
+      $.get("/auth/verify_sms.json", {
+        me: me,
+        profile: $(this).attr('href'),
+        code: btn.parent().children('.sms_code').val()
+      }, function(data){
+        if(data.result == "verified") {
+          status.text("Code was successfully verified! Redirecting...");
+          window.location = data.redirect;
+        } else {
+          btn.parent().children('input[type=text]').remove();
+          btn.text()
+          status.text("The code you entered did not match, or the code expired.");
+        }
+      });
+    } else {
+      btn.attr("disabled","disabled");
+      status.text("Sending verification code...");
+
+      $.get("/auth/send_sms.json", {
+        me: me,
+        profile: $(this).attr('href'),
+        redirect_uri: redirect_uri
+      }, function(data){
+        if(data.result == "sent") {
+          // Swap the button for a field to enter the code
+          btn.text("Verify").removeAttr("disabled");
+          status.text("Sent! Enter the verification code you received above.");
+          btn.parent().prepend('<input type="text" class="span1 sms_code">').focus();
+        }
+      });
+    }
+    return false;
+  });
+}
+
+function format_sms_number(href) {
+  href = href.replace(/sms:\/?\/?/, '');
+  if(match=href.match(/^\+1([0-9]{3})([0-9]{3})([0-9]{4})$/)) {
+    href = '('+match[1]+') '+match[2]+'-'+match[3];
+  }
+  return 'SMS: '+href;
+}
+
 $(function(){
   $.get("/auth/relme_links.json", {me: me}, function(data){
     if(data && data.links && data.links.length > 0) {
@@ -43,7 +95,12 @@ $(function(){
       $(data.links).each(function(i, link){
         profiles[i] = link;
         var index = i;
-        $("#profiles").append(Mustache.to_html(template, {link: link.replace(/^https?:\/\//, ""), index: i}));
+        var formatted_link = link.replace(/^https?:\/\//, "");
+        if(formatted_link.match(/sms:\/?\/?/)) {
+          formatted_link = format_sms_number(formatted_link);
+        }
+
+        $("#profiles").append(Mustache.to_html(template, {link: formatted_link, index: i}));
 
         // Verify the url links back to the rel="me" link specified
         $.get("/auth/verify_link.json", {me: me, profile: link}, function(data){
@@ -51,7 +108,12 @@ $(function(){
             set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
           } else if(data.verified) {
             set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
-            $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.replace(/^https?:\/\//, "")+'</a>');
+            if(data.provider == "sms") {
+              $("#profile_"+i+" .link").html('<a href="'+link+'" class="btn btn-success sms-auth">'+format_sms_number(link)+'</a>');
+              set_up_sms_auth();
+            } else {
+              $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.replace(/^(https|http|sms):\/\//, "")+'</a>');              
+            }
           } else if(data.verified == false) {
             set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
           } else {

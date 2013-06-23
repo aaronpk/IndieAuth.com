@@ -49,6 +49,8 @@ class Controller < Sinatra::Base
         #if p['code'] == 
         if p['code'] == 'google_oauth2'
           provider p['code'].to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'userinfo.profile,plus.me'} if p['client_id']
+        elsif p['code'] == 'sms'
+          # HI!
         else
           provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
         end

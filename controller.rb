@@ -43,11 +43,11 @@ class Controller < Sinatra::Base
     begin
       links = me_parser.rel_me_links
     rescue SocketError
-      json_error 200, {error: 'connection_error', error_description: "Error retrieving: #{me}"}
+      json_error 200, {error: 'connection_error', error_description: "Error retrieving: #{me_parser.url}"}
     end
 
     if links.nil?
-      json_error 200, {error: 'no_links_found', error_description: "No links found on #{me} or could not parse the page"}
+      json_error 200, {error: 'no_links_found', error_description: "No links found on #{me_parser.url} or could not parse the page"}
     end
 
     links
@@ -59,10 +59,15 @@ class Controller < Sinatra::Base
   end
 
   def verify_user_profile(me_parser, profile, user)
-    # Search the "profile" page for a rel=me link back to "me"
-    profile_parser = RelParser.new profile
 
-    provider = profile_parser.get_provider
+    if profile.match RelParser.sms_regex
+      provider = Provider.first :code => 'sms'
+    else
+      # Search the "profile" page for a rel=me link back to "me"
+      profile_parser = RelParser.new profile
+
+      provider = profile_parser.get_provider
+    end
 
     if provider.nil?
       json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
@@ -78,7 +83,11 @@ class Controller < Sinatra::Base
       :verified => false
     })
 
-    verified = me_parser.verify_link profile, profile_parser
+    if provider.code == 'sms'
+      verified = true
+    else
+      verified = me_parser.verify_link profile, profile_parser
+    end
 
     if verified
       profile_record.verified = true
@@ -86,6 +95,26 @@ class Controller < Sinatra::Base
     end
 
     return provider, profile_record, verified
+  end
+
+  def auth_param_setup
+    # Double check they provided valid parameters for "me" and "profile"
+
+    me = verify_me_param
+    profile = verify_profile_param
+
+    user = save_user_record me
+
+    me_parser = RelParser.new me
+
+    links = find_all_relme_links me_parser
+
+    if !links.include?(profile)
+      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'}
+    end
+
+    provider, profile_record, verified = verify_user_profile me_parser, profile, user
+    return me, profile, user, provider, profile_record, verified
   end
 
   # 1. Begin the auth process
@@ -121,20 +150,7 @@ class Controller < Sinatra::Base
   #  * me=example.com
   #  * profile=provider.com/user/xxxxx
   get '/auth/verify_link.json' do
-    me = verify_me_param
-    profile = verify_profile_param
-
-    user = save_user_record me
-
-    me_parser = RelParser.new me
-
-    links = find_all_relme_links me_parser
-
-    if !links.include?(profile)
-      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'}
-    end
-
-    provider, profile_record, verified = verify_user_profile me_parser, profile, user
+    me, profile, user, provider, profile_record, verified = auth_param_setup
 
     if false # TODO: if provider is openid
       auth_path = "/auth/start?openid_url=#{profile}&me=#{me}"
@@ -148,6 +164,77 @@ class Controller < Sinatra::Base
       provider: provider.code, 
       verified: verified,
       auth_path: (verified ? auth_path : false)
+    }
+  end
+
+  get '/auth/send_sms.json' do
+    me, profile, user, provider, profile_record, verified = auth_param_setup
+
+    if provider.nil? or provider.code != 'sms'
+      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
+    end
+
+    login = Login.create :user => user,
+      :provider => provider,
+      :profile => profile_record, 
+      :complete => false,
+      :token => Login.generate_token,
+      :redirect_uri => params[:redirect_uri],
+      :sms_code => Login.generate_sms_code
+
+    # Send the SMS now!
+    @twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
+    @twilio.account.sms.messages.create(
+      :from => SiteConfig.twilio.number,
+      :to => profile_record.sms_number,
+      :body => "Your IndieAuth verification code is: #{login.sms_code}"
+    )
+
+    json_response 200, {
+      me: me, 
+      profile: profile, 
+      provider: provider.code,
+      result: 'sent'
+    }
+  end
+
+  get '/auth/verify_sms.json' do
+    me, profile, user, provider, profile_record, verified = auth_param_setup
+
+    if provider.nil? or provider.code != 'sms'
+      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
+    end
+
+    login = Login.first :user => user,
+      :provider => provider,
+      :sms_code => params[:code],
+      :complete => false
+
+    # TODO: Check code creation date and disallow old stuff
+
+    if login.nil?
+      json_error 400, {error: 'invalid_code', error_description: 'The code could not be verified'}
+    end
+
+    login.complete = true
+    login.save
+
+    if login.redirect_uri
+      redirect_uri = URI.parse login.redirect_uri
+      params = Rack::Utils.parse_query redirect_uri.query
+      params['token'] = login.token
+      redirect_uri.query = Rack::Utils.build_query params
+      redirect_uri = redirect_uri.to_s 
+    else
+      redirect_uri = "/success?token=#{login.token}"
+    end
+
+    json_response 200, {
+      me: me,
+      profile: profile,
+      provider: provider.code,
+      result: 'verified',
+      redirect: redirect_uri
     }
   end
 
