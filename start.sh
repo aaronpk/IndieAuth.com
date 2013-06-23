@@ -1,3 +1,3 @@
 #!/bin/bash
 
-bundle exec shotgun -s thin -P public -p 9010
+RACK_ENV=development bundle exec shotgun -s thin -P public -p 9010
