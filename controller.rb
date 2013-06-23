@@ -242,7 +242,7 @@ class Controller < Sinatra::Base
 
   post '/auth/verify_email.json' do
     data = RestClient.post 'https://verifier.login.persona.org/verify', {
-      :audience => SiteConfig.base_uri,
+      :audience => SiteConfig.root,
       :assertion => params[:assertion]
     }
     response = JSON.parse data
