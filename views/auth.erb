@@ -2,8 +2,6 @@
 var me = "<%= @me %>";
 var redirect_uri = "<%= @redirect_uri %>";
 
-var profiles = [];
-
 function set_provider_status(index, status, error) {
   $("#profile_"+index+" .status_img").addClass(status).removeClass("loading");
   if(error) {
@@ -14,9 +12,9 @@ function set_provider_status(index, status, error) {
 function update_progress_bar() {
 
   // The "success" bar starts out at 15% because 5% is reserved for starting the page and 10% is reserved for loading the links
-  var success = ($("#profiles .status_img.verified").length / profiles.length) * 0.85;
-  var warning = ($("#profiles .status_img.unsupported").length / profiles.length) * 0.85;
-  var error = ($("#profiles .status_img.error").length / profiles.length) * 0.85;
+  var success = ($("#profiles .status_img.verified").length / $("#profiles li").length) * 0.85;
+  var warning = ($("#profiles .status_img.unsupported").length / $("#profiles li").length) * 0.85;
+  var error = ($("#profiles .status_img.error").length / $("#profiles li").length) * 0.85;
 
   success = Math.round(success*100);
   warning = Math.round(warning*100);
@@ -124,12 +122,12 @@ function format_sms_number(href) {
   return 'SMS: '+href;
 }
 
-function verify_link_back(me, link, i) {
+function verify_link_back(me, link, i, use_cached) {
 
   // Don't make an HTTP request for links we already know aren't valid providers
   if(link.provider == null) {
     set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
-    update_provider_verification_status();
+    provider_verification_finished();
     return;
   }
 
@@ -138,7 +136,7 @@ function verify_link_back(me, link, i) {
     $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login" data-email="'+link.profile+'" />');
     set_provider_status(i, 'verified', 'Click to authenticate using '+link.profile.replace(/mailto:/,''));
     set_up_email_auth();
-    update_provider_verification_status();
+    provider_verification_finished();
     return;
   }
 
@@ -146,28 +144,47 @@ function verify_link_back(me, link, i) {
     $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success sms-auth">'+format_sms_number(link.profile)+'</a>');
     set_provider_status(i, 'verified', 'Click to receive a verification code via SMS.');
     set_up_sms_auth();
-    update_provider_verification_status();
+    provider_verification_finished();
     return;
   }
 
-  // Verify the url links back to the rel="me" link specified
-  $.get("/auth/verify_link.json", {me: me, profile: link.profile}, function(data){
-    if(data.error == "unsupported_provider") {
-      set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
-    } else if(data.verified) {
-      set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
-      $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
-    } else if(data.verified == false) {
-      set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
-    } else {
-      set_provider_status(i, 'error', 'An unknown error occurred with this provider.');
-    }
+  if(use_cached) {
+    var profile = $("#profile_"+i);
 
-    update_provider_verification_status();
-  });
+    if(profile.data('provider') == 'email' || profile.data('provider') == 'sms') {
+      return;
+    } 
+
+    update_provider_status(link, {
+      verified: profile.data('verified'),
+      error: false,
+      auth_path: profile.data('auth-path')
+    }, profile.attr('id').split('_')[1]);
+
+  } else {
+    // Verify the url links back to the rel="me" link specified
+    $.get("/auth/verify_link.json", {me: me, profile: link.profile}, function(data){
+      update_provider_status(link, data, i);
+    });    
+  }
 }
 
-function update_provider_verification_status() {
+function update_provider_status(link, data, i) {
+  if(data.error == "unsupported_provider") {
+    set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
+  } else if(data.verified) {
+    set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
+    $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
+  } else if(data.verified == false) {
+    set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
+  } else {
+    set_provider_status(i, 'error', 'An unknown error occurred with this provider.');
+  }
+
+  provider_verification_finished();
+}
+
+function provider_verification_finished() {
   // Check if all the providers are done being checked, if so, verify there is at least one valid one
   if($("#profiles .status_img.loading").length == 0) {
     update_progress_bar();
@@ -187,47 +204,101 @@ function update_provider_verification_status() {
 }
 
 $(function(){
-  $.get("/auth/relme_links.json", {me: me}, function(data){
-    if(data && data.links && data.links.length > 0) {
-      $("#progress_bar .bar-loading").css("width", "15%");
-      var template = $('#profile_link_template').html();
-      $(data.links).each(function(i, link){
-        profiles[i] = link.profile;
-        var index = i;
-        var formatted_link = link.profile.replace(/^https?:\/\//, "");
-        if(formatted_link.match(/sms:\/?\/?/)) {
-          formatted_link = format_sms_number(formatted_link);
-        }
-
-        $("#profiles").append(Mustache.to_html(template, {link: formatted_link, index: i}));
-
-        verify_link_back(me, link, i);
-      });
-    } else {
-      $("#progress_bar").hide();
-      $(".loading_message").hide();
-      $(".no_links_error").show();
-    }
-  });
-
   $("#progress_bar .bar").tooltip({placement: "bottom"});
+  update_progress_bar();
+
+  start_scan();
+
+  $(".rescan-button").click(function(){
+    // Erase all existing profiles
+    $("#profiles li").remove();
+    
+    // Re-set the notices
+    $("#progress_bar .bar-loading").css("width", "5%");
+    $("#progress_bar .bar-verified").css("width", "0");
+    $("#progress_bar .bar-info").css("width", "0");
+    $("#progress_bar .bar-danger").css("width", "0");
+    $("#progress_bar").show();
+
+    $(".loading_message").show();
+
+    $(".no_links_error").hide();
+    $(".unsupported_links_error").hide();
+    $(".continue_message").hide();
+
+    // Start a new scan
+    start_scan();
+  });
 });
+
+function start_scan() {
+  // Returning users will have a bunch of profiles already written to the HTML
+  if($("#profiles li").length > 0) {
+    // Skip loading links
+    $("#progress_bar .bar-loading").css("width", "15%");
+    update_progress_bar();
+
+    // Run the "verify" function which will set up the JS hooks and add the buttons
+    // for email and sms profiles, but set to "use_cached" to avoid making HTTP requests
+    $("#profiles li").each(function(){
+      verify_link_back(me, {
+        profile: $(this).data('profile'), 
+        verified: $(this).data('verified'),
+        provider: $(this).data('provider')
+      }, $(this).attr('id').split('_')[1], true);
+    });
+  } else {
+    $.get("/auth/relme_links.json", {me: me}, function(data){
+      if(data && data.links && data.links.length > 0) {
+        $("#progress_bar .bar-loading").css("width", "15%");
+        var template = $('#profile_link_template').html();
+        $(data.links).each(function(i, link){
+          var index = i;
+          var formatted_link = link.profile.replace(/^https?:\/\//, "");
+          if(formatted_link.match(/sms:\/?\/?/)) {
+            formatted_link = format_sms_number(formatted_link);
+          }
+
+          $("#profiles").append(Mustache.to_html(template, {link: formatted_link, index: i}));
+
+          verify_link_back(me, link, i);
+        });
+      } else {
+        $("#progress_bar").hide();
+        $(".loading_message").hide();
+        $(".no_links_error").show();
+      }
+    });
+  }
+}
+
 </script>
 
 <div class="wrapper">
+
+  <h3>Authenticating as <%= @me %></h3>
 
   <div class="loading_message">
     <div class="alert alert-info">Finding rel="me" links on <%= @me %></div>
   </div>
   
   <div class="no_links_error" style="display: none;">
-    <div class="alert alert-error">No rel="me" links were found on your site!</div>
+    <div class="alert alert-error">
+      No rel="me" links were found on your site!
+      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+    </div>
   </div>
   <div class="unsupported_links_error" style="display: none;">
-    <div class="alert alert-error">No supported rel="me" links were found on your site!</div>
+    <div class="alert alert-error">
+      No supported rel="me" links were found on your site!
+      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+    </div>
   </div>
   <div class="continue_message" style="display: none;">
-    <div class="alert alert-success"><span id="num_providers">1</span> supported and verified providers were found!</div>
+    <div class="alert alert-success">
+      <span id="num_providers">1</span> supported and verified providers were found!
+      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+    </div>
   </div>
 
   <div id="progress_bar" class="progress progress-striped active">
@@ -237,7 +308,19 @@ $(function(){
     <div class="bar bar-danger" style="width: 0;" rel="tooltip" title="Error verifying provider"></div>
   </div>
 
-  <ul id="profiles"></ul>
+  <ul id="profiles">
+    <% 
+      # If they are a returning visitor, the database already has their list of profiles. Populate with that now. 
+      # The database will only return URLs that are valid providers, not the complete list of rel-me links on the person's site.
+    %>
+    <% @profiles.each_with_index do |profile,i| %>
+      <li class="profile <%= profile.provider.code %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider.code %>" data-auth-path="/auth/start?me=<%=URI.encode_www_form_component @me%>&amp;profile=<%=URI.encode_www_form_component profile[:href]%>">
+        <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
+        <span class="link"><%= profile[:href] %></span>
+        <div class="status">Verifying...</div>
+      </li>
+    <% end %>
+  </ul>
 
   <div class="no_links_error" style="display: none;">
     <p>Add links on your home page to your various social profiles (Twitter, Github, etc) with the attribute rel="me"</p>
@@ -257,8 +340,13 @@ $(function(){
     <p><a href="/setup">Full Setup Instructions</a></p>
   </div>
   <div class="continue_message" style="display: none;">
-    <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account.</p>
+    <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account on any of the providers.</p>
+
+    <% if @redirect_uri %>
+      <div class="redirect">Will redirect to <%= @redirect_uri %> to finish logging in to the site.</div>
+    <% end %>
   </div>
+
 </div>
 
 <div style="display:none;">
@@ -281,8 +369,18 @@ $(function(){
     margin: 20px auto;
   }
 
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #444;
+  }
+
   ul#profiles {
     list-style-type: none;
+  }
+
+  .alert {
+    padding-right: 17px;
   }
 
   .status_img {

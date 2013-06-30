@@ -82,6 +82,7 @@ class Controller < Sinatra::Base
     if provider.code == 'sms' or provider.code == 'email'
       verified = true
     else
+      # This does an HTTP request
       verified = me_parser.verify_link profile, profile_parser
     end
 
@@ -118,6 +119,18 @@ class Controller < Sinatra::Base
   get '/auth' do
     title "IndieAuth - Sign in with your domain name"
     @me = params[:me]
+
+    if !@me.match(/^http/)
+      @me = "http://#{@me}"
+    end
+    
+    @profiles = []
+    # If there's already a user record, look up all their existing profiles
+    user = User.first :href => @me.sub(/(\/)+$/,'')
+    unless user.nil?
+      @profiles = user.profiles
+    end
+
     @redirect_uri = params[:redirect_uri]
     @providers = Provider.all(:home_page.not => '')
     erb :auth
@@ -139,6 +152,9 @@ class Controller < Sinatra::Base
     user.me_links = links.to_json
     user.save
 
+    # TODO: Figure out how to delete all old profiles that aren't linked on the user's page anymore
+    
+
     # Check each link to see if it's a supported provider
     links_response = []
 
@@ -152,6 +168,9 @@ class Controller < Sinatra::Base
 
       if provider && (provider.code == 'sms' or provider.code == 'email')
         verified = true
+        # Run verify_user_profile which will save the profile in the DB. Since it's only
+        # running for SMS and Email profiles, it won't trigger an HTTP request.
+        verify_user_profile me_parser, link, user
       end
 
       links_response << {
