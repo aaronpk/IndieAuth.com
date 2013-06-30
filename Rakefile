@@ -48,6 +48,21 @@ namespace :db do
           :regex_username => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'
         })
 
+    appnet = Provider.create ({
+          :code => 'appnet',
+          :client_id => SiteConfig.appnet.client_id,
+          :client_secret => SiteConfig.appnet.client_secret,
+          :regex_username => 'https?:\/\/alpha\.app\.net\/([^\/]+)'
+        })
+
+    sms = Provider.create ({
+          :code => 'sms'
+        })
+
+    email = Provider.create ({
+          :code => 'email'
+        })
+
   end
   task :migrate do
     init
