@@ -124,61 +124,84 @@ function format_sms_number(href) {
   return 'SMS: '+href;
 }
 
+function verify_link_back(me, link, i) {
+
+  // Don't make an HTTP request for links we already know aren't valid providers
+  if(link.provider == null) {
+    set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
+    update_provider_verification_status();
+    return;
+  }
+
+  // Don't need to verify email or SMS links, provide the buttoms immediately
+  if(link.provider == 'email') {
+    $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login" data-email="'+link.profile+'" />');
+    set_provider_status(i, 'verified', 'Click to authenticate using '+link.profile.replace(/mailto:/,''));
+    set_up_email_auth();
+    update_provider_verification_status();
+    return;
+  }
+
+  if(link.provider == 'sms') {
+    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success sms-auth">'+format_sms_number(link.profile)+'</a>');
+    set_provider_status(i, 'verified', 'Click to receive a verification code via SMS.');
+    set_up_sms_auth();
+    update_provider_verification_status();
+    return;
+  }
+
+  // Verify the url links back to the rel="me" link specified
+  $.get("/auth/verify_link.json", {me: me, profile: link.profile}, function(data){
+    if(data.error == "unsupported_provider") {
+      set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
+    } else if(data.verified) {
+      set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
+      $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
+    } else if(data.verified == false) {
+      set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
+    } else {
+      set_provider_status(i, 'error', 'An unknown error occurred with this provider.');
+    }
+
+    update_provider_verification_status();
+  });
+}
+
+function update_provider_verification_status() {
+  // Check if all the providers are done being checked, if so, verify there is at least one valid one
+  if($("#profiles .status_img.loading").length == 0) {
+    update_progress_bar();
+    complete_progress_bar();
+
+    if($("#profiles .status_img.verified").length == 0) {
+      $(".loading_message").hide();
+      $(".unsupported_links_error").show();
+    } else {
+      $("#num_providers").html($("#profiles .status_img.verified").length);
+      $(".loading_message").hide();
+      $(".continue_message").show();
+    }
+  } else {
+    update_progress_bar();
+  }
+}
+
 $(function(){
   $.get("/auth/relme_links.json", {me: me}, function(data){
     if(data && data.links && data.links.length > 0) {
       $("#progress_bar .bar-loading").css("width", "15%");
       var template = $('#profile_link_template').html();
       $(data.links).each(function(i, link){
-        profiles[i] = link;
+        profiles[i] = link.profile;
         var index = i;
-        var formatted_link = link.replace(/^https?:\/\//, "");
+        var formatted_link = link.profile.replace(/^https?:\/\//, "");
         if(formatted_link.match(/sms:\/?\/?/)) {
           formatted_link = format_sms_number(formatted_link);
         }
 
         $("#profiles").append(Mustache.to_html(template, {link: formatted_link, index: i}));
 
-        // Verify the url links back to the rel="me" link specified
-        $.get("/auth/verify_link.json", {me: me, profile: link}, function(data){
-          if(data.error == "unsupported_provider") {
-            set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
-          } else if(data.verified) {
-            set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
-            if(data.provider == "sms") {
-              $("#profile_"+i+" .link").html('<a href="'+link+'" class="btn btn-success sms-auth">'+format_sms_number(link)+'</a>');
-              set_up_sms_auth();
-            } else if(data.provider == "email") {
-              $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login" data-email="'+link+'" />');
-              set_provider_status(i, 'verified', 'Ok! Click to authenticate using '+link.replace(/mailto:/,''));
-              set_up_email_auth();
-            } else {
-              $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.replace(/^(https|http|sms):\/\//, "")+'</a>');              
-            }
-          } else if(data.verified == false) {
-            set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
-          } else {
-            set_provider_status(i, 'error', 'An unknown error occurred with this provider.');
-          }
-
-          // Check if all the providers are done being checked, if so, verify there is at least one valid one
-          if($("#profiles .status_img.loading").length == 0) {
-            update_progress_bar();
-            complete_progress_bar();
-
-            if($("#profiles .status_img.verified").length == 0) {
-              $(".loading_message").hide();
-              $(".unsupported_links_error").show();
-            } else {
-              $("#num_providers").html($("#profiles .status_img.verified").length);
-              $(".loading_message").hide();
-              $(".continue_message").show();
-            }
-          } else {
-            update_progress_bar();
-          }
-
-        });
+        verify_link_back(me, link, i);
       });
     } else {
       $("#progress_bar").hide();

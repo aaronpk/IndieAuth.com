@@ -60,16 +60,10 @@ class Controller < Sinatra::Base
 
   def verify_user_profile(me_parser, profile, user)
 
-    if profile.match RelParser.sms_regex
-      provider = Provider.first :code => 'sms'
-    elsif profile.match RelParser.email_regex
-      provider = Provider.first :code => 'email'
-    else
-      # Search the "profile" page for a rel=me link back to "me"
-      profile_parser = RelParser.new profile
-
-      provider = profile_parser.get_provider
-    end
+    # Checks the URL against the list of regexes to see what provider it is
+    # Does not fetch the page contents
+    profile_parser = RelParser.new profile
+    provider = profile_parser.get_provider
 
     if provider.nil?
       json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
@@ -109,6 +103,7 @@ class Controller < Sinatra::Base
 
     me_parser = RelParser.new me
 
+    # TODO: Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
     links = find_all_relme_links me_parser
 
     if !links.include?(profile)
@@ -144,7 +139,29 @@ class Controller < Sinatra::Base
     user.me_links = links.to_json
     user.save
 
-    json_response 200, {links: links}
+    # Check each link to see if it's a supported provider
+    links_response = []
+
+    links.each do |link|
+      verified = nil
+
+      # Checks the URL against the list of regexes to see what provider it is
+      # Does not fetch the page contents
+      profile_parser = RelParser.new link
+      provider = profile_parser.get_provider
+
+      if provider && (provider.code == 'sms' or provider.code == 'email')
+        verified = true
+      end
+
+      links_response << {
+        profile: link,
+        provider: (provider ? provider.code : nil),
+        verified: verified
+      }
+    end
+
+    json_response 200, {links: links_response}
   end
 
   # 3. Verify a link has a rel=me relation back to the specified site

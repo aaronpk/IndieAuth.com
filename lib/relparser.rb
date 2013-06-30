@@ -125,8 +125,17 @@ class RelParser
 
   def get_provider
     return nil if @url.nil?
+
+    if @url.match RelParser.sms_regex
+      return Provider.first :code => 'sms'
+    end
+
+    if @url.match RelParser.email_regex
+      return Provider.first :code => 'email'
+    end
+
     Provider.all.each do |provider|
-      if provider['regex_username'] && @url.match(Regexp.new provider['regex_username'])
+      if provider['regex_username'] != '' && @url.match(Regexp.new provider['regex_username'])
         # puts "Provider name for #{url} is #{provider['code']}"
         return provider
       end
