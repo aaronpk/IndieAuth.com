@@ -114,6 +114,39 @@ function set_up_email_auth() {
   });
 }
 
+function set_up_totp_auth() {
+  $(".totp-auth").click(function(){
+    var btn = $(this);
+    var status = $(this).parents('li').children('.status');
+
+    if(btn.text() == "Verify") {
+      btn.attr("disabled","disabled");
+      status.text("Verifying...");
+
+      $.get("/auth/verify_totp.json", {
+        me: me,
+        redirect_uri: redirect_uri,
+        code: btn.parent().children('.totp_code').val()
+      }, function(data){
+        if(data.result == "verified") {
+          status.text("Code was successfully verified! Redirecting...");
+          window.location = data.redirect;
+        } else {
+          btn.parent().children('input[type=text]').remove();
+          btn.text()
+          status.text("The code you entered was invalid.");
+        }
+      });
+    } else {
+      // Swap the button for a field to enter the code
+      status.text("Enter a verification code");
+      btn.text("Verify");
+      btn.parent().prepend('<input type="text" class="span1 totp_code">').focus();
+    }
+    return false;
+  });
+}
+
 function format_sms_number(href) {
   href = href.replace(/sms:\/?\/?/, '');
   if(match=href.match(/^\+1([0-9]{3})([0-9]{3})([0-9]{4})$/)) {
@@ -144,6 +177,14 @@ function verify_link_back(me, link, i, use_cached) {
     $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success sms-auth">'+format_sms_number(link.profile)+'</a>');
     set_provider_status(i, 'verified', 'Click to receive a verification code via SMS.');
     set_up_sms_auth();
+    provider_verification_finished();
+    return;
+  }
+
+  if(link.provider == 'totp') {
+    $("#profile_"+i+" .link").html('<a href="#" class="btn btn-success totp-auth">Google Authenticator</a>');
+    set_provider_status(i, 'verified', 'Click to enter a TOTP code.');
+    set_up_totp_auth();
     provider_verification_finished();
     return;
   }
@@ -314,6 +355,7 @@ function start_scan() {
       # The database will only return URLs that are valid providers, not the complete list of rel-me links on the person's site.
     %>
     <% @profiles.each_with_index do |profile,i| %>
+      <% next if @redirect_uri == 'totp' and profile.provider.code == 'totp' %>
       <li class="profile <%= profile.provider.code %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider.code %>" data-auth-path="/auth/start?me=<%=URI.encode_www_form_component @me%>&amp;profile=<%=URI.encode_www_form_component profile[:href]%>">
         <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
         <span class="link"><%= profile[:href] %></span>

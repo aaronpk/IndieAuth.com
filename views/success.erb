@@ -15,20 +15,32 @@
   <div class="row">
 
     <div class="span4">
-      <h3>Create a Sign-in form for your website</h3>
+      <h3>What's Next?</h3>
+      <h5>Create a Sign-in form for your website</h5>
       <p>Read <a href="/#documentation">the documentation</a> to use IndieAuth.com to sign people in on your website.</p>
+    </div>
+
+    <div class="span4">
+      <h3>Install the Google Authenticator App</h3>
+      <p>You can use the Google Authenticator app as an authentication provider for your domain!</p>
+      <p>Sign in with your domain below to generate the QR code to set up the app.</p>
+
+      <form action="/auth" method="get" class="well">
+        <label>Web Address:</label>
+        <input type="text" name="me" class="span3" placeholder="yourdomain.com" />
+        <p><button type="submit" class="btn">Sign In</button></p>
+        <input type="hidden" name="redirect_uri" value="totp" />
+      </form>
+
     </div>
 
     <div class="span4">
       <h3>Join the Community</h3>
       <ul>
-        <li>Attend <a href="http://indiewebcamp.com/Main_Page">IndieWebCamp 2012</a> in Portland, Oregon<br />(June 30 to July 1, 2012)</li>
-        <li>Add yourself to the <a href="http://indiewebcamp.com/Guest_List">IndieWebCamp 2012 Guest List</a> after signing in with your own domain</li>
+        <li>Attend <a href="http://indiewebcamp.com/events">an IndieWebCamp event</a></li>
         <li>Add your own IndieWeb projects to the <a href="http://indiewebcamp.com/Projects">Project List</a></li>
       </ul>
-    </div>
 
-    <div class="span4">
       <ul class="thumbnails">
         <li class="span1">
           <a class="thumbnail" href="http://indiewebcamp.com/"><img src="/img/wiki-button.png" width="114" height="114" /></a>

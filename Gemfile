@@ -25,6 +25,9 @@ gem 'unshorten',	">=0.2.1"
 gem 'rest-client'
 gem 'twilio-ruby'
 
+gem 'base32'
+gem 'google_authenticator_auth'
+
 gem 'mysql2',          '0.3.7'
 gem 'dm-core'
 gem 'dm-timestamps'

@@ -126,9 +126,9 @@ class Controller < Sinatra::Base
     
     @profiles = []
     # If there's already a user record, look up all their existing profiles
-    user = User.first :href => @me.sub(/(\/)+$/,'')
-    unless user.nil?
-      @profiles = user.profiles
+    @user = User.first :href => @me.sub(/(\/)+$/,'')
+    unless @user.nil?
+      @profiles = @user.profiles
     end
 
     @redirect_uri = params[:redirect_uri]
@@ -153,7 +153,7 @@ class Controller < Sinatra::Base
     user.save
 
     # TODO: Figure out how to delete all old profiles that aren't linked on the user's page anymore
-    
+
 
     # Check each link to see if it's a supported provider
     links_response = []
@@ -236,6 +236,19 @@ class Controller < Sinatra::Base
     }
   end
 
+  def build_redirect_uri(login)
+    if login.redirect_uri
+      redirect_uri = URI.parse login.redirect_uri
+      p = Rack::Utils.parse_query redirect_uri.query
+      p['token'] = login.token
+      redirect_uri.query = Rack::Utils.build_query p
+      redirect_uri = redirect_uri.to_s 
+    else
+      redirect_uri = "/success?token=#{login.token}"
+    end
+    return redirect_uri
+  end
+
   get '/auth/verify_sms.json' do
     me, profile, user, provider, profile_record, verified = auth_param_setup
 
@@ -257,15 +270,7 @@ class Controller < Sinatra::Base
     login.complete = true
     login.save
 
-    if login.redirect_uri
-      redirect_uri = URI.parse login.redirect_uri
-      params = Rack::Utils.parse_query redirect_uri.query
-      params['token'] = login.token
-      redirect_uri.query = Rack::Utils.build_query params
-      redirect_uri = redirect_uri.to_s 
-    else
-      redirect_uri = "/success?token=#{login.token}"
-    end
+    redirect_uri = build_redirect_uri login
 
     json_response 200, {
       me: me,
@@ -303,15 +308,7 @@ class Controller < Sinatra::Base
           :token => Login.generate_token,
           :redirect_uri => params[:redirect_uri]
 
-        if login.redirect_uri
-          redirect_uri = URI.parse login.redirect_uri
-          p = Rack::Utils.parse_query redirect_uri.query
-          p['token'] = login.token
-          redirect_uri.query = Rack::Utils.build_query p
-          redirect_uri = redirect_uri.to_s 
-        else
-          redirect_uri = "/success?token=#{login.token}"
-        end
+        redirect_uri = build_redirect_uri login
 
         json_response 200, {
           status: response['status'],
@@ -323,6 +320,100 @@ class Controller < Sinatra::Base
       json_error 200, {
         status: response['status'],
         reason: response['reason']
+      }
+    end
+  end
+
+  get '/totp' do
+    if params[:token].nil?
+      @message = "Missing 'token' parameter"
+      title "Error"
+      return erb :error
+    end
+
+    login = Login.first :token => params[:token]
+
+    if login.nil?
+      @message = "The token provided was not found"
+      title "Error"
+      return erb :error
+    end
+
+    @me = login.user
+    title "Successfully Signed In!"
+
+    # Upon successfully verifying their IndieAuth login:
+    # * generate a TOTP secret
+    # * store in the user record
+    # * add a TOTP profile for the user so the button appears
+
+    if @me.totp_secret.nil? or @me.totp_secret == ''
+      ga = GoogleAuthenticator.new
+      secret = ga.secret_key
+
+      @me.totp_secret = secret
+      @me.save
+    else
+      ga = GoogleAuthenticator.new @me.totp_secret
+    end
+
+    @qrcode = ga.qrcode_image_url "indieauth@#{@me[:href].sub(/https?:\/\//,'')}"
+
+    profile = Profile.first_or_create({
+      :user => @me,
+      :provider => Provider.first(:code => 'totp')
+    }, {
+      :verified => true
+    })
+
+    erb :totp
+  end
+
+  get '/auth/verify_totp.json' do
+    me = verify_me_param
+    me = me.sub(/(\/)+$/,'')
+    @user = User.first :href => me
+
+    if @user.nil?
+      json_error 400, {
+        error: 'invalid_user',
+        error_description: 'Profile was not found'
+      }
+    end
+
+    if @user.totp_secret.nil? or @user.totp_secret == ''
+      json_error 400, {
+        error: 'not_supported',
+        error_description: 'TOTP is not yet configured for this user'
+      }
+    end
+
+    ga = GoogleAuthenticator.new @user.totp_secret
+    if ga.key_valid? params[:code]
+
+      profile = Profile.first_or_create({
+        :user => @user, 
+        :provider => Provider.first(:code => 'totp')
+      }, {
+        :verified => true
+      })
+
+      login = Login.create :user => @user,
+        :provider => Provider.first(:code => 'totp'),
+        :profile => profile,
+        :complete => true,
+        :token => Login.generate_token,
+        :redirect_uri => params[:redirect_uri]
+
+      redirect_uri = build_redirect_uri login
+
+      json_response 200, {
+        result: 'verified',
+        redirect: redirect_uri
+      }
+    else
+      json_response 200, {
+        result: 'error'
       }
     end
   end

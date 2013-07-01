@@ -4,6 +4,7 @@ class User
 
   property :href, String, :length => 255
   property :me_links, Text
+  property :totp_secret, String, :length => 100
 
   has n, :logins
   has n, :profiles
