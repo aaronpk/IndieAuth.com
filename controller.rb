@@ -326,9 +326,8 @@ class Controller < Sinatra::Base
 
   get '/totp' do
     if params[:token].nil?
-      @message = "Missing 'token' parameter"
-      title "Error"
-      return erb :error
+      title "Set up Google Authenticator"
+      return erb :totp_login
     end
 
     login = Login.first :token => params[:token]
@@ -338,6 +337,16 @@ class Controller < Sinatra::Base
       title "Error"
       return erb :error
     end
+
+    if login.used_count > 0
+      @message = "The token provided has already been used"
+      title "Error"
+      return erb :error
+    end
+
+    login.last_used_at = Time.now
+    login.used_count = login.used_count + 1
+    login.save
 
     @me = login.user
     title "Successfully Signed In!"
@@ -538,6 +547,10 @@ class Controller < Sinatra::Base
       title "Error"
       return erb :error
     end
+
+    login.last_used_at = Time.now
+    login.used_count = login.used_count + 1
+    login.save
 
     @domain = login.user['href']
     title "Successfully Signed In!"
