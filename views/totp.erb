@@ -17,6 +17,7 @@
     <div class="span4 offset4">
       <p style="text-align: center;">Scan this QR code from your Google Authenticator app, then you can sign in using codes generated from the app!</p>
       <p style="text-align: center;"><img src="<%= @qrcode %>" /></p>
+      <p style="text-align: center;">You can also manually enter the key below:<br /><br /><code><%= @me.totp_secret %></code></p>
     </div>
     
   </div><!-- row -->  

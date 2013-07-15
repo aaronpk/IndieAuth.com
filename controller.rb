@@ -326,7 +326,7 @@ class Controller < Sinatra::Base
 
   get '/totp' do
     if params[:token].nil?
-      title "Set up Google Authenticator"
+      title "Set up Password-less Logins"
       return erb :totp_login
     end
 
@@ -339,7 +339,7 @@ class Controller < Sinatra::Base
     end
 
     if login.used_count > 0
-      @message = "The token provided has already been used"
+      @message = "The token provided has already been used. Please <a href=\"/totp\">log in again</a>."
       title "Error"
       return erb :error
     end
