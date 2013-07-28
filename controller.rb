@@ -38,7 +38,7 @@ class Controller < Sinatra::Base
     profile
   end
 
-  def find_all_relme_links(me_parser)
+  def find_all_relme_links(me_parser, profile=nil)
     # Find all the rel=me links on the specified page
     begin
       links = me_parser.rel_me_links
@@ -104,10 +104,8 @@ class Controller < Sinatra::Base
 
     me_parser = RelParser.new me
 
-    # TODO: Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
-    links = find_all_relme_links me_parser
-
-    if !links.include?(profile)
+    # Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
+    if !me_parser.links_to profile
       json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'}
     end
 

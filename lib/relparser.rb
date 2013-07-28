@@ -37,8 +37,7 @@ class RelParser
     @page
   end
 
-  def get(tag)
-    links = []
+  def load_page
     if @page.nil?
       puts "<<<<<<< FETCHING #{@url} >>>>>>>"
       begin
@@ -53,6 +52,26 @@ class RelParser
         return []
       end
     end
+  end
+
+  # Check whether an HTML page actually contains a link to the given profile
+  def links_to(profile)
+    load_page
+
+    @page.links.each do |link|
+      if link.rel? "me"
+        puts link.href
+        return true if link.href == profile
+      end
+    end
+
+    return false
+  end
+
+  def rel_me_links
+    tag = "me"
+    links = []
+    load_page
 
     @page.links.each do |link|
       if link.rel?(tag)
@@ -103,10 +122,6 @@ class RelParser
     end
 
     links.uniq
-  end
-
-  def rel_me_links
-    self.get "me"
   end
 
   def get_supported_links
@@ -165,7 +180,7 @@ class RelParser
     # Scan the external site for rel="me" links
     site_parser = RelParser.new link if site_parser.nil?
     begin
-      links_to = site_parser.get "me"
+      links_to = site_parser.rel_me_links
     rescue SocketError
       return false
     end
