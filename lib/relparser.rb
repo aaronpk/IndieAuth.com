@@ -74,6 +74,8 @@ class RelParser
     links = []
     load_page
 
+    return links if @page.nil?
+
     @page.links.each do |link|
       if link.rel? "me"
         # puts " --> #{link.href.inspect}"
@@ -200,11 +202,12 @@ class RelParser
     links_back = false
     # Find any that match the user's entered "me" link
 
+    # Continue searching through links and follow redirects, and stop when a match is found
     links_to.each do |site_link|
       siteURI = URI.parse site_link
 
-      # Follow redirects and stop when a match is found
       stop = false
+      previous = nil # used to prevent redirect loops
       while stop == false
         # Normalize
         siteURI.scheme = "http" if siteURI.scheme == "https"
@@ -217,16 +220,17 @@ class RelParser
           links_back = true
           stop = true
           puts "Found match at: #{siteURI.to_s}"
+          return true
         else
           # Check if siteURI is a redirect to something else, and continue
           unshortened = Unshorten.unshorten site_link, {:short_hosts => false, :use_cache => true, :max_level => 1}
-          if unshortened == siteURI.to_s
+          if previous == siteURI or unshortened == site_link
             stop = true
-            puts "Redirected to: #{unshortened} and stopping"
           else
             siteURI = URI.parse unshortened
-            puts "Redirected to: #{unshortened}"
+            puts "Redirected to: #{unshortened} from #{site_link}"
           end
+          previous = siteURI
           links_back = (unshortened == @meURI.to_s)
         end
       end
