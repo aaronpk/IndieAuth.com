@@ -68,13 +68,14 @@ class RelParser
     return false
   end
 
-  def rel_me_links
-    tag = "me"
+  def rel_me_links(opts={})
+    opts[:follow_redirects] = true if opts[:follow_redirects] == nil
+
     links = []
     load_page
 
     @page.links.each do |link|
-      if link.rel?(tag)
+      if link.rel? "me"
         # puts " --> #{link.href.inspect}"
 
         if link.href.match RelParser.sms_regex or link.href.match RelParser.email_regex
@@ -83,34 +84,40 @@ class RelParser
           begin
             original = URI.parse link.href
 
-            # Follow redirects (un-shorten links) 
-            # Mostly to follow twitter's profile links wrapped in t.co
-            unshortened = Unshorten.unshorten link.href, {:short_hosts => false, :use_cache => true}
+            if opts[:follow_redirects]
 
-            # If the original link is http but the redirect is to an https link, use the original.
-            # This is to avoid introducing a trust hole, since if someone is using https we are assuming they are using https everywhere.
-            begin
-              actual = URI.parse unshortened
+              # Follow redirects (un-shorten links) 
+              # Mostly to follow twitter's profile links wrapped in t.co
+              unshortened = Unshorten.unshorten link.href, {:short_hosts => false, :use_cache => true}
 
-              # If there is no host in the un-shortened version, assume it's the same host as the original link.
-              # Some servers return an absolute path in the 301 redirect. For example:
-              #
-              # http://picasaweb.google.com/wnorris
-              # Location: /111832530347449196055?gsessionid=6SZtIqXiPEW45p_gwXf2Xw
-              if actual.host == nil
-                actual.host = original.host
+              # If the original link is http but the redirect is to an https link, use the original.
+              # This is to avoid introducing a trust hole, since if someone is using https we are assuming they are using https everywhere.
+              begin
+                actual = URI.parse unshortened
+
+                # If there is no host in the un-shortened version, assume it's the same host as the original link.
+                # Some servers return an absolute path in the 301 redirect. For example:
+                #
+                # http://picasaweb.google.com/wnorris
+                # Location: /111832530347449196055?gsessionid=6SZtIqXiPEW45p_gwXf2Xw
+                if actual.host == nil
+                  actual.host = original.host
+                end
+
+                if original.scheme == actual.scheme
+                  puts " Found URL: #{actual}"
+                  links << actual.to_s
+                else
+                  # TODO: Figure out how to surface this error to the user
+                  puts "     skipping redirect due to protocol mismatch"
+                end
+              rescue => e
+                # Ignore exceptions parsing the URL
+                puts "Error parsing #{unshortened}"
               end
 
-              if original.scheme == actual.scheme
-                puts " Found URL: #{actual}"
-                links << actual.to_s
-              else
-                # TODO: Figure out how to surface this error to the user
-                puts "     skipping redirect due to protocol mismatch"
-              end
-            rescue => e
-              # Ignore exceptions parsing the URL
-              puts "Error parsing #{unshortened}"
+            else
+              links << link.href
             end
 
           rescue => e
@@ -180,7 +187,7 @@ class RelParser
     # Scan the external site for rel="me" links
     site_parser = RelParser.new link if site_parser.nil?
     begin
-      links_to = site_parser.rel_me_links
+      links_to = site_parser.rel_me_links :follow_redirects => false
     rescue SocketError
       return false
     end
@@ -195,16 +202,35 @@ class RelParser
 
     links_to.each do |site_link|
       siteURI = URI.parse site_link
-      # Normalize
-      siteURI.scheme = "http" if siteURI.scheme == "https"
-      siteURI.path = "/" if siteURI.path == ""
 
-      # Compare
-      if siteURI.scheme == @meURI.scheme && 
-        siteURI.host == @meURI.host &&
-        siteURI.path == @meURI.path
-        links_back = true
+      # Follow redirects and stop when a match is found
+      stop = false
+      while stop == false
+        # Normalize
+        siteURI.scheme = "http" if siteURI.scheme == "https"
+        siteURI.path = "/" if siteURI.path == ""
+
+        # Check if the URL matches
+        if siteURI.scheme == @meURI.scheme && 
+          siteURI.host == @meURI.host &&
+          siteURI.path == @meURI.path
+          links_back = true
+          stop = true
+          puts "Found match at: #{siteURI.to_s}"
+        else
+          # Check if siteURI is a redirect to something else, and continue
+          unshortened = Unshorten.unshorten site_link, {:short_hosts => false, :use_cache => true, :max_level => 1}
+          if unshortened == siteURI.to_s
+            stop = true
+            puts "Redirected to: #{unshortened} and stopping"
+          else
+            siteURI = URI.parse unshortened
+            puts "Redirected to: #{unshortened}"
+          end
+          links_back = (unshortened == @meURI.to_s)
+        end
       end
+
     end
 
     # if links_back
