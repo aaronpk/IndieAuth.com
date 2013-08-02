@@ -41,7 +41,7 @@ class Controller < Sinatra::Base
   def find_all_relme_links(me_parser, profile=nil)
     # Find all the rel=me links on the specified page
     begin
-      links = me_parser.rel_me_links :follow_redirects => false
+      links = me_parser.rel_me_links
     rescue SocketError
       json_error 200, {error: 'connection_error', error_description: "Error retrieving: #{me_parser.url}"}
     end

@@ -69,8 +69,6 @@ class RelParser
   end
 
   def rel_me_links(opts={})
-    opts[:follow_redirects] = true if opts[:follow_redirects] == nil
-
     links = []
     load_page
 
@@ -85,43 +83,7 @@ class RelParser
         else
           begin
             original = URI.parse link.href
-
-            if opts[:follow_redirects]
-
-              # Follow redirects (un-shorten links) 
-              # Mostly to follow twitter's profile links wrapped in t.co
-              unshortened = Unshorten.unshorten link.href, {:short_hosts => false, :use_cache => true}
-
-              # If the original link is http but the redirect is to an https link, use the original.
-              # This is to avoid introducing a trust hole, since if someone is using https we are assuming they are using https everywhere.
-              begin
-                actual = URI.parse unshortened
-
-                # If there is no host in the un-shortened version, assume it's the same host as the original link.
-                # Some servers return an absolute path in the 301 redirect. For example:
-                #
-                # http://picasaweb.google.com/wnorris
-                # Location: /111832530347449196055?gsessionid=6SZtIqXiPEW45p_gwXf2Xw
-                if actual.host == nil
-                  actual.host = original.host
-                end
-
-                if original.scheme == actual.scheme
-                  puts " Found URL: #{actual}"
-                  links << actual.to_s
-                else
-                  # TODO: Figure out how to surface this error to the user
-                  puts "     skipping redirect due to protocol mismatch"
-                end
-              rescue => e
-                # Ignore exceptions parsing the URL
-                puts "Error parsing #{unshortened}"
-              end
-
-            else
-              links << link.href
-            end
-
+            links << link.href
           rescue => e
             # Ignore exceptions on invalid urls
             puts "Error parsing #{link.href}"
@@ -131,20 +93,6 @@ class RelParser
     end
 
     links.uniq
-  end
-
-  def get_supported_links
-    supported = []
-    self.rel_me_links.each do |link|
-      parser = RelParser.new link
-      if parser.is_supported_provider?
-        supported << {
-          :link => link,
-          :parser => parser
-        }
-      end
-    end
-    supported
   end
 
   def get_provider
@@ -165,18 +113,18 @@ class RelParser
       end
     end
 
-    # TODO: Remove this to enable OpenID
+    # TODO: Fix the below to re-enable OpenID
     return nil
 
     # Check if the URL is an OpenID endpoint
-    rel_me_links # fetch the page contents now which populates @page
-    # If the page contains an openID tag, use it!
-    return nil if @page.class != Mechanize::Page
+    # rel_me_links # fetch the page contents now which populates @page
+    # # If the page contains an openID tag, use it!
+    # return nil if @page.class != Mechanize::Page
 
-    if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
-      return Provider.first(:code => 'open_id')
-    end
-    return nil
+    # if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
+    #   return Provider.first(:code => 'open_id')
+    # end
+    # return nil
   end
 
   def is_supported_provider?
@@ -189,7 +137,7 @@ class RelParser
     # Scan the external site for rel="me" links
     site_parser = RelParser.new link if site_parser.nil?
     begin
-      links_to = site_parser.rel_me_links :follow_redirects => false
+      links_to = site_parser.rel_me_links
     rescue SocketError
       return false
     end
@@ -199,7 +147,6 @@ class RelParser
     puts "Links to: #{links_to}"
     puts
     
-    links_back = false
     # Find any that match the user's entered "me" link
 
     # Continue searching through links and follow redirects, and stop when a match is found
@@ -207,43 +154,68 @@ class RelParser
       siteURI = URI.parse site_link
 
       stop = false
-      previous = nil # used to prevent redirect loops
+      previous = [] # used to prevent redirect loops
       while stop == false
         # Normalize
-        siteURI.scheme = "http" if siteURI.scheme == "https"
         siteURI.path = "/" if siteURI.path == ""
 
         # Check if the URL matches
-        if siteURI.scheme == @meURI.scheme && 
-          siteURI.host == @meURI.host &&
-          siteURI.path == @meURI.path
-          links_back = true
+        if siteURI == @meURI
           stop = true
           puts "Found match at: #{siteURI.to_s}"
           return true
+          
         else
-          # Check if siteURI is a redirect to something else, and continue
-          unshortened = Unshorten.unshorten site_link, {:short_hosts => false, :use_cache => true, :max_level => 1}
-          if previous == siteURI or unshortened == site_link
+          # Check if siteURI is a redirect
+          unshortened = RelParser.follow siteURI
+          if unshortened == nil
             stop = true
+            puts "Stopping because no redirect was found: #{siteURI}"
+            previous << unshortened
+          elsif previous.include? unshortened
+            stop = true
+            puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
+          elsif siteURI.scheme != unshortened.scheme
+            stop = true
+            puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
           else
-            siteURI = URI.parse unshortened
-            puts "Redirected to: #{unshortened} from #{site_link}"
+            puts "Redirect found: #{siteURI} -> #{unshortened}"
+            siteURI = unshortened
+            previous << unshortened
           end
-          previous = siteURI
-          links_back = (unshortened == @meURI.to_s)
+
+          if siteURI == @meURI
+            stop = true
+            return true
+          end
         end
       end
 
     end
 
-    # if links_back
-    #   @links << {
-    #     :url => link,
-    #     :me_links => links_to
-    #   }
-    # end
-    links_back
+    # Returns before this point
+  end
+
+  FOLLOW_OPTIONS = {
+    :timeout => 2
+  }
+
+  # Follow the given URI (object) for a single redirect, and return nil if no redirect is returned
+  def self.follow uri, options=FOLLOW_OPTIONS
+    return nil if uri.nil?
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.open_timeout = options[:timeout]
+    http.read_timeout = options[:timeout]
+    http.use_ssl = true if uri.scheme == "https"
+
+    response = http.request_head(uri.path.empty? ? '/' : uri.path) rescue nil
+
+    if response.is_a? Net::HTTPRedirection and response['location'] then
+      URI.parse response['location']
+    else
+      nil
+    end
   end
 
 end
