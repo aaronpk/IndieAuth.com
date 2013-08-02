@@ -599,13 +599,6 @@ class Controller < Sinatra::Base
     erb :session
   end
 
-  # get '/session' do 
-  #   @session = session
-  #   puts session
-  #   title "Session"
-  #   erb :session
-  # end
-
   def json_error(code, data)
     halt code, {
         'Content-Type' => 'application/json;charset=UTF-8',
