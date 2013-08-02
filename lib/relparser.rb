@@ -1,5 +1,9 @@
 class RelParser
 
+  class InsecureRedirectError < Exception
+    attr_accessor :message
+  end
+
   def self.sms_regex
     /sms:\/?\/?([0-9\-+]+)/
   end
@@ -25,7 +29,7 @@ class RelParser
     end
   
     # Normalize
-    @meURI.scheme = "http" if @meURI.scheme == "https"
+    #@meURI.scheme = "http" if @meURI.scheme == "https"
     @meURI.path = "/" if @meURI.path == ""  
   end
 
@@ -41,7 +45,37 @@ class RelParser
     if @page.nil?
       puts "<<<<<<< FETCHING #{@url} >>>>>>>"
       begin
-        @page = @agent.get @url
+        # Follow redirects to the end checking for cross-protocol links (http->https)
+        stop = false
+        previous = [] # used to prevent redirect loops
+        url = URI.parse @url
+        secure = true
+        while stop == false
+          unshortened = RelParser.follow url
+          if unshortened == nil
+            stop = true
+          elsif previous.include? unshortened
+            stop = true
+            puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
+          elsif url.scheme != unshortened.scheme
+            stop = true
+            secure = false
+            puts "Stopping because an insecure redirect was found :: #{url} -> #{unshortened}"
+            e = InsecureRedirectError.new
+            e.message = "Insecure redirect error. #{url.scheme} redirected to #{unshortened.scheme}. To fix, link to #{unshortened} directly."
+            raise e
+          else
+            puts "Redirect found: #{url} -> #{unshortened}"
+            url = unshortened
+            previous << unshortened
+          end
+        end
+
+        if secure == false
+          return []
+        end
+
+        @page = @agent.get url.to_s
       rescue => e # catch all errors and return a blank list
         puts e
         return []
@@ -57,6 +91,8 @@ class RelParser
   # Check whether an HTML page actually contains a link to the given profile
   def links_to(profile)
     load_page
+
+    return false if @page.nil?
 
     @page.links.each do |link|
       if link.rel? "me"
@@ -139,7 +175,9 @@ class RelParser
     begin
       links_to = site_parser.rel_me_links
     rescue SocketError
-      return false
+      return false, "Error trying to connect to #{link}"
+    rescue InsecureRedirectError => e
+      return false, e.message
     end
 
     puts "==========="
@@ -150,6 +188,7 @@ class RelParser
     # Find any that match the user's entered "me" link
 
     # Continue searching through links and follow redirects, and stop when a match is found
+    insecure_redirect_present = false
     links_to.each do |site_link|
       siteURI = URI.parse site_link
 
@@ -163,8 +202,8 @@ class RelParser
         if siteURI == @meURI
           stop = true
           puts "Found match at: #{siteURI.to_s}"
-          return true
-          
+          return true, nil
+
         else
           # Check if siteURI is a redirect
           unshortened = RelParser.follow siteURI
@@ -178,6 +217,14 @@ class RelParser
           elsif siteURI.scheme != unshortened.scheme
             stop = true
             puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
+            # If this link is otherwise a match, surface the redirect error
+            a = unshortened.clone
+            b = @meURI.clone
+            a.scheme = "http"
+            b.scheme = "http"
+            if a == b
+              insecure_redirect_present = unshortened
+            end
           else
             puts "Redirect found: #{siteURI} -> #{unshortened}"
             siteURI = unshortened
@@ -186,14 +233,20 @@ class RelParser
 
           if siteURI == @meURI
             stop = true
-            return true
+            return true, nil
           end
         end
       end
 
     end
 
-    # Returns before this point
+    # Returns here only if no links were found on the site
+    if insecure_redirect_present
+      error_description = "Insecure redirect error. To fix this, link to #{insecure_redirect_present} directly."
+    else
+      error_description = nil
+    end
+    return false, error_description
   end
 
   FOLLOW_OPTIONS = {

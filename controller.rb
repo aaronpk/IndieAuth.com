@@ -81,9 +81,10 @@ class Controller < Sinatra::Base
 
     if provider.code == 'sms' or provider.code == 'email'
       verified = true
+      error_description = nil
     else
       # This does an HTTP request
-      verified = me_parser.verify_link profile, profile_parser
+      verified, error_description = me_parser.verify_link profile, profile_parser
     end
 
     if verified
@@ -91,7 +92,7 @@ class Controller < Sinatra::Base
       profile_record.save
     end
 
-    return provider, profile_record, verified
+    return provider, profile_record, verified, error_description
   end
 
   def auth_param_setup
@@ -109,8 +110,8 @@ class Controller < Sinatra::Base
       json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'}
     end
 
-    provider, profile_record, verified = verify_user_profile me_parser, profile, user
-    return me, profile, user, provider, profile_record, verified
+    provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
+    return me, profile, user, provider, profile_record, verified, error_description
   end
 
   # 1. Begin the auth process
@@ -186,7 +187,7 @@ class Controller < Sinatra::Base
   #  * me=example.com
   #  * profile=provider.com/user/xxxxx
   get '/auth/verify_link.json' do
-    me, profile, user, provider, profile_record, verified = auth_param_setup
+    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
     if false # TODO: if provider is openid
       auth_path = "/auth/start?openid_url=#{profile}&me=#{me}"
@@ -199,12 +200,13 @@ class Controller < Sinatra::Base
       profile: profile, 
       provider: provider.code, 
       verified: verified,
+      error_description: error_description,
       auth_path: (verified ? auth_path : false)
     }
   end
 
   get '/auth/send_sms.json' do
-    me, profile, user, provider, profile_record, verified = auth_param_setup
+    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
     if provider.nil? or provider.code != 'sms'
       json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
@@ -248,7 +250,7 @@ class Controller < Sinatra::Base
   end
 
   get '/auth/verify_sms.json' do
-    me, profile, user, provider, profile_record, verified = auth_param_setup
+    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
     if provider.nil? or provider.code != 'sms'
       json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
@@ -443,7 +445,7 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    provider, profile_record, verified = verify_user_profile me_parser, profile, user
+    provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
 
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]

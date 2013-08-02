@@ -217,7 +217,13 @@ function update_provider_status(link, data, i) {
     set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
     $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
   } else if(data.verified == false) {
-    set_provider_status(i, 'error', 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.');
+    var message;
+    if(data.error_description) {
+      message = data.error_description;
+    } else {
+      message = 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.';
+    }
+    set_provider_status(i, 'error', message);
   } else {
     set_provider_status(i, 'error', 'An unknown error occurred with this provider.');
   }
@@ -226,21 +232,24 @@ function update_provider_status(link, data, i) {
 }
 
 function provider_verification_finished() {
+
+  if($("#profiles .status_img.verified").length == 0 && $("#profiles .status_img.loading").length == 0) {
+    $(".loading_message").hide();
+    $(".unsupported_links_error").show();
+  } else {
+    $("#num_providers").html($("#profiles .status_img.verified").length);
+    $(".unsupported_links_error").hide();
+    $(".loading_message").hide();
+    $(".continue_message").show();
+  }
+  update_progress_bar();
+
   // Check if all the providers are done being checked, if so, verify there is at least one valid one
   if($("#profiles .status_img.loading").length == 0) {
-    update_progress_bar();
+    $(".continue_message .rescan-button").show();
     complete_progress_bar();
-
-    if($("#profiles .status_img.verified").length == 0) {
-      $(".loading_message").hide();
-      $(".unsupported_links_error").show();
-    } else {
-      $("#num_providers").html($("#profiles .status_img.verified").length);
-      $(".loading_message").hide();
-      $(".continue_message").show();
-    }
   } else {
-    update_progress_bar();
+    $(".continue_message .rescan-button").hide();    
   }
 }
 
