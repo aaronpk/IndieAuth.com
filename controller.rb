@@ -241,6 +241,7 @@ class Controller < Sinatra::Base
       redirect_uri = URI.parse login.redirect_uri
       p = Rack::Utils.parse_query redirect_uri.query
       p['token'] = login.token
+      p['me'] = login.user.href
       redirect_uri.query = Rack::Utils.build_query p
       redirect_uri = redirect_uri.to_s 
     else
