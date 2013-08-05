@@ -245,7 +245,7 @@ class Controller < Sinatra::Base
       redirect_uri.query = Rack::Utils.build_query p
       redirect_uri = redirect_uri.to_s 
     else
-      redirect_uri = "/success?token=#{login.token}"
+      redirect_uri = "/success?token=#{login.token}&me=#{URI.encode_www_form_component(login.user.href)}"
     end
     return redirect_uri
   end
@@ -514,15 +514,7 @@ class Controller < Sinatra::Base
       else
         login.complete = true
         login.save
-        if redirect_uri
-          redirect_uri = URI.parse redirect_uri
-          params = Rack::Utils.parse_query redirect_uri.query
-          params['token'] = token
-          redirect_uri.query = Rack::Utils.build_query params
-          redirect redirect_uri.to_s
-        else
-          redirect "/success?token=#{token}"
-        end
+        redirect build_redirect_uri login
       end
     end
   end
