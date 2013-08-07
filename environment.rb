@@ -27,13 +27,6 @@ class Controller < Sinatra::Base
     register Sinatra::Namespace
     helpers  Sinatra::UserAgentHelpers
 
-    # Set controller names so we can map them in the config.ru file.
-    set :controller_names, []
-    Dir.glob('controllers/*.rb').each do |file|
-      settings.controller_names << File.basename(file, '.rb')
-#      require_relative "./#{file}"
-    end
-
     use Rack::Session::Cookie, :key => 'rel.me.auth',
                                :path => '/',
                                :expire_after => 2592000,
@@ -46,10 +39,10 @@ class Controller < Sinatra::Base
     use OmniAuth::Builder do
       Provider.all.each do |p|
         # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
-        #if p['code'] == 
-        if p['code'] == 'google_oauth2'
+        case p['code']
+        when 'google_oauth2'
           provider p['code'].to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'userinfo.profile,plus.me'} if p['client_id']
-        elsif p['code'] == 'sms'
+        when 'sms'
           # HI!
         else
           provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
