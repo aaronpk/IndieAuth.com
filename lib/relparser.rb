@@ -110,19 +110,22 @@ class RelParser
 
     return links if @page.nil?
 
-    @page.search("*[rel=me]").each do |link|
-      puts " --> #{link.attribute("href").value}"
-      href = link.attribute("href").value
+    @page.search("a,link").each do |link|
+      rels = (link.attribute("rel").to_s || '').split(/ /)
+      if rels.include? 'me'
+        puts " --> #{link.attribute("href").value} rel=#{link.attribute("rel")}"
+        href = link.attribute("href").value
 
-      if href.match RelParser.sms_regex or href.match RelParser.email_regex
-        links << href
-      else
-        begin
-          original = URI.parse href
+        if href.match RelParser.sms_regex or href.match RelParser.email_regex
           links << href
-        rescue => e
-          # Ignore exceptions on invalid urls
-          puts "Error parsing #{href}"
+        else
+          begin
+            original = URI.parse href
+            links << href
+          rescue => e
+            # Ignore exceptions on invalid urls
+            puts "Error parsing #{href}"
+          end
         end
       end
     end
