@@ -94,10 +94,10 @@ class RelParser
 
     return false if @page.nil?
 
-    @page.links.each do |link|
-      if link.rel? "me"
-        puts link.href
-        return true if link.href == profile
+    @page.search("a,link").each do |link|
+      rels = (link.attribute("rel").to_s || '').split(/ /)
+      if rels.include? 'me'
+        return true if link.attribute("href").value == profile
       end
     end
 
