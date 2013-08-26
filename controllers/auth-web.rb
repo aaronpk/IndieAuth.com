@@ -74,8 +74,11 @@ class Controller < Sinatra::Base
 
     if verified
       profile_record.verified = true
-      profile_record.save
+      profile_record.active = true
+    else
+      profile_record.active = false  # Prevent this option from appearing next time the cached list is retrieved
     end
+    profile_record.save
 
     return provider, profile_record, verified, error_description
   end
@@ -126,7 +129,7 @@ class Controller < Sinatra::Base
     # If there's already a user record, look up all their existing profiles
     @user = User.first :href => @me.sub(/(\/)+$/,'')
     unless @user.nil?
-      @profiles = @user.profiles
+      @profiles = @user.profiles.all(:active => true)
     end
 
     @redirect_uri = params[:redirect_uri]
@@ -150,8 +153,14 @@ class Controller < Sinatra::Base
     user.me_links = links.to_json
     user.save
 
-    # TODO: Figure out how to delete all old profiles that aren't linked on the user's page anymore
-
+    # Delete all old profiles that aren't linked on the user's page anymore
+    user.profiles.each do |profile|
+      if !links.include? profile.href
+        puts "Link to #{profile.href} no longer found, deactivating"
+        profile.active = false
+        profile.save
+      end
+    end
 
     # Check each link to see if it's a supported provider
     links_response = []

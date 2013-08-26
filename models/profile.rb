@@ -8,6 +8,8 @@ class Profile
   property :href, String, :length => 255
   property :verified, Boolean, :default => false
 
+  property :active, Boolean, :default => true
+
   property :created_at, DateTime
   property :updated_at, DateTime
 
