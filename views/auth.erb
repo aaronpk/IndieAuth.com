@@ -350,7 +350,7 @@ function start_scan() {
     <div class="alert alert-success">
       <span id="num_providers">1</span> supported and verified providers were found!
       <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
-      <span class="last-refresh"><%= @user.last_refresh %></span>
+      <span class="last-refresh"><%= (@user ? @user.last_refresh : '') %></span>
     </div>
   </div>
 
