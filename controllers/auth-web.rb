@@ -121,6 +121,12 @@ class Controller < Sinatra::Base
     title "IndieAuth - Sign in with your domain name"
     @me = params[:me]
 
+    if @me.nil?
+      @message = 'No "me" value was specified'
+      title "Error"
+      return erb :error      
+    end
+
     if !@me.match(/^http/)
       @me = "http://#{@me}"
     end
