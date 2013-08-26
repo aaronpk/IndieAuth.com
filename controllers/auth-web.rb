@@ -151,6 +151,7 @@ class Controller < Sinatra::Base
 
     # Save the complete list of links to the user object
     user.me_links = links.to_json
+    user.last_refresh_at = DateTime.now
     user.save
 
     # Delete all old profiles that aren't linked on the user's page anymore

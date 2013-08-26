@@ -276,6 +276,8 @@ $(function(){
     $(".unsupported_links_error").hide();
     $(".continue_message").hide();
 
+    $(".last-refresh").html("");
+
     // Start a new scan
     start_scan();
   });
@@ -348,6 +350,7 @@ function start_scan() {
     <div class="alert alert-success">
       <span id="num_providers">1</span> supported and verified providers were found!
       <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+      <span class="last-refresh"><%= @user.last_refresh %></span>
     </div>
   </div>
 
@@ -416,7 +419,7 @@ function start_scan() {
 <style type="text/css">
 
   .wrapper {
-    width: 450px;
+    width: 500px;
     margin: 20px auto;
   }
 
@@ -450,6 +453,12 @@ function start_scan() {
   }
   .status_img.error {
     background-image: url(/img/profile-error.png);
+  }
+
+  .continue_message .last-refresh {
+    font-style: italic;
+    float: right;
+    margin-right: 10px;
   }
 
   #profiles .status {
