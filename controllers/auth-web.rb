@@ -161,8 +161,9 @@ class Controller < Sinatra::Base
     user.save
 
     # Delete all old profiles that aren't linked on the user's page anymore
+    # Except totp!
     user.profiles.each do |profile|
-      if !links.include? profile.href
+      if !['totp','server'].include? profile.provider.code and !links.include? profile.href
         puts "Link to #{profile.href} no longer found, deactivating"
         profile.active = false
         profile.save
