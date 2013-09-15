@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org/'
 
 gem 'sinatra',             :require => 'sinatra/base'
 gem 'sinatra-namespace',   :require => 'sinatra/namespace'
@@ -19,6 +19,8 @@ gem 'omniauth-github'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-twitter'
 gem 'omniauth-openid'
+
+gem 'ruby-openid'
 
 gem 'mechanize'
 gem 'unshorten',	">=0.2.1"

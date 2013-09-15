@@ -22,6 +22,17 @@ end
 SiteConfig = RelMeAuth::SiteConfig.new YAML.load_file('config.yml')[ENV['RACK_ENV']] if File.exists?('config.yml')
 
 class Controller < Sinatra::Base
+  # before do
+  #   puts "================================="
+  #   puts request.env['REQUEST_PATH']
+  #   jj params
+  # end
+
+  def self.get_or_post(url,&block)
+    get(url,&block)
+    post(url,&block)
+  end
+
   configure do
 
     register Sinatra::Namespace
@@ -34,7 +45,8 @@ class Controller < Sinatra::Base
 
     set :root, File.dirname(__FILE__)
     set :show_exceptions, true
-    set :raise_errors,    false
+    set :raise_errors,    true
+    enable :logging
 
     use OmniAuth::Builder do
       Provider.all.each do |p|
