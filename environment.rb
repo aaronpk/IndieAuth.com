@@ -38,7 +38,7 @@ class Controller < Sinatra::Base
     register Sinatra::Namespace
     helpers  Sinatra::UserAgentHelpers
 
-    use Rack::Session::Cookie, :key => 'rel.me.auth',
+    use Rack::Session::Cookie, :key => 'indieauth.com',
                                :path => '/',
                                :expire_after => 2592000,
                                :secret => SiteConfig.session_secret

@@ -47,6 +47,8 @@ class Controller < Sinatra::Base
 
     if oidreq.kind_of? OpenID::Server::CheckIDRequest
       # Save all the openid.* parameters in a session, and redirect to /auth
+      puts "Saving openid params in session"
+      puts "Length: #{params.to_json.length}"
       session[:openid_params] = params.to_json
 
       redirect "/auth?me=#{params['openid.identity']}&redirect_uri=#{URI.encode_www_form_component('/openid/complete')}"
@@ -83,6 +85,12 @@ class Controller < Sinatra::Base
     @domain = login.user['href']
 
     # Successfully authenticated as @domain
+
+    if session[:openid_params].nil?
+      @message = "Missing OpenID session data"
+      title "OpenID Error"
+      return erb :error
+    end
 
     openid_params = JSON.parse(session[:openid_params])
     puts 'Saved openid params'
