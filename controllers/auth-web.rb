@@ -251,7 +251,6 @@ class Controller < Sinatra::Base
       :token => Login.generate_token,
       :redirect_uri => params[:redirect_uri]
 
-    session[:redirect_uri] = params[:redirect_uri]
     session[:attempted_token] = login[:token]
     session[:attempted_profile] = profile
     puts "Attempting authentication for #{session[:attempted_username]} via #{provider['code']}"
@@ -296,9 +295,9 @@ class Controller < Sinatra::Base
       token = session[:attempted_token]
       login = Login.first :token => token
 
-      redirect_uri = session[:redirect_uri]
-
-      session.clear
+      session[:attempted_userid] = nil
+      session[:attempted_profile] = nil
+      session[:attempted_token] = nil
 
       if login.nil?
         @message = "Something went horribly wrong!"
