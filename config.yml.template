@@ -1,3 +1,30 @@
 development:
-  root: http://example.com
+  root: http://localhost:9393
+  database_url: "mysql://root@127.0.0.1/indieauth"
   session_secret: PUT SOMETHING HERE
+  ga_id: UA-XXXXXXXX
+  foursquare:
+    client_id: 
+    client_secret: 
+  github:
+    client_id: 
+    client_secret: 
+  google:
+    client_id: 
+    client_secret: 
+  facebook:
+    app_id: 
+    app_secret: 
+  flickr:
+    api_key: 
+    api_secret: 
+  twitter:
+    consumer_key: 
+    consumer_secret: 
+  twilio:
+    sid: 
+    token: 
+    number: 
+  appnet:
+    client_id: 
+    client_secret: 
