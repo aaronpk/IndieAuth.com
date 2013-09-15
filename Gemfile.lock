@@ -1,5 +1,5 @@
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
     addressable (2.2.8)
     backports (2.7.0)
@@ -174,6 +174,7 @@ DEPENDENCIES
   rainbows
   rake
   rest-client
+  ruby-openid
   shotgun
   sinatra
   sinatra-namespace

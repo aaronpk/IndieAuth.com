@@ -6,54 +6,68 @@ namespace :db do
     init
     DataMapper.auto_migrate!
 
-    facebook = Provider.create ({
-          :code => 'facebook',
-          :client_id => SiteConfig.facebook.app_id,
-          :client_secret => SiteConfig.facebook.app_secret,
-          :regex_username => 'https?:\/\/(?:www\.)?facebook\.com\/([^\/]+)'
-        })
+    if SiteConfig.facebook && SiteConfig.facebook.app_id
+      facebook = Provider.create ({
+            :code => 'facebook',
+            :client_id => SiteConfig.facebook.app_id,
+            :client_secret => SiteConfig.facebook.app_secret,
+            :regex_username => 'https?:\/\/(?:www\.)?facebook\.com\/([^\/]+)'
+          })
+    end
 
-    flickr = Provider.create ({
-          :code => 'flickr',
-          :client_id => SiteConfig.flickr.api_key,
-          :client_secret => SiteConfig.flickr.api_secret,
-          :regex_username => 'https?:\/\/(?:www\.)?flickr\.com\/(?:photos\/)?([^\/]+)'
-        })
+    if SiteConfig.flickr && SiteConfig.flickr.api_key
+      flickr = Provider.create ({
+            :code => 'flickr',
+            :client_id => SiteConfig.flickr.api_key,
+            :client_secret => SiteConfig.flickr.api_secret,
+            :regex_username => 'https?:\/\/(?:www\.)?flickr\.com\/(?:photos\/)?([^\/]+)'
+          })
+    end
 
-    geoloqi = Provider.create ({
-          :code => 'geoloqi',
-          :client_id => SiteConfig.geoloqi.api_key,
-          :client_secret => SiteConfig.geoloqi.api_secret,
-          :regex_username => 'https?:\/\/(?:www\.)?geoloqi\.com\/([^\/]+)'
-        })
+    if SiteConfig.geoloqi && SiteConfig.geoloqi.api_key
+      geoloqi = Provider.create ({
+            :code => 'geoloqi',
+            :client_id => SiteConfig.geoloqi.api_key,
+            :client_secret => SiteConfig.geoloqi.api_secret,
+            :regex_username => 'https?:\/\/(?:www\.)?geoloqi\.com\/([^\/]+)'
+          })
+    end
 
-    github = Provider.create ({
-          :code => 'github',
-          :client_id => SiteConfig.github.client_id,
-          :client_secret => SiteConfig.github.client_secret,
-          :regex_username => 'https?:\/\/(?:www\.)?github\.com\/([^\/]+)'
-        })
+    if SiteConfig.github && SiteConfig.github.api_key
+      github = Provider.create ({
+            :code => 'github',
+            :client_id => SiteConfig.github.client_id,
+            :client_secret => SiteConfig.github.client_secret,
+            :regex_username => 'https?:\/\/(?:www\.)?github\.com\/([^\/]+)'
+          })
+    end
 
-    google = Provider.create ({
-          :code => 'google',
-          :client_id => SiteConfig.google.client_id,
-          :client_secret => SiteConfig.google.client_secret,
-          :regex_username => 'https?:\/\/(?:www\.)?profiles\.google\.com\/([^\/]+)'
-        })
+    if SiteConfig.google && SiteConfig.google.api_key
+      google = Provider.create ({
+            :code => 'google',
+            :client_id => SiteConfig.google.client_id,
+            :client_secret => SiteConfig.google.client_secret,
+            :regex_username => 'https?:\/\/(?:www\.)?profiles\.google\.com\/([^\/]+)'
+          })
+    end
 
-    twitter = Provider.create ({
-          :code => 'twitter',
-          :client_id => SiteConfig.twitter.consumer_key,
-          :client_secret => SiteConfig.twitter.consumer_secret,
-          :regex_username => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'
-        })
+    if SiteConfig.twitter && SiteConfig.twitter.api_key
+      twitter = Provider.create ({
+            :code => 'twitter',
+            :client_id => SiteConfig.twitter.consumer_key,
+            :client_secret => SiteConfig.twitter.consumer_secret,
+            :regex_username => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'
+          })
+    end
 
-    appnet = Provider.create ({
-          :code => 'appnet',
-          :client_id => SiteConfig.appnet.client_id,
-          :client_secret => SiteConfig.appnet.client_secret,
-          :regex_username => 'https?:\/\/alpha\.app\.net\/([^\/]+)'
-        })
+    if SiteConfig.appnet && SiteConfig.appnet.api_key
+      appnet = Provider.create ({
+            :code => 'appnet',
+            :client_id => SiteConfig.appnet.client_id,
+            :client_secret => SiteConfig.appnet.client_secret,
+            :regex_username => 'https?:\/\/alpha\.app\.net\/([^\/]+)'
+          })
+    end
 
     sms = Provider.create ({
           :code => 'sms'
