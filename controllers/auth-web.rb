@@ -95,7 +95,7 @@ class Controller < Sinatra::Base
 
     # Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
     if !me_parser.links_to profile
-      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'}
+      json_error 400, {error: 'invalid_input', error_description: "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\""}
     end
 
     provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
@@ -234,7 +234,7 @@ class Controller < Sinatra::Base
     links = find_all_relme_links me_parser
 
     if !links.include?(profile)
-      @message = 'Parameter "profile" must be one of the rel=me links in the site specified in the "me" parameter'
+      @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."
       title "Error"
       return erb :error
     end
