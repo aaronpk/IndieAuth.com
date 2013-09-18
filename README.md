@@ -8,6 +8,17 @@ It works by linking your website to one or more authentication providers such as
 See more information and tutorials at [indieauth.com](https://indieauth.com/)
 
 
+### Setup
+
+Copy `config.yml.template` to `config.yml` and fill in all the details. You'll need to register OAuth apps at any of the providers you wish to support.
+
+Bootstrap the database:
+
+```
+$ bundle exec rake db:bootstrap
+```
+
+
 ### Contributing
 
 By submitting code to this project, you agree to irrevocably release it under the same license as this project.
