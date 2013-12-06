@@ -63,8 +63,8 @@
       <h3>Try It!</h3>
 
       <form action="/auth" method="get" class="well">
-        <label>Web Address:</label>
-        <input type="text" name="me" class="span3" placeholder="yourdomain.com" />
+        <label for="indie_auth_url">Web Address:</label>
+        <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
         <p><button type="submit" class="btn">Sign In</button></p>
         <input type="hidden" name="redirect_uri" value="<%= SiteConfig.root %>/success" />
       </form>
