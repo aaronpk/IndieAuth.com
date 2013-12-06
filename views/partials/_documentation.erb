@@ -6,8 +6,8 @@
 
       <p><pre><code><%== 
 '<form action="http://indieauth.com/auth" method="get">
-  <label>Web Address:</label>
-  <input type="text" name="me" placeholder="yourdomain.com" />
+  <label for="indie_auth_url">Web Address:</label>
+  <input id="indie_auth_url" type="text" name="me" placeholder="yourdomain.com" />
   <p><button type="submit">Sign In</button></p>
   <input type="hidden" name="redirect_uri" value="http://example.com/auth" />
 </form>' %></code></pre></p>
@@ -72,8 +72,8 @@ Content-Type: application/json;charset=UTF-8
     </div>
     <div class="span4" style="padding-top: 63px;">
       <form action="/auth" method="get" class="well">
-        <label>Web Address:</label>
-        <input type="text" name="me" class="span3" placeholder="yourdomain.com" />
+        <label for="indie_auth_url2">Web Address:</label>
+        <input id="indie_auth_url2" type="text" name="me" class="span3" placeholder="yourdomain.com" />
         <p><button type="submit" class="btn">Sign In</button></p>
         <input type="hidden" name="redirect_uri" value="http://<%= request.host %>/success" />
       </form>
