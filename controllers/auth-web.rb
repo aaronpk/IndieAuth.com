@@ -106,14 +106,24 @@ class Controller < Sinatra::Base
     if login.redirect_uri
       redirect_uri = URI.parse login.redirect_uri
       p = Rack::Utils.parse_query redirect_uri.query
-      p['token'] = login.token
+      p[session[:response_type]] = login.token
       p['me'] = login.user.href
+      p['state'] = login.state if login.state
       redirect_uri.query = Rack::Utils.build_query p
       redirect_uri = redirect_uri.to_s 
     else
-      redirect_uri = "/success?token=#{login.token}&me=#{URI.encode_www_form_component(login.user.href)}"
+      redirect_uri = "/success?#{login.response_type}=#{login.token}&me=#{URI.encode_www_form_component(login.user.href)}"
+      redirect_uri = "#{redirect_uri}&state=#{login.state}" if login.state
     end
     return redirect_uri
+  end
+
+  def save_response_type
+    # If a client_id is specified, assume this is a new client and use "code" for the name instead
+    session[:response_type] = 'token'
+    if params[:client_id]
+      session[:response_type] = 'code'
+    end
   end
 
   # 1. Begin the auth process
@@ -137,6 +147,9 @@ class Controller < Sinatra::Base
     unless @user.nil?
       @profiles = @user.profiles.all(:active => true)
     end
+
+    save_response_type
+    session[:state] = params[:state]
 
     @redirect_uri = params[:redirect_uri]
     @providers = Provider.all(:home_page.not => '')
@@ -249,7 +262,8 @@ class Controller < Sinatra::Base
       :profile => profile_record, 
       :complete => false,
       :token => Login.generate_token,
-      :redirect_uri => params[:redirect_uri]
+      :redirect_uri => params[:redirect_uri],
+      :state => session[:state]
 
     session[:attempted_token] = login[:token]
     session[:attempted_profile] = profile
