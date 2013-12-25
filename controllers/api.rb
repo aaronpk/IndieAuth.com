@@ -71,8 +71,8 @@ class Controller < Sinatra::Base
       json_error 404, {error: "invalid_request", error_description: "The code provided was not found"}
     end
 
-    if login.used_count > 0
-      json_error 400, {error: "invalid_request", error_description: "The code provided has already been used"}
+    if login.created_at.to_time.to_i < Time.now.to_i - 30  # auth codes are only valid for 30 seconds
+      json_error 400, {error: "invalid_request", error_description: "The auth code has expired (valid for 30 seconds)"}
     end
 
     if login.redirect_uri != params[:redirect_uri]
@@ -87,7 +87,10 @@ class Controller < Sinatra::Base
     login.used_count = login.used_count + 1
     login.save
 
-    json_response 200, {:me => login.user['href']}
+    json_response 200, {
+      :me => login.user['href'],
+      :scope => login.scope
+    }
   end
 
 end

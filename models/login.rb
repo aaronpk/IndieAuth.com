@@ -12,6 +12,7 @@ class Login
   property :used_count, Integer, :default => 0
 
   property :state, String, :length => 255
+  property :scope, String, :length => 255
 
   property :sms_code, String, :length => 4, :default => ''
 

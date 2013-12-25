@@ -328,7 +328,23 @@ function start_scan() {
 
 <div class="wrapper">
 
-  <h3>Authenticating as <%= @me %></h3>
+  <% if params[:client_id] %>
+    <h3>Authorize <%= params[:client_id].gsub(/https?:\/\//, '') %> to access <%= @me.gsub(/https?:\/\//, '') %>?</h3>
+
+    <div class="continue_message" style="display: none;">
+      <p>The app <b><%= params[:client_id] %></b> would like to access your site, <b><%= @me %></b>.</p>
+      <% if params[:scope] %>
+        <p>Requested <a href="http://indiewebcamp.com/scope">scopes</a>:<br>
+          <ul>
+            <%= params[:scope].split(' ').map{|s| "<li>#{s}</li>"}.join %>
+          </ul>
+        </p>
+      <% end %>
+      <p>Authenticate using one of the methods below to approve this request.</p>
+    </div>
+  <% else %>
+    <h3>Authenticating as <%= @me %></h3>
+  <% end %>
 
   <div class="loading_message">
     <div class="alert alert-info">Finding rel="me" links on <%= @me %></div>
@@ -393,13 +409,15 @@ function start_scan() {
     <p>Ensure your profiles link back to your home page.</p>
     <p><a href="/setup">Full Setup Instructions</a></p>
   </div>
-  <div class="continue_message" style="display: none;">
-    <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account on any of the providers.</p>
+  <% if !params[:client_id] %>
+    <div class="continue_message" style="display: none;">
+      <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account on any of the providers.</p>
 
-    <% if @redirect_uri %>
-      <div class="redirect">Will redirect to <%= @redirect_uri %> to finish logging in to the site.</div>
-    <% end %>
-  </div>
+      <% if @redirect_uri %>
+        <div class="redirect">Will redirect to <%= @redirect_uri %> to finish logging in to the site.</div>
+      <% end %>
+    </div>
+  <% end %>
 
 </div>
 

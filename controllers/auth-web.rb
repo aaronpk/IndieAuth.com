@@ -150,6 +150,7 @@ class Controller < Sinatra::Base
 
     save_response_type
     session[:state] = params[:state]
+    session[:scope] = params[:scope]
 
     @redirect_uri = params[:redirect_uri]
     @providers = Provider.all(:home_page.not => '')
@@ -263,7 +264,8 @@ class Controller < Sinatra::Base
       :complete => false,
       :token => Login.generate_token,
       :redirect_uri => params[:redirect_uri],
-      :state => session[:state]
+      :state => session[:state],
+      :scope => session[:scope]
 
     session[:attempted_token] = login[:token]
     session[:attempted_profile] = profile

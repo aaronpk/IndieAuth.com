@@ -14,7 +14,8 @@ class Controller < Sinatra::Base
       :token => Login.generate_token,
       :redirect_uri => params[:redirect_uri],
       :sms_code => Login.generate_sms_code,
-      :state => session[:state]
+      :state => session[:state],
+      :scope => session[:scope]
 
     # Send the SMS now!
     @twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
@@ -90,7 +91,8 @@ class Controller < Sinatra::Base
           :complete => true,
           :token => Login.generate_token,
           :redirect_uri => params[:redirect_uri],
-          :state => session[:state]
+          :state => session[:state],
+          :scope => session[:scope]
 
         redirect_uri = build_redirect_uri login
 
@@ -197,7 +199,8 @@ class Controller < Sinatra::Base
         :complete => true,
         :token => Login.generate_token,
         :redirect_uri => params[:redirect_uri],
-        :state => session[:state]
+        :state => session[:state],
+        :scope => session[:scope]
 
       redirect_uri = build_redirect_uri login
 
