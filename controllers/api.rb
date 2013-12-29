@@ -1,11 +1,7 @@
 class Controller < Sinatra::Base
 
   def json_error(code, data)
-    halt code, {
-        'Content-Type' => 'application/json;charset=UTF-8',
-        'Cache-Control' => 'no-store'
-      }, 
-      data.to_json
+    json_response code, data
   end
 
   def json_response(code, data)
@@ -14,6 +10,18 @@ class Controller < Sinatra::Base
         'Cache-Control' => 'no-store'
       }, 
       data.to_json
+  end
+
+  def http_error(code, data)
+    http_response code, data
+  end
+
+  def http_response(code, data)
+    halt code, {
+      'Content-Type' => 'application/x-www-form-urlencoded',
+      'Cache-Control' => 'no-store'
+    },
+    URI.encode_www_form(data)
   end
 
   get '/session' do
@@ -63,31 +71,31 @@ class Controller < Sinatra::Base
     code = params[:code]
 
     if code.nil?
-      json_error 400, {error: "invalid_request", error_description: "Missing 'code' parameter"}
+      http_error 400, {error: "invalid_request", error_description: "Missing 'code' parameter"}
     end
 
     login = Login.first :token => code
     if login.nil?
-      json_error 404, {error: "invalid_request", error_description: "The code provided was not found"}
+      http_error 404, {error: "invalid_request", error_description: "Invalid code provided"}
     end
 
     if login.created_at.to_time.to_i < Time.now.to_i - 30  # auth codes are only valid for 30 seconds
-      json_error 400, {error: "invalid_request", error_description: "The auth code has expired (valid for 30 seconds)"}
+      http_error 400, {error: "invalid_request", error_description: "The auth code has expired (valid for 30 seconds)"}
     end
 
     if login.redirect_uri != params[:redirect_uri]
-      json_error 400, {error: "invalid_request", error_description: "The 'redirect_uri' parameter did not match"}
+      http_error 400, {error: "invalid_request", error_description: "The 'redirect_uri' parameter did not match"}
     end
 
     if login.state != params[:state]
-      json_error 400, {error: "invalid_request", error_description: "The 'state' parameter did not match"}
+      http_error 400, {error: "invalid_request", error_description: "The 'state' parameter did not match"}
     end
 
     login.last_used_at = Time.now
     login.used_count = login.used_count + 1
     login.save
 
-    json_response 200, {
+    http_response 200, {
       :me => login.user['href'],
       :scope => login.scope
     }

@@ -329,7 +329,7 @@ function start_scan() {
 <div class="wrapper">
 
   <% if params[:client_id] %>
-    <h3>Authorize <%= params[:client_id].gsub(/https?:\/\//, '') %> to access <%= @me.gsub(/https?:\/\//, '') %>?</h3>
+    <h3>Allow <%= params[:client_id].gsub(/https?:\/\//, '') %> access to <%= @me.gsub(/https?:\/\//, '') %>?</h3>
 
     <div class="continue_message" style="display: none;">
       <p>The app <b><%= params[:client_id] %></b> would like to access your site, <b><%= @me %></b>.</p>
