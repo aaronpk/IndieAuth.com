@@ -56,6 +56,9 @@ class Controller < Sinatra::Base
           provider p['code'].to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'userinfo.profile,plus.me'} if p['client_id']
         when 'sms'
           # HI!
+        when 'github'
+          # Scope taken from http://developer.github.com/v3/oauth/#scopes
+          provider p['code'].to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'user:profile'} if p['client_id']
         else
           provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
         end
