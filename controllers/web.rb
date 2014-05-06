@@ -10,4 +10,9 @@ class Controller < Sinatra::Base
     erb :setup_instructions
   end
 
+  get '/history/?' do
+    title "The History of IndieAuth"
+    erb :history
+  end
+
 end

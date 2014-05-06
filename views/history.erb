@@ -1,3 +1,10 @@
+<%= partial :'partials/_banner' %>
+
+<div class="container">
+
+  <div class="row">
+    <div class="span6">
+
       <h2 id="history">The History of IndieAuth</h2>
 
       <p>By <a href="http://aaronparecki.com/" rel="author">Aaron Parecki</a></p>
@@ -11,4 +18,10 @@
       <p>What I needed was to write the RelMeAuth and OAuth client code once and be able to use it on any website needing authentication from here on out. I decided to build IndieAuth.com as a hosted service that anyone can easily use if they want to support RelMeAuth logins. By abstracting our the rel="me" and OAuth client logic into a very simple HTTP+JSON interface, it is now possible to quickly write a web page needing authentication by relying on IndieAuth.com to do the legwork.</p>
 
       <p>In March 2012, I built a prototype of the site and <a href="http://indiewebcamp.com/irc/2012-03-28#t1333002549">gave a quick explanation</a> in the #indiewebcamp IRC channel. A few days later, I launched this site on indieauth.com!</p>
-      
+  
+    </div>
+  </div>
+
+</div>
+
+<%= partial :'partials/_footer' %>

@@ -4,13 +4,16 @@
       <p>The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
 
       <h3 id="faq-can-links-be-hidden">Can my rel="me" links be hidden on my home page?</h3>
-      <p>Yes, your rel="me" links do not need to be visible, but the html does need to be on your home page. You can hide the links with CSS.</p>
+      <p>Yes, your rel="me" links do not need to be visible, but the html does need to be on your home page. You can hide the links with CSS, or include them as &lt;link&gt; tags in your html head.</p>
 
       <h3 id="faq-require-users-have-own-domain">Does this require users to have their own domain name?</h3>
       <p>Yes, the assumption is that people are willing to <a href="http://indiewebcamp.com/why">own their online identities</a> in the form of a domain name. It is getting easier and easier to host content on your own domain name. See "<a href="http://indiewebcamp.com/Getting_Started">Getting Started on the Indie Web</a>"" for some suggestions, including mapping your domain to a Tumblr blog, or signing up for a simple web hosting service like <a href="http://www.dreamhost.com/r.cgi?426455">Dreamhost</a>.</p>
 
       <h3 id="faq-dependent-on-your-site">But doesn't this make me dependent on your site, indieauth.com?</h3>
-      <p>You are more than welcome to run this software on your own website! We continue to host indieauth.com for convenience, for people who don't want to invest the time to write OAuth code for providers over and over again. However, you are encouraged to run this software on your own site if you would like to support IndieAuth logins! Feel free to run your own IndieAuth server by <a href="https://github.com/aaronpk/IndieAuth">downloading the source code</a>, or you can implement the <a href="http://microformats.org/wiki/RelMeAuth">RelMeAuth</a> protocol directly.</p>
+      <p>This service exists for websites to use if they don't want to implement OAuth code for each provider. You are certainly encouraged to implement your own version if you wish, or you can <a href="https://github.com/aaronpk/IndieAuth">run an instance of this service</a> yourself.</p>
+
+      <h3 id="faq-what-if-indieauth-com-is-down">What if IndieAuth.com is down?</h3>
+      <p>If an application is using IndieAuth.com as an auth service and IndieAuth.com is down, then logins to that website will not work. However this is just the same as if that site's own internal auth service is down had they implemented it themselves. Because of this potential risk, it is possible that some apps may wish to run their own instance of this software or implement <a href="http://indiewebcamp.com/RelMeAuth">RelMeAuth</a> directly to avoid relying on a third party service, or the app may fall back to other auth servers.</p>
 
       <h3 id="faq-how-to-be-added-to-supported-providers">I run an authentication provider, how can I be added to the "supported providers" list?</h3>
       <p>
