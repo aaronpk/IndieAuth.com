@@ -244,8 +244,6 @@ function provider_verification_finished() {
   }
   update_progress_bar();
 
-  //rebind_keyboard_listeners();
-
   // Check if all the providers are done being checked, if so, verify there is at least one valid one
   if($("#profiles .status_img.loading").length == 0) {
     $(".continue_message .rescan-button").show();
@@ -261,14 +259,6 @@ function selected_profile() {
     return $(selected[0]);
   } else {
     return false;
-  }
-}
-
-function rebind_keyboard_listeners() {
-  // called after a new profile is added to the list
-  if($("#profiles li.selected") !== false) {
-    $("#profiles li").removeClass("selected");
-    $($("#profiles li")[0]).addClass("selected");
   }
 }
 
@@ -312,6 +302,10 @@ $(function(){
       case 13: // enter
         if(selected_profile() !== false) {
           // click the thing inside
+          $("#profiles li.selected a, #profiles li.selected .begin-auth")[0].click();
+        } else {
+          // nothing selected but they pressed enter, so sign in with the first
+          $($("#profiles li")[0]).addClass("selected");
           $("#profiles li.selected a, #profiles li.selected .begin-auth")[0].click();
         }
         break;
