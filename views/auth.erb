@@ -166,7 +166,7 @@ function verify_link_back(me, link, i, use_cached) {
 
   // Don't need to verify email or SMS links, provide the buttoms immediately
   if(link.provider == 'email') {
-    $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login" data-email="'+link.profile+'" />');
+    $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login begin-auth" data-email="'+link.profile+'" />');
     set_provider_status(i, 'verified', 'Click to authenticate using '+link.profile.replace(/mailto:/,''));
     set_up_email_auth();
     provider_verification_finished();
@@ -174,7 +174,7 @@ function verify_link_back(me, link, i, use_cached) {
   }
 
   if(link.provider == 'sms') {
-    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success sms-auth">'+format_sms_number(link.profile)+'</a>');
+    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success sms-auth begin-auth">'+format_sms_number(link.profile)+'</a>');
     set_provider_status(i, 'verified', 'Click to receive a verification code via SMS.');
     set_up_sms_auth();
     provider_verification_finished();
@@ -182,7 +182,7 @@ function verify_link_back(me, link, i, use_cached) {
   }
 
   if(link.provider == 'totp') {
-    $("#profile_"+i+" .link").html('<a href="#" class="btn btn-success totp-auth">Google Authenticator</a>');
+    $("#profile_"+i+" .link").html('<a href="#" class="btn btn-success totp-auth begin-auth">Google Authenticator</a>');
     set_provider_status(i, 'verified', 'Click to enter a TOTP code.');
     set_up_totp_auth();
     provider_verification_finished();
@@ -244,6 +244,8 @@ function provider_verification_finished() {
   }
   update_progress_bar();
 
+  rebind_keyboard_listeners();
+
   // Check if all the providers are done being checked, if so, verify there is at least one valid one
   if($("#profiles .status_img.loading").length == 0) {
     $(".continue_message .rescan-button").show();
@@ -253,9 +255,68 @@ function provider_verification_finished() {
   }
 }
 
+function selected_profile() {
+  var selected = $("#profiles li.selected");
+  if(selected.length > 0) {
+    return $(selected[0]);
+  } else {
+    return false;
+  }
+}
+
+function rebind_keyboard_listeners() {
+  // called after a new profile is added to the list
+  if($("#profiles li.selected") !== false) {
+    $("#profiles li").removeClass("selected");
+    $($("#profiles li")[0]).addClass("selected");
+  }
+}
+
 $(function(){
   $("#progress_bar .bar").tooltip({placement: "bottom"});
   update_progress_bar();
+
+  $("body").keydown(function(e) {
+    switch(e.keyCode) {
+      case 74: // j
+        if(selected_profile() == false) {
+          // If none is selected yet, select the first
+          $($("#profiles li")[0]).addClass("selected");
+        } else {
+          // Find the ID of this element, then set the next element to "selected"
+          var index = parseInt(selected_profile().attr("id").match(/_(\d+)/)[1]);
+          $("#profiles li").removeClass("selected");
+          if($("#profile_"+(index+1)).length == 0) {
+            index = -1;
+          }
+          $("#profile_"+(index+1)).addClass("selected");
+        }
+        break;
+
+      case 75: // k
+        if(selected_profile() == false) {
+          // If none is selected yet, select the last
+          var profiles = $("#profiles li");
+          $(profiles[profiles.length-1]).addClass("selected");
+        } else {
+          // Find the ID of this element, then set the previous element to "selected"
+          var index = parseInt(selected_profile().attr("id").match(/_(\d+)/)[1]);
+          $("#profiles li").removeClass("selected");
+          if($("#profile_"+(index-1)).length == 0) {
+            index = $("#profiles li").length;
+          }
+          $("#profile_"+(index-1)).addClass("selected");
+        }
+
+        break;
+      case 13: // enter
+        if(selected_profile() !== false) {
+          // click the thing inside
+          $("#profiles li.selected a, #profiles li.selected .begin-auth")[0].click();
+        }
+        break;
+    }
+  });
 
   start_scan();
 
@@ -486,5 +547,9 @@ function start_scan() {
   #profiles .status {
     margin-left: 20px;
     color: #999;
+  }
+
+  .profile.selected {
+    background-color: #ffffcc;
   }
 </style>
