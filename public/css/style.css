@@ -1,6 +1,10 @@
 body {
-  font: 13px Helvetica,arial,freesans,clean,sans-serif;
   background: url(/img/noise.jpg);
+}
+
+h3 {
+  margin-top: 20px;
+  line-height: 28px;
 }
 
 @media (max-width: 767px) {
@@ -87,6 +91,37 @@ body {
 .persona-login {
   cursor: pointer;
 }
+
+
+.narrow {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.narrow.large {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+
+.imgfloat .img {
+  float: left;
+  margin-right: 10px;
+  clear:both;  
+}
+.imgfloat .text {
+  margin-left: 0px;
+  overflow:auto;
+  display:block; 
+}
+
+
+
+.narrow.providers li {
+  float: left;
+  margin-right: 8px;
+}
+
 
 /**
  * Headers
