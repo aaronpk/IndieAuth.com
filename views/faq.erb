@@ -1,6 +1,13 @@
+<div class="hero-unit">
+  <h1>IndieAuth FAQ</h1>
+</div>
+
+<div class="container">
+  <div class="section narrow large h-entry">
+
       <h2 id="faq">Frequently Asked Questions</h2>
 
-      <h3 id="faq-how-is-this-different-from-openid">How is this different from OpenID?</h3>
+      <h3 id="faq-how-is-this-different-from-openid"><a href="#faq-how-is-this-different-from-openid"></a>How is this different from OpenID?</h3>
       <p>The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
 
       <h3 id="faq-can-links-be-hidden">Can my rel="me" links be hidden on my home page?</h3>
@@ -33,3 +40,10 @@
       <h3 id="why-permissions">Why does IndieAuth.com need to see my tweets and see who I follow?</h3>
       <p>IndieAuth.com requests the minimum permissions from each OAuth provider. In some cases providers do not provide a scope that only verifies identity without also giving access to data such as public tweets.</p>
 
+
+
+
+  </div><!-- section -->
+</div><!-- container -->
+
+<%= partial :'partials/_footer' %>

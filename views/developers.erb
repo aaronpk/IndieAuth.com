@@ -1,10 +1,20 @@
-  <div class="row">
-    <div class="span8">
-      <h2 id="documentation">Using IndieAuth.com to sign users in to your website</h2>
+<div class="hero-unit">
+  <h1>IndieAuth for Developers</h1>
+</div>
+
+<div class="container">
+  <div class="section narrow large h-entry">
+
+
+
+    <h2 id="documentation" class="p-name">Using IndieAuth.com to sign users in to your website</h2>
+
+    <div class="e-content">
+      <p>If you are building a website and need to sign people in, you can use IndieAuth.com to handle web sign-in so that you don't have to implement OAuth code for each provider.</p>
 
       <h3>1. Create a Web Sign-in form</h3>
 
-      <p><pre><code><%== 
+      <p><pre style="word-wrap: normal;"><code style="overflow: scroll;"><%== 
 '<form action="https://indieauth.com/auth" method="get">
   <label for="indie_auth_url">Web Address:</label>
   <input id="indie_auth_url" type="text" name="me" placeholder="yourdomain.com" />
@@ -16,8 +26,7 @@
       <p>
         <h4>Parameters</h4>
         <ul>
-          <li><b>action</b>: Set the action of the form to an IndieAuth service such as <code>https://indieauth.com/auth</code>, or <a href="https://github.com/aaronpk/IndieAuth">download the source</a> and run your own IndieAuth server.</li>
-          <li><b>method</b>: The request method of the form should be "get"</li>
+          <li><b>action</b>: Set the action of the form to your IndieAuth service (you can use <code>https://indieauth.com/auth</code>, or <a href="https://github.com/aaronpk/IndieAuth">download the source</a> and run your own server).</li>
           <li><b>me</b>: The "me" parameter is the URL that the user enters</li>
           <li><b>client_id</b>: Set the client_id in a hidden field to let indieauth.com know the home page of the application the user is signing in to</li>
           <li><b>redirect_uri</b>: Set the redirect_uri in a hidden field to let indieauth.com know where to redirect back to after authentication is complete</li>
@@ -28,7 +37,7 @@
 
       <h3>2. The user logs in with their domain</h3>
 
-      <p>After the user enters their domain in the sign-in form and submits, indieauth.com goes and scans their domain looking for rel="me" links from providers it knows about (see <a href="#supported-providers">Supported Providers</a> above). It also verifies that the third-party website links back to the user's domain with a rel="me" link as well.</p>
+      <p>After the user enters their domain in the sign-in form and submits, indieauth.com goes and scans their domain looking for rel="me" links from providers it knows about (see <a href="/#supported-providers">Supported Providers</a> above). It also verifies that the third-party website links back to the user's domain with a rel="me" link as well.</p>
 
       <br />
 
@@ -69,16 +78,13 @@ error_description=The+code+provided+was+not+valid</code></pre></p>
 
       <h3>5. Done!</h3>
 
-      <p>At this point you know the domain belonging to the authenticated user. You can store the domain and/or the token in a secure session and log the user in with their domain name identity. You don't need to worry about whether they authenticated with Google, Twitter or Github, their identity is their domain name! You won't have to worry about merging duplicate accounts or handling error cases when Twitter is offline.</p>
+      <p>At this point you know the domain belonging to the authenticated user. You can store the domain secure session and log the user in with their domain name identity. You don't need to worry about whether they authenticated with Google, Twitter or Github, their identity is their domain name! You won't have to worry about merging duplicate accounts or handling error cases when Twitter is offline.</p>
 
     </div>
-    <div class="span4" style="padding-top: 63px;">
-      <form action="/auth" method="get" class="well">
-        <label for="indie_auth_url2">Web Address:</label>
-        <input id="indie_auth_url2" type="text" name="me" class="span3" placeholder="yourdomain.com" />
-        <p><button type="submit" class="btn">Sign In</button></p>
-        <input type="hidden" name="redirect_uri" value="http://<%= request.host %>/success" />
-      </form>
-    </div>
 
-  </div><!-- row -->
+
+
+  </div><!-- section -->
+</div><!-- container -->
+
+<%= partial :'partials/_footer' %>

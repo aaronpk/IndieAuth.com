@@ -15,4 +15,14 @@ class Controller < Sinatra::Base
     erb :history
   end
 
+  get '/faq/?' do
+    title "IndieAuth FAQ"
+    erb :faq
+  end
+
+  get '/developers/?' do
+    title "IndieAuth for Developers"
+    erb :developers
+  end
+
 end
