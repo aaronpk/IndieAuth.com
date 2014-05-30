@@ -171,8 +171,10 @@ class Controller < Sinatra::Base
       links = find_all_relme_links me_parser
     rescue RelParser::InsecureRedirectError => e
       json_error 200, {error: 'insecure_redirect', error_description: e.message}
+    rescue RelParser::SSLError => e
+      json_error 200, {error: 'ssl_error', error_description: "There was an SSL error connecting to #{e.url}"}
     rescue Exception => e
-      json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}"}
+      json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}: #{e.message}"}
     end
 
     # Save the complete list of links to the user object

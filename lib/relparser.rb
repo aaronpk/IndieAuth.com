@@ -4,6 +4,11 @@ class RelParser
     attr_accessor :message
   end
 
+  class SSLError < Exception
+    attr_accessor :message
+    attr_accessor :url
+  end
+
   def self.sms_regex
     /sms:\/?\/?([0-9\-+]+)/
   end
@@ -57,7 +62,7 @@ class RelParser
           elsif previous.include? unshortened
             stop = true
             puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
-          elsif url.scheme != unshortened.scheme
+          elsif url.scheme == "https" && unshortened.scheme == "http"
             stop = true
             secure = false
             puts "Stopping because an insecure redirect was found :: #{url} -> #{unshortened}"
@@ -76,9 +81,15 @@ class RelParser
         end
 
         @page = @agent.get url.to_s
+      rescue OpenSSL::SSL::SSLError => e
+        puts "!!!! SSL ERROR: #{e.message}"
+        er = SSLError.new
+        er.url = url
+        raise er
       rescue => e # catch all errors and return a blank list
-        puts e
-        return []
+        puts "!!!!! #{e}"
+        puts e.class
+        raise e
       end
       if @page.class != Mechanize::Page
         # Server didn't return content-type: html, so mechanize can't turn it into a Page class.
