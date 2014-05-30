@@ -373,6 +373,9 @@ function start_scan() {
       } else {
         $("#progress_bar").hide();
         $(".loading_message").hide();
+        if(data && data.error_description) {
+          $(".no_links_error .message").text(data.error_description);
+        }
         $(".no_links_error").show();
       }
     });
@@ -407,7 +410,7 @@ function start_scan() {
   
   <div class="no_links_error" style="display: none;">
     <div class="alert alert-error">
-      No rel="me" links were found on your site!
+      <span class="message">No rel="me" links were found on your site!</span>
       <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
     </div>
   </div>
