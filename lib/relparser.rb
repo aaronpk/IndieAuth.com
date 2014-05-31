@@ -221,54 +221,63 @@ class RelParser
     links_to.each do |site_link|
       siteURI = URI.parse site_link
 
-      stop = false
-      previous = [] # used to prevent redirect loops
-      while stop == false
-        # Normalize
-        siteURI.path = "/" if siteURI.path == ""
+      if siteURI.scheme and siteURI.host
 
-        # Check if the URL matches
-        if look_for.include? siteURI.to_s
-          stop = true
-          puts "Found match at: #{siteURI.to_s}"
-          return true, nil
+        stop = false
+        previous = [] # used to prevent redirect loops
+        while stop == false
+          # Normalize
+          siteURI.path = "/" if siteURI.path == ""
 
-        else
-          # Check if siteURI is a redirect
-          unshortened = RelParser.follow siteURI
-          if unshortened == nil
+          # Check if the URL matches
+          if look_for.include? siteURI.to_s
             stop = true
-            puts "Stopping because no redirect was found: #{siteURI}"
-            previous << unshortened
-          elsif previous.include? unshortened
-            stop = true
-            puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
-          elsif siteURI.scheme == "https" && unshortened.scheme == "http"
-            # Allow http -> https redirects
-            stop = true
-            puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
-            # If this link is otherwise a match, surface the redirect error
-            a = unshortened.clone
-            b = @meURI.clone
-            a.scheme = "http"
-            b.scheme = "http"
-            if a == b
-              insecure_redirect_present = unshortened
-            end
-          else
-            puts "Redirect found: #{siteURI} -> #{unshortened}"
-            siteURI = unshortened
-            previous << unshortened
-          end
-
-          if siteURI == @meURI
-            stop = true
+            puts "Found match at: #{siteURI.to_s}"
             return true, nil
-          end
-        end
-      end
 
-    end
+          else
+            # Check if siteURI is a redirect
+            unshortened = RelParser.follow siteURI
+            if unshortened == nil
+              stop = true
+              puts "Stopping because no redirect was found: #{siteURI}"
+              previous << unshortened
+            elsif previous.include? unshortened
+              stop = true
+              puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
+            elsif siteURI.scheme == "https" && unshortened.scheme == "http"
+              # Allow http -> https redirects
+              stop = true
+              puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
+              # If this link is otherwise a match, surface the redirect error
+              a = unshortened.clone
+              b = @meURI.clone
+              a.scheme = "http"
+              b.scheme = "http"
+              if a == b
+                insecure_redirect_present = unshortened
+              end
+            else
+              puts "Redirect found: #{siteURI} -> #{unshortened}"
+              siteURI = unshortened
+              previous << unshortened
+            end
+
+            if siteURI == @meURI
+              stop = true
+              return true, nil
+            end
+          end
+        end # while
+      else
+        puts "No scheme/host found: #{siteURI}"
+
+        # TODO: Fetch this page and look for a match there
+        # https://github.com/aaronpk/IndieAuth/issues/1
+
+      end # if scheme and host
+
+    end # each links_to
 
     # Returns here only if no links were found on the site
     if insecure_redirect_present
