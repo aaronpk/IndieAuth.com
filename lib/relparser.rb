@@ -279,25 +279,23 @@ class RelParser
     return false, error_description
   end
 
-  FOLLOW_OPTIONS = {
-    :timeout => 2
-  }
-
   # Follow the given URI (object) for a single redirect, and return nil if no redirect is returned
-  def self.follow uri, options=FOLLOW_OPTIONS
+  def self.follow uri
     return nil if uri.nil?
 
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.open_timeout = options[:timeout]
-    http.read_timeout = options[:timeout]
-    http.use_ssl = true if uri.scheme == "https"
-
-    response = http.request_head(uri.path.empty? ? '/' : uri.path) rescue nil
-
-    if response.is_a? Net::HTTPRedirection and response['location'] then
-      URI.parse response['location']
+    response = HTTParty.get uri.to_s, {:follow_redirects => false}
+    if response.headers['location']
+      begin
+        redirect = URI.parse response.headers['location']
+        redirect.scheme = uri.scheme if redirect.scheme == nil 
+        redirect.host = uri.host if redirect.host == nil
+        redirect.path = '/' if redirect.path == ''
+        return redirect
+      rescue URI::InvalidURIError => e
+        return nil
+      end
     else
-      nil
+      return nil
     end
   end
 

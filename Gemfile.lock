@@ -37,6 +37,9 @@ GEM
     google_authenticator_auth (1.0.0)
       builder
     hashie (1.2.0)
+    httparty (0.11.0)
+      multi_json (~> 1.0)
+      multi_xml (>= 0.5.2)
     httpauth (0.2.0)
     json (1.7.6)
     jwt (0.1.5)
@@ -52,6 +55,7 @@ GEM
       webrobots (~> 0.0, >= 0.0.9)
     mime-types (1.19)
     multi_json (1.5.0)
+    multi_xml (0.5.5)
     multipart-post (1.1.5)
     mysql2 (0.3.7)
     net-http-digest_auth (1.2.1)
@@ -160,6 +164,7 @@ DEPENDENCIES
   erubis
   google_authenticator_auth
   hashie
+  httparty
   json
   mechanize
   mysql2 (= 0.3.7)
