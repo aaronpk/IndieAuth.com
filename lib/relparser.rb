@@ -292,7 +292,12 @@ class RelParser
   def self.follow uri
     return nil if uri.nil?
 
-    response = HTTParty.get uri.to_s, {:follow_redirects => false}
+    begin
+      response = HTTParty.get uri.to_s, {:follow_redirects => false}
+    rescue => e
+      return nil
+    end
+    
     if response.headers['location']
       begin
         redirect = URI.parse response.headers['location']
