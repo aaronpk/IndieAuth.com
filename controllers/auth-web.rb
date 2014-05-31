@@ -266,6 +266,9 @@ class Controller < Sinatra::Base
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]
 
+    match = profile_record.href.match(Regexp.new provider['regex_username'])
+    session[:attempted_username] = match[1]
+
     login = Login.create :user => user,
       :provider => provider,
       :profile => profile_record, 
@@ -277,7 +280,7 @@ class Controller < Sinatra::Base
 
     session[:attempted_token] = login[:token]
     session[:attempted_profile] = profile
-    puts "Attempting authentication for #{session[:attempted_username]} via #{provider['code']}"
+    puts "Attempting authentication for #{session[:attempted_uri]} via #{provider['code']} (Expecting #{session[:attempted_username]})"
 
     if params[:openid_url]
       redirect "/auth/#{provider.code}?openid_url=#{session[:me]}" # TODO: verify this works
@@ -291,28 +294,29 @@ class Controller < Sinatra::Base
     auth = request.env['omniauth.auth']
 
     profile = Profile.first :user_id => session[:attempted_userid], :href => session[:attempted_profile]
-    if profile.provider[:code] == 'open_id'
-      attempted_url = session[:attempted_profile]
-      actual_url = params['openid_url']
-    elsif profile.provider[:code] == 'google_oauth2'
-      attempted_url = session[:attempted_profile]
-      actual_url = auth['extra']['raw_info']['link']
+    attempted_username = session[:attempted_username]
+    actual_username = ''
+    if profile.provider[:code] == 'google_oauth2'
+      authed_url = auth['extra']['raw_info']['link']
+      if authed_url && (match=authed_url.match(Regexp.new profile.provider[:regex_username]))
+        actual_username = match[1]
+      end
     else
-      attempted_url = session[:attempted_profile]
-      actual_url = profile.provider[:profile_url_template].gsub('{username}', auth['info']['nickname'])
+      actual_username = auth['info']['nickname']
     end
 
     puts "Auth complete!"
     puts "Provider: #{auth['provider']}"
     puts "UID: #{auth['uid']}"
-    puts "URL: #{actual_url}"
-    puts "Auth info:"
-    puts auth.inspect
-    puts "Session:"
-    puts session
+    puts "Username: #{actual_username}"
+    # puts "Auth info:"
+    # puts auth.inspect
+    # puts "Session:"
+    # puts session
 
-    if !actual_url || !attempted_url || attempted_url.downcase != actual_url.downcase  # case in-sensitive compare
-      @message = "You just authenticated as '#{actual_url}' but your website linked to '#{attempted_url}'"
+    if !actual_username || !attempted_username || attempted_username.downcase != actual_username.downcase  # case in-sensitive compare
+      @message = "You just authenticated as '#{actual_username}' but your website linked to '#{session[:attempted_profile]}'"
+      puts "ERROR: #{@message}"
       title "Error"
       erb :error
     else
@@ -321,6 +325,7 @@ class Controller < Sinatra::Base
 
       session[:attempted_userid] = nil
       session[:attempted_profile] = nil
+      session[:attempted_username] = nil
       session[:attempted_token] = nil
 
       if login.nil?
