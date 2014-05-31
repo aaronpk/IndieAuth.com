@@ -32,17 +32,18 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
+    params['openid.session_type'] = 'no-encryption' if params['openid.session_type'] == ''
+
     begin
       oidreq = @server.decode_request(params)
     rescue OpenID::Server::ProtocolError => e
-      @message = e.to_s
-      puts "OpenID Error: #{@message}"
-      title "OpenID Error"
-      return erb :error
+      puts params.inspect
+      puts "OpenID Error: #{e.to_s}"
+      halt(200, "error: #{e.to_s}")
     rescue Exception => e
-      @message = "We're stuck"
-      title "OpenID Error"
-      return erb :error
+      puts params.inspect
+      puts "OpenID Error: #{e.to_s}"
+      halt(200, "error: #{e.to_s}")
     end
 
     if oidreq.kind_of? OpenID::Server::CheckIDRequest
