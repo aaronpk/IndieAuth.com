@@ -18,6 +18,7 @@ class RelParser
   end
 
   attr_accessor :url
+  attr_accessor :redirects
 
   def initialize(opts={})
     @agent = Mechanize.new {|agent|
@@ -26,6 +27,7 @@ class RelParser
     @agent.agent.http.ca_file = './lib/ca-bundle.crt'
     @url = opts
     @page = nil
+    @redirects = []
     begin
       @meURI = URI.parse @url
     rescue => e
@@ -72,6 +74,7 @@ class RelParser
           else
             puts "Redirect found: #{url} -> #{unshortened}"
             url = unshortened
+            @redirects << unshortened.to_s # Keep track of all the redirects seen in case the external profile links to one in the chain
             previous << unshortened
           end
         end
@@ -196,13 +199,18 @@ class RelParser
     puts "==========="
     puts "Page: #{link}"
     puts "Links to: #{links_to}"
-    puts "Looking for: #{@meURI}"
+    puts "Looking for: #{@meURI} Redirects: #{@redirects}"
     puts
     
     # Find any that match the user's entered "me" link
 
     # First check if it's in the array so we can skip making HTTP requests to check for redirects
-    if links_to.include? "#{@meURI}"
+    look_for = @redirects.clone
+    look_for << @meURI.to_s
+    # puts "Looking for: #{look_for.inspect}"
+    # puts "Links to: #{links_to.inspect}"
+    # puts "Intersection: #{(links_to & look_for).inspect}"
+    if (links_to & look_for).length > 0
       puts "Found it!"
       return true, nil
     end
