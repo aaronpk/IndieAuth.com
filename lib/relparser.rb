@@ -196,9 +196,16 @@ class RelParser
     puts "==========="
     puts "Page: #{link}"
     puts "Links to: #{links_to}"
+    puts "Looking for: #{@meURI}"
     puts
     
     # Find any that match the user's entered "me" link
+
+    # First check if it's in the array so we can skip making HTTP requests to check for redirects
+    if links_to.include? "#{@meURI}"
+      puts "Found it!"
+      return true, nil
+    end
 
     # Continue searching through links and follow redirects, and stop when a match is found
     insecure_redirect_present = false
@@ -227,7 +234,8 @@ class RelParser
           elsif previous.include? unshortened
             stop = true
             puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
-          elsif siteURI.scheme != unshortened.scheme
+          elsif siteURI.scheme == "https" && unshortened.scheme == "http"
+            # Allow http -> https redirects
             stop = true
             puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
             # If this link is otherwise a match, surface the redirect error
