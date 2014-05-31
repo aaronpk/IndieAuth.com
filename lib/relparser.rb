@@ -135,6 +135,7 @@ class RelParser
         else
           begin
             original = URI.parse href
+            #puts "Path: #{original.path.inspect}"
             links << href
           rescue => e
             # Ignore exceptions on invalid urls
@@ -227,7 +228,7 @@ class RelParser
         siteURI.path = "/" if siteURI.path == ""
 
         # Check if the URL matches
-        if siteURI == @meURI
+        if look_for.include? siteURI.to_s
           stop = true
           puts "Found match at: #{siteURI.to_s}"
           return true, nil
