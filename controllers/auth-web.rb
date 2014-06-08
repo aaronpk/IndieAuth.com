@@ -23,7 +23,7 @@ class Controller < Sinatra::Base
     profile
   end
 
-  def find_all_relme_links(me_parser, profile=nil)
+  def find_all_supported_providers(me_parser, profile=nil)
     # Find all the rel=me links on the specified page
     begin
       links = me_parser.rel_me_links
@@ -38,6 +38,16 @@ class Controller < Sinatra::Base
     links
   end
 
+  def find_auth_endpoints(me_parser) 
+    begin
+      endpoints = me_parser.auth_endpoints
+    rescue SocketError
+      json_error 200, {error: 'connection_error', error_description: "Error retrieving: #{me_parser.url}"}
+    end
+
+    endpoints
+  end
+
   def save_user_record(me)
     # Remove trailing "/" when storing and looking up the user
     User.first_or_create :href => me.sub(/(\/)+$/,'')
@@ -45,28 +55,44 @@ class Controller < Sinatra::Base
 
   def verify_user_profile(me_parser, profile, user)
 
-    # Checks the URL against the list of regexes to see what provider it is
-    # Does not fetch the page contents
-    profile_parser = RelParser.new profile
-    provider = profile_parser.get_provider
+    # First check if there's already a matching profile record for this user 
+    existing = Profile.first :user => user, :href => profile
+    puts "Checking for existing profile: #{user}, #{profile}"
 
-    if provider.nil?
-      json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
+    if !existing
+      # Checks the URL against the list of regexes to see what provider it is
+      # Does not fetch the page contents
+      profile_parser = RelParser.new profile
+      provider = profile_parser.get_provider
+
+      if provider.nil?
+        json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
+      end
+
+      puts "No existing provider, but parsed as: #{provider.code}"
+
+      # Save the profile entry in the DB, mark as "unverified" if new
+      profile_record = Profile.first_or_create({ 
+        :user => user, 
+        :href => profile
+      }, 
+      { 
+        :provider => provider,
+        :verified => false
+      })
+    else
+      profile_parser = RelParser.new profile
+      provider = existing.provider
+      profile_record = existing
+      puts "Found existing: #{provider.code}"
     end
-
-    # Save the profile entry in the DB as "unverified"
-    profile_record = Profile.first_or_create({ 
-      :user => user, 
-      :href => profile
-    }, 
-    { 
-      :provider => provider,
-      :verified => false
-    })
 
     if provider.code == 'sms' or provider.code == 'email'
       verified = true
       error_description = nil
+    elsif provider.code == 'indieauth'
+      # Make an HTTP request to the auth server and check that it responds with an "IndieAuth: authorization_endpoint" header
+      verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
     else
       # This does an HTTP request
       verified, error_description = me_parser.verify_link profile, profile_parser
@@ -132,9 +158,10 @@ class Controller < Sinatra::Base
     @me = params[:me]
 
     if @me.nil?
-      @message = 'No "me" value was specified'
-      title "Error"
-      return erb :error      
+      title "About IndieAuth"
+      halt 200, {
+        'IndieAuth' => 'authorization_endpoint'  # tell clients this is an indieauth endpoint
+      }, erb(:auth_about)
     end
 
     if !@me.match(/^http/)
@@ -154,21 +181,25 @@ class Controller < Sinatra::Base
 
     @redirect_uri = params[:redirect_uri]
     @providers = Provider.all(:home_page.not => '')
-    erb :auth
+
+    halt 200, {
+      'IndieAuth' => 'authorization_endpoint'
+    }, erb(:auth)
   end
 
-  # 2. Return all rel=me links on the given page
+  # 2. Return all supported providers on the given page
   # Params: 
   #  * me=example.com
-  get '/auth/relme_links.json' do
+  get '/auth/supported_providers.json' do
     me = verify_me_param
 
     user = save_user_record me
 
     me_parser = RelParser.new me
 
+    # Check for supported auth providers
     begin
-      links = find_all_relme_links me_parser
+      links = find_all_supported_providers me_parser
     rescue RelParser::InsecureRedirectError => e
       json_error 200, {error: 'insecure_redirect', error_description: e.message}
     rescue RelParser::SSLError => e
@@ -179,17 +210,30 @@ class Controller < Sinatra::Base
 
     # Save the complete list of links to the user object
     user.me_links = links.to_json
+
+    # Check if the website points to its own IndieAuth server
+    begin
+      auth_endpoints = find_auth_endpoints me_parser
+    rescue Exception => e
+      json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}: #{e.message}"}
+    end
+
+    # Save the auth endpoint (will delete any existing ones if none was found now)
+    user.auth_endpoints = auth_endpoints.to_json
+
     user.last_refresh_at = DateTime.now
     user.save
 
     # Delete all old profiles that aren't linked on the user's page anymore
     # Except totp!
     user.profiles.each do |profile|
-      if !['totp','server'].include? profile.provider.code and !links.include? profile.href
+      if profile.active and !['totp','server'].include? profile.provider.code and !links.include? profile.href
         puts "Link to #{profile.href} no longer found, deactivating"
         profile.active = false
         profile.save
       end
+      # TODO: Also deactivate old auth servers
+
     end
 
     # Check each link to see if it's a supported provider
@@ -217,6 +261,28 @@ class Controller < Sinatra::Base
       }
     end
 
+    if user.auth_endpoints 
+      provider = Provider.first(:code => 'indieauth')
+
+      JSON.parse(user.auth_endpoints).each do |endpoint|
+        # Save the profile in the DB
+        Profile.first_or_create({ 
+          :user => user, 
+          :href => endpoint
+        }, 
+        { 
+          :provider => provider,
+          :verified => false
+        })
+
+        links_response << {
+          profile: endpoint,
+          provider: 'indieauth',
+          verified: nil
+        }
+      end
+    end
+
     json_response 200, {links: links_response}
   end
 
@@ -225,10 +291,19 @@ class Controller < Sinatra::Base
   #  * me=example.com
   #  * profile=provider.com/user/xxxxx
   get '/auth/verify_link.json' do
-    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
-    if false # TODO: if provider is openid
-      auth_path = "/auth/start?openid_url=#{profile}&me=#{me}"
+    begin
+      me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
+    rescue RelParser::InsecureRedirectError => e
+      json_error 200, {error: 'insecure_redirect', error_description: e.message}
+    rescue RelParser::SSLError => e
+      json_error 200, {error: 'ssl_error', error_description: "There was an SSL error connecting to #{e.url}"}
+    rescue Exception => e
+      json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}: #{e.message}"}
+    end
+
+    if provider == 'indieauth'
+      auth_path = "#{profile_record.href}?me=#{me}&redirect_uri=test&client_id=test"
     else
       auth_path = "/auth/start?me=#{URI.encode_www_form_component me}&profile=#{URI.encode_www_form_component profile}"
     end
@@ -253,7 +328,7 @@ class Controller < Sinatra::Base
 
     me_parser = RelParser.new me
 
-    links = find_all_relme_links me_parser
+    links = find_all_supported_providers me_parser
 
     if !links.include?(profile)
       @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."

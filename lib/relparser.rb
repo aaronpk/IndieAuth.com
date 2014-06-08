@@ -110,7 +110,7 @@ class RelParser
 
     @page.search("a,link").each do |link|
       rels = (link.attribute("rel").to_s || '').split(/ /)
-      if rels.include? 'me'
+      if rels.include?('me') || rels.include?('authorization_endpoint')
         return true if link.attribute("href").value == profile
       end
     end
@@ -148,6 +148,20 @@ class RelParser
     links.uniq
   end
 
+  def auth_endpoints
+    endpoints = []
+    load_page
+
+    return endpoints if @page.nil?
+
+    @page.search("[rel=authorization_endpoint]").each do |link|
+      puts " --> IndieAuth: #{link.attribute("href").value} rel=#{link.attribute("rel")}"
+      endpoints << link.attribute("href").value
+    end
+
+    endpoints
+  end
+
   def get_provider
     return nil if @url.nil?
 
@@ -167,6 +181,7 @@ class RelParser
     end
 
     # TODO: Fix the below to re-enable OpenID
+    #return Provider.first(:code => 'indieauth')
     return nil
 
     # Check if the URL is an OpenID endpoint
@@ -184,6 +199,41 @@ class RelParser
     provider = self.get_provider
     return false if provider.nil?
     return OmniAuth.provider_supported? provider['code']
+  end
+
+  def verify_auth_endpoint(link, site_parser=nil)
+    site_parser = RelParser.new link if site_parser.nil?
+    begin 
+    rescue SocketError
+      return false, "Error trying to connect to #{link}"
+    rescue InsecureRedirectError => e
+      return false, e.message
+    end
+
+    puts "==========="
+    puts "Page: #{link}"
+
+    # Check the HTTP headers to see if the endpoint returns "IndieAuth: authorization_endpoint"
+    begin
+      @page = @agent.head link
+      puts "IndieAuth: #{@page.header['indieauth']}"
+      if @page.header['indieauth'] == 'authorization_endpoint'
+        return true, nil
+      else
+        return false, 'Endpoint is not an authorization endpoint'
+      end
+    rescue OpenSSL::SSL::SSLError => e
+      puts "!!!! SSL ERROR: #{e.message}"
+      er = SSLError.new
+      er.url = url
+      raise er
+    rescue => e # catch all errors and return a blank list
+      puts "!!!!! #{e}"
+      puts e.class
+      raise e
+    end
+
+    return false, 'unknown error'
   end
 
   def verify_link(link, site_parser=nil)

@@ -25,4 +25,9 @@ class Controller < Sinatra::Base
     erb :developers
   end
 
+  get '/sign-in/?' do
+    title "IndieAuth Sign-In"
+    erb :sign_in
+  end
+
 end

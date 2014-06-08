@@ -164,7 +164,7 @@ function verify_link_back(me, link, i, use_cached) {
     return;
   }
 
-  // Don't need to verify email or SMS links, provide the buttoms immediately
+  // Don't need to verify email or SMS links, provide the buttons immediately
   if(link.provider == 'email') {
     $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login begin-auth" data-email="'+link.profile+'" />');
     set_provider_status(i, 'verified', 'Click to authenticate using '+link.profile.replace(/mailto:/,''));
@@ -216,7 +216,7 @@ function update_provider_status(link, data, i) {
   } else if(data.verified) {
     set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
     $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
-  } else if(data.verified == false) {
+  } else if(data.error) {
     var message;
     if(data.error_description) {
       message = data.error_description;
@@ -355,7 +355,7 @@ function start_scan() {
       }, $(this).attr('id').split('_')[1], true);
     });
   } else {
-    $.get("/auth/relme_links.json", {me: me}, function(data){
+    $.get("/auth/supported_providers.json", {me: me}, function(data){
       if(data && data.links && data.links.length > 0) {
         $("#progress_bar .bar-loading").css("width", "15%");
         var template = $('#profile_link_template').html();
