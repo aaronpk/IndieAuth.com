@@ -9,6 +9,11 @@ class RelParser
     attr_accessor :url
   end
 
+  class InvalidContentError < Exception
+    attr_accessor :message
+    attr_accessor :url
+  end
+
   def self.sms_regex
     /sms:\/?\/?([0-9\-+]+)/
   end
@@ -23,6 +28,12 @@ class RelParser
   def initialize(opts={})
     @agent = Mechanize.new {|agent|
       agent.user_agent_alias = "Mac Safari"
+      # Default to text/html if content-type is not set
+      agent.post_connect_hooks << lambda { |_,_,response,_|
+        if response.content_type.nil? || response.content_type.empty?
+          response.content_type = 'text/html'
+        end
+      }
     }
     @agent.agent.http.ca_file = './lib/ca-bundle.crt'
     @url = opts
@@ -95,9 +106,11 @@ class RelParser
         raise e
       end
       if @page.class != Mechanize::Page
+        e = InvalidContentError.new
+        e.message = "The URL #{url} returned an invalid content-type: '#{@page.response['content-type']}'"
+        e.url = url
+        raise e
         # Server didn't return content-type: html, so mechanize can't turn it into a Page class.
-        # Can't parse it, so return nil
-        return []
       end
     end
   end
@@ -225,7 +238,7 @@ class RelParser
     rescue OpenSSL::SSL::SSLError => e
       puts "!!!! SSL ERROR: #{e.message}"
       er = SSLError.new
-      er.url = url
+      er.url = link
       raise er
     rescue => e # catch all errors and return a blank list
       puts "!!!!! #{e}"
