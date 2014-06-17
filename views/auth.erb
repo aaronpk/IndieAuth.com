@@ -386,8 +386,8 @@ function start_scan() {
 
 <div class="wrapper">
 
-  <% if params[:client_id] %>
-    <h3>Allow <%= params[:client_id].gsub(/https?:\/\//, '') %> access to <%= @me.gsub(/https?:\/\//, '') %>?</h3>
+  <% if params[:scope] %>
+    <h3>Allow <%= @app_name %> access to <%= @me.gsub(/https?:\/\//, '') %>?</h3>
 
     <div class="continue_message" style="display: none;">
       <p>The app <b><%= params[:client_id] %></b> would like to access your site, <b><%= @me %></b>.</p>
@@ -401,7 +401,8 @@ function start_scan() {
       <p>Authenticate using one of the methods below to approve this request.</p>
     </div>
   <% else %>
-    <h3>Authenticating as <%= @me %></h3>
+    <h3>Sign in to <%= @app_name %></h3>
+    <p>Authenticate using one of the methods below to sign in as <%= @me %>.</p>
   <% end %>
 
   <div class="loading_message">
@@ -442,7 +443,7 @@ function start_scan() {
     %>
     <% @profiles.each_with_index do |profile,i| %>
       <% next if @redirect_uri == 'totp' and profile.provider.code == 'totp' %>
-      <li class="profile <%= profile.provider.code %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider.code %>" data-auth-path="/auth/start?me=<%=URI.encode_www_form_component @me%>&amp;profile=<%=URI.encode_www_form_component profile[:href]%>">
+      <li class="profile <%= profile.provider.code %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider.code %>" data-auth-path="<%= profile.auth_path %>">
         <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
         <span class="link"><%= profile[:href] %></span>
         <div class="status">Verifying...</div>
