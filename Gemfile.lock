@@ -1,6 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    activesupport (4.0.5)
+      i18n (~> 0.6, >= 0.6.9)
+      minitest (~> 4.2)
+      multi_json (~> 1.3)
+      thread_safe (~> 0.1)
+      tzinfo (~> 0.3.37)
     addressable (2.2.8)
     backports (2.7.0)
     base32 (0.2.0)
@@ -41,6 +47,7 @@ GEM
       multi_json (~> 1.0)
       multi_xml (>= 0.5.2)
     httpauth (0.2.0)
+    i18n (0.6.9)
     json (1.7.6)
     jwt (0.1.5)
       multi_json (>= 1.0)
@@ -53,7 +60,12 @@ GEM
       nokogiri (~> 1.4)
       ntlm-http (~> 0.1, >= 0.1.1)
       webrobots (~> 0.0, >= 0.0.9)
+    microformats2 (2.0.1)
+      activesupport
+      json
+      nokogiri
     mime-types (1.19)
+    minitest (4.7.5)
     multi_json (1.5.0)
     multi_xml (0.5.5)
     multipart-post (1.1.5)
@@ -84,6 +96,9 @@ GEM
     omniauth-google-oauth2 (0.1.13)
       omniauth (~> 1.0)
       omniauth-oauth2
+    omniauth-lastfm (0.0.5)
+      omniauth-oauth (~> 1.0)
+      rest-client (~> 1.6.6)
     omniauth-oauth (1.0.1)
       oauth
       omniauth (~> 1.0)
@@ -96,6 +111,8 @@ GEM
     omniauth-twitter (0.0.14)
       multi_json (~> 1.3)
       omniauth-oauth (~> 1.0)
+    puma (2.7.0)
+      rack (>= 1.1, < 2.0)
     rack (1.4.4)
     rack-openid (1.3.1)
       rack (>= 1.1.0)
@@ -134,11 +151,13 @@ GEM
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
       rack (>= 1.0.0)
+    thread_safe (0.3.3)
     tilt (1.3.3)
     twilio-ruby (3.9.0)
       builder (>= 2.1.2)
       jwt (>= 0.1.2)
       multi_json (>= 1.3.0)
+    tzinfo (0.3.39)
     unf (0.0.5)
       unf_ext
     unf_ext (0.0.5)
@@ -167,6 +186,7 @@ DEPENDENCIES
   httparty
   json
   mechanize
+  microformats2
   mysql2 (= 0.3.7)
   omniauth
   omniauth-facebook
@@ -174,8 +194,10 @@ DEPENDENCIES
   omniauth-geoloqi
   omniauth-github
   omniauth-google-oauth2
+  omniauth-lastfm
   omniauth-openid
   omniauth-twitter
+  puma
   rainbows
   rake
   rest-client

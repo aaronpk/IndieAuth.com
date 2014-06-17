@@ -92,7 +92,15 @@ class Controller < Sinatra::Base
       error_description = nil
     elsif provider.code == 'indieauth'
       # Make an HTTP request to the auth server and check that it responds with an "IndieAuth: authorization_endpoint" header
-      verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
+      # But return verified=false if it's actually this server
+      # if "#{SiteConfig.root}/auth" == profile
+      #   verified = false
+      #   error_description = 'This auth server cannot be used to authenticate to itself'
+      # else
+      #   verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
+      # end
+      verified = false
+      error_description = 'Support for your own IndieAuth server is coming soon!'
     else
       # This does an HTTP request
       verified, error_description = me_parser.verify_link profile, profile_parser
@@ -181,6 +189,13 @@ class Controller < Sinatra::Base
 
     @redirect_uri = params[:redirect_uri]
     @providers = Provider.all(:home_page.not => '')
+
+    if params[:client_id]
+      @app_name = params[:client_id].gsub(/https?:\/\//, '').gsub(/\/$/, '')
+
+    else params[:redirect_uri]
+      @app_name = params[:redirect_uri].gsub(/https?:\/\//, '')
+    end
 
     halt 200, {
       'IndieAuth' => 'authorization_endpoint'
@@ -301,23 +316,23 @@ class Controller < Sinatra::Base
     rescue RelParser::SSLError => e
       json_error 200, {error: 'ssl_error', error_description: "There was an SSL error connecting to #{e.url}"}
     rescue Exception => e
-      json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}: #{e.message}"}
+      json_error 200, {error: 'unknown', error_description: "Unknown error: #{e.message}"}
     end
 
-    if provider == 'indieauth'
-      auth_path = "#{profile_record.href}?me=#{me}&redirect_uri=test&client_id=test"
-    else
-      auth_path = "/auth/start?me=#{URI.encode_www_form_component me}&profile=#{URI.encode_www_form_component profile}"
-    end
-
-    json_response 200, {
+    response = {
       me: me, 
       profile: profile, 
       provider: provider.code, 
       verified: verified,
       error_description: error_description,
-      auth_path: (verified ? auth_path : false)
+      auth_path: (verified ? profile_record.auth_path : false)
     }
+
+    if error_description
+      response[:error] = 'self'
+    end
+
+    json_response 200, response
   end
 
   get '/auth/start' do
@@ -330,9 +345,16 @@ class Controller < Sinatra::Base
 
     me_parser = RelParser.new me
 
-    links = find_all_supported_providers me_parser
+    begin
+      links = find_all_supported_providers me_parser
+      auth_endpoints = find_auth_endpoints me_parser
+    rescue Exception => e
+      @message = "Unknown error retrieving #{me_parser.url}: #{e.message}"
+      title "Error"
+      return erb :error
+    end
 
-    if !links.include?(profile)
+    if !links.include?(profile) and !auth_endpoints.include?(profile)
       @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."
       title "Error"
       return erb :error
@@ -361,6 +383,8 @@ class Controller < Sinatra::Base
 
     if params[:openid_url]
       redirect "/auth/#{provider.code}?openid_url=#{session[:me]}" # TODO: verify this works
+    elsif provider.code == 'indieauth'
+      redirect "#{profile_record.href}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component 'https://indieauth.cc/auth/indieauth/callback'}"
     else
       redirect "/auth/#{provider.code}"
     end

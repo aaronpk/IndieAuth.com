@@ -20,6 +20,7 @@ gem 'omniauth-github'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-twitter'
 gem 'omniauth-openid'
+gem 'omniauth-lastfm'
 
 gem 'ruby-openid'
 
@@ -30,6 +31,8 @@ gem 'twilio-ruby'
 
 gem 'base32'
 gem 'google_authenticator_auth'
+
+gem 'microformats2'
 
 gem 'mysql2',          '0.3.7'
 gem 'dm-core'
@@ -42,4 +45,5 @@ gem 'dm-pager'
 group :development do
   gem 'shotgun',                :require => nil
   gem 'thin',                   :require => nil
+  gem 'puma',                   :require => nil
 end

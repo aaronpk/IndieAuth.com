@@ -233,13 +233,15 @@ class RelParser
       if @page.header['indieauth'] == 'authorization_endpoint'
         return true, nil
       else
-        return false, 'Endpoint is not an authorization endpoint'
+        return false, 'Endpoint did not acknowledge it is an authorization endpoint. The endpoint should return an "IndieAuth: authorization" header.'
       end
     rescue OpenSSL::SSL::SSLError => e
       puts "!!!! SSL ERROR: #{e.message}"
       er = SSLError.new
       er.url = link
       raise er
+    rescue Mechanize::ResponseCodeError => e
+      return false, "Endpoint did not return HTTP 200 for the initial query. (Returned #{e.response_code} instead)"
     rescue => e # catch all errors and return a blank list
       puts "!!!!! #{e}"
       puts e.class
