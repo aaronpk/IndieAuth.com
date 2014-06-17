@@ -63,6 +63,7 @@
         <label for="indie_auth_url">Web Address:</label>
         <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
         <p><button type="submit" class="btn">Sign In</button></p>
+        <input type="hidden" name="client_id" value="<%= SiteConfig.root %>" />
         <input type="hidden" name="redirect_uri" value="<%= SiteConfig.root %>/success" />
       </form>
 
