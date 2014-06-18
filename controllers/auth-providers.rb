@@ -215,4 +215,18 @@ class Controller < Sinatra::Base
     end
   end
 
+  post '/auth/verify_gpg' do
+    # Verify the signature
+    # The plaintext version is actually a JWT-signed payload that has all required info
+    # (me, redirect_uri, scope, etc)
+
+    # On errors, show an error page
+
+    # Generate a login token
+
+    # Redirect to the callback URL
+
+
+  end
+
 end

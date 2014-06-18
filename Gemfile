@@ -31,6 +31,8 @@ gem 'twilio-ruby'
 
 gem 'base32'
 gem 'google_authenticator_auth'
+gem 'gpgme'
+gem 'jwt'
 
 gem 'microformats2'
 

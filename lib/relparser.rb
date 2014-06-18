@@ -175,6 +175,33 @@ class RelParser
     endpoints
   end
 
+  def gpg_keys
+    keys = []
+
+    load_page
+
+    return endpoints if @page.nil?
+
+    @page.search("[rel=pgpkey]").each do |link|
+      puts " --> GPG Key: #{link.attribute("href").value} rel=#{link.attribute("rel")}"
+      # Fetch the key. Assume the href links to a plaintext key
+      href = link.attribute("href").value
+      begin
+        response = @agent.get href
+        puts response.body
+        keys << {
+          :href => href,
+          :key => response.body
+        }
+      rescue => e
+        # just ignore errors
+        puts "Error retrieving key at #{href}"
+      end
+    end
+
+    keys
+  end
+
   def get_provider
     return nil if @url.nil?
 

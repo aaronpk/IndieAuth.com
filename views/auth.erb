@@ -147,6 +147,20 @@ function set_up_totp_auth() {
   });
 }
 
+function set_up_gpg_auth() {
+  $(".gpg-auth").click(function(){
+    var btn = $(this);
+
+    show_gpg_popup();
+
+  });
+}
+
+function show_gpg_popup() {
+  $("#gpg-popup").show();
+  $("#gpg-popup .in").css("height", $("#gpg-popup form").height()+"px");
+}
+
 function format_sms_number(href) {
   href = href.replace(/sms:\/?\/?/, '');
   if(match=href.match(/^\+1([0-9]{3})([0-9]{3})([0-9]{4})$/)) {
@@ -187,6 +201,15 @@ function verify_link_back(me, link, i, use_cached) {
     set_up_totp_auth();
     provider_verification_finished();
     return;
+  }
+
+  if(link.provider == 'gpg') {
+    var display = link.profile.replace(/https?:\/\//, '');
+    $("#profile_"+i+" .link").html('<a href="#" class="btn btn-success gpg-auth begin-auth">'+'GPG ('+display+')'+'</a>');
+    set_provider_status(i, 'verified', 'Click to sign a challenge with your GPG key.');
+    set_up_totp_auth();
+    provider_verification_finished();
+    return
   }
 
   if(use_cached) {
@@ -336,6 +359,8 @@ $(function(){
     // Start a new scan
     start_scan();
   });
+
+  show_gpg_popup();
 });
 
 function start_scan() {
@@ -484,6 +509,34 @@ function start_scan() {
 
 </div>
 
+<div id="gpg-popup"><div class="in">
+  <form action="/auth/verify_gpg" method="post">
+    <div class="fields">
+      <label for="plaintext">Sign this text with your private key</label>
+      <textarea rows="3" readonly="readonly" name="plaintext">foo</textarea>
+
+      <label for="signature">Paste signature below</label>
+      <textarea rows="3" name="signature">-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1
+
+owEBOQHG/pANAwACATdF5QC0/3yxAcsJYgBToSRfZm9viQEcBAABAgAGBQJToSRf
+AAoJEDdF5QC0/3yxqlMIAKtweynxZD30WhTjWN2fzc4JCza/R9RG3oLjyKJroQtz
+BQtJR4EV/nO+vGPWjIRZ1O/a0Xta5kgdHg/P3s7sVcbvMAxNgZ1g0pRwfaYgOYgw
+KbqvDPlF924XgRO5CjiKkmkeQbMtc/EDN9qmQ9de8YvItlh590/kufw8svvyE9bW
+auHA5q6M732S3W4YE5kJuvv+vBMJqfqjU0ufFpNDm4tFkiFV41GvhOzMFopNRvGJ
+D1XHWqwS+RbPUaqCgWIzK48bAyLCRzh2DyJzQEI2hylZaS45IJefwkNKZRCsKTyK
+YHaoGLbZCvFw8LMwyZylmWyIsjtJsX0/T83NbUmviow=
+=pVfE
+-----END PGP MESSAGE-----</textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Verify</button>
+      <button type="button" class="btn">Cancel</button>
+    </div>  
+  </form>
+</div></div>
+
+
 <div style="display:none;">
 <img src="/img/profile-verified.png") />
 <img src="/img/profile-unsupported.png") />
@@ -498,6 +551,28 @@ function start_scan() {
 </li>
 </script>
 <style type="text/css">
+
+  #gpg-popup {
+    position: absolute;
+    top: 70px;
+    left: 30px;
+    border: 6px rgba(80,80,80,0.8) solid;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+  }
+  #gpg-popup .in {
+    background: white;
+    display: block;
+    width: 400px;
+    height: 300px;
+  }
+  #gpg-popup .fields {
+    padding: 6px;
+  }
+  #gpg-popup textarea {
+    width: 374px;
+  }
 
   .wrapper {
     width: 500px;

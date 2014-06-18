@@ -48,6 +48,16 @@ class Controller < Sinatra::Base
     endpoints
   end
 
+  def get_gpg_keys(me_parser)
+    begin
+      keys = me_parser.gpg_keys
+    rescue SocketError
+      json_error 200, {error: 'connection_error', error_description: "Error retrieving keys at #{me_parser.url}"}
+    end
+
+    keys
+  end
+
   def save_user_record(me)
     # Remove trailing "/" when storing and looking up the user
     User.first_or_create :href => me.sub(/(\/)+$/,'')
@@ -229,6 +239,7 @@ class Controller < Sinatra::Base
     user.me_links = links.to_json
 
     # Check if the website points to its own IndieAuth server
+    auth_endpoints = []
     begin
       auth_endpoints = find_auth_endpoints me_parser
     rescue Exception => e
@@ -237,6 +248,15 @@ class Controller < Sinatra::Base
 
     # Save the auth endpoint (will delete any existing ones if none was found now)
     user.auth_endpoints = auth_endpoints.to_json
+
+    gpg_keys = []
+    begin
+      gpg_keys = get_gpg_keys me_parser
+    rescue Exception => e
+      json_error 200, {error: 'unknown', error_description: "Unknown error retrieving GPG keys for #{me_parser.url}: #{e.message}"}
+    end
+
+    user.gpg_keys = gpg_keys.to_json
 
     user.last_refresh_at = DateTime.now
     user.save
@@ -250,7 +270,6 @@ class Controller < Sinatra::Base
         profile.save
       end
       # TODO: Also deactivate old auth servers
-
     end
 
     # Check each link to see if it's a supported provider
@@ -283,7 +302,7 @@ class Controller < Sinatra::Base
 
       JSON.parse(user.auth_endpoints).each do |endpoint|
         # Save the profile in the DB
-        Profile.first_or_create({ 
+        profile = Profile.first_or_create({ 
           :user => user, 
           :href => endpoint
         }, 
@@ -291,11 +310,35 @@ class Controller < Sinatra::Base
           :provider => provider,
           :verified => false
         })
+        profile.active = true
+        profile.save
 
         links_response << {
           profile: endpoint,
           provider: 'indieauth',
           verified: nil
+        }
+      end
+    end
+
+    if user.gpg_keys
+      provider = Provider.first(:code => 'gpg')
+
+      JSON.parse(user.gpg_keys).each do |key|
+        profile = Profile.first_or_create({
+          :user => user,
+          :href => key['href'],
+          :provider => provider
+        }, {
+          :verified => true
+        })
+        profile.active = true
+        profile.save
+
+        links_response << {
+          profile: key['href'],
+          provider: 'gpg',
+          verified: true
         }
       end
     end
