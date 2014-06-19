@@ -225,6 +225,7 @@ class Controller < Sinatra::Base
     plaintext = JWT.encode({
       :me => me,
       :user_id => user.id,
+      :profile_id => profile_record.id,
       :redirect_uri => params[:redirect_uri],
       :state => params[:state],
       :scope => params[:scope],
@@ -270,6 +271,7 @@ class Controller < Sinatra::Base
         # Generate a login token
         login = Login.create :user => User.get(payload['user_id'].to_i),
           :provider => Provider.first(:code => 'gpg'),
+          :profile => Profile.get(payload['profile_id']),
           :complete => true,
           :token => Login.generate_token,
           :redirect_uri => payload['redirect_uri'],
