@@ -1,6 +1,9 @@
 <script>
 var me = "<%= @me %>";
 var redirect_uri = "<%= @redirect_uri %>";
+var client_id = "<%= @client_id %>";
+var state = "<%= @state %>";
+var scope = "<%= @scope %>";
 
 function set_provider_status(index, status, error) {
   $("#profile_"+index+" .status_img").addClass(status).removeClass("loading");
@@ -34,7 +37,7 @@ function complete_progress_bar() {
 }
 
 function set_up_sms_auth() {
-  $(".sms-auth").click(function(){
+  $(".sms-auth").unbind("click").click(function(){
     var btn = $(this);
     var status = $(this).parents('li').children('.status');
 
@@ -51,7 +54,7 @@ function set_up_sms_auth() {
           status.text("Code was successfully verified! Redirecting...");
           window.location = data.redirect;
         } else {
-          btn.parent().children('input[type=text]').remove();
+          btn.parent().children('input[type=text]').val('');
           btn.text()
           status.text("The code you entered did not match, or the code expired.");
         }
@@ -78,7 +81,7 @@ function set_up_sms_auth() {
 }
 
 function set_up_email_auth() {
-  $(".persona-login").click(function(){
+  $(".persona-login").unbind("click").click(function(){
     var img = $(this);
     var status = $(this).parents('li').children('.status');
 
@@ -115,7 +118,7 @@ function set_up_email_auth() {
 }
 
 function set_up_totp_auth() {
-  $(".totp-auth").click(function(){
+  $(".totp-auth").unbind("click").click(function(){
     var btn = $(this);
     var status = $(this).parents('li').children('.status');
 
@@ -132,7 +135,7 @@ function set_up_totp_auth() {
           status.text("Code was successfully verified! Redirecting...");
           window.location = data.redirect;
         } else {
-          btn.parent().children('input[type=text]').remove();
+          btn.parent().children('input[type=text]').val('');
           btn.text()
           status.text("The code you entered was invalid.");
         }
@@ -148,17 +151,71 @@ function set_up_totp_auth() {
 }
 
 function set_up_gpg_auth() {
-  $(".gpg-auth").click(function(){
+  $(".gpg-auth").unbind("click").click(function(){
     var btn = $(this);
 
+    $("#gpg-popup .btn-primary").attr("disabled", "disabled");
+    $("#gpg-popup .alert").html("Loading...").removeClass("alert-error");
+    $("#gpg-popup .fields").hide();
     show_gpg_popup();
 
+    $.post("/auth/start_gpg.json", {
+      me: me,
+      profile: btn.attr('href'),
+      redirect_uri: redirect_uri,
+      client_id: client_id,
+      scope: scope,
+      state: state
+    }, function(data){
+      if(data.plaintext) {
+        $("#gpg-popup .plaintext").text(data.plaintext).removeAttr("disabled");
+        $("#gpg-popup .btn-primary").removeAttr("disabled");
+        $("#gpg-popup .alert").html("").removeClass("alert-error").hide();
+        $("#gpg-popup .fields").show();
+        show_gpg_popup();
+      } else if(data.error) {
+        $("#gpg-popup .alert").html(data.error_description).addClass("alert-error");
+        show_gpg_popup();
+      } else {
+        $("#gpg-popup .alert").html("An unknown error occurred").addClass("alert-error");
+        show_gpg_popup();
+      }
+    });
+
+    return false;
+  });
+  $("#gpg-popup .btn-primary").unbind("click").click(function(){
+    $("#gpg-popup .btn-primary").attr("disabled", "disabled");
+    $("#gpg-popup .signature").attr("disabled", "disabled");
+    $("#gpg-popup .alert").html("Verifying...").removeClass("alert-error").show();
+    show_gpg_popup();
+    $.post("/auth/verify_gpg.json", {
+      signature: $("#gpg-popup .signature").val()
+    }, function(data) {
+      if(data.error) {
+        $("#gpg-popup .btn-primary").removeAttr("disabled");
+        $("#gpg-popup .signature").removeAttr("disabled").html("");
+        $("#gpg-popup .alert").html("The signature could not be verified!").addClass("alert-error").show();
+        show_gpg_popup();
+      } else {
+        $("#gpg-popup .alert").html("Success! Redirecting...").addClass("alert-success").show();
+        $("#gpg-popup .fields").hide();
+        show_gpg_popup();
+        window.location = data.redirect_uri;
+      }
+    });
+  });
+  $("#gpg-popup .btn-cancel").unbind("click").click(function(){
+    $("#gpg-popup .plaintext").text("");
+    $("#gpg-popup .signature").text("");
+    $("#gpg-popup").hide();
   });
 }
 
 function show_gpg_popup() {
   $("#gpg-popup").show();
   $("#gpg-popup .in").css("height", $("#gpg-popup form").height()+"px");
+  $("#gpg-popup").css("left", ($(window).width()/2) - ($("#gpg-popup").width()/2)+"px");
 }
 
 function format_sms_number(href) {
@@ -205,11 +262,11 @@ function verify_link_back(me, link, i, use_cached) {
 
   if(link.provider == 'gpg') {
     var display = link.profile.replace(/https?:\/\//, '');
-    $("#profile_"+i+" .link").html('<a href="#" class="btn btn-success gpg-auth begin-auth">'+'GPG ('+display+')'+'</a>');
+    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success gpg-auth begin-auth">'+'GPG ('+display+')'+'</a>');
     set_provider_status(i, 'verified', 'Click to sign a challenge with your GPG key.');
-    set_up_totp_auth();
+    set_up_gpg_auth();
     provider_verification_finished();
-    return
+    return;
   }
 
   if(use_cached) {
@@ -360,7 +417,6 @@ $(function(){
     start_scan();
   });
 
-  show_gpg_popup();
 });
 
 function start_scan() {
@@ -411,15 +467,15 @@ function start_scan() {
 
 <div class="wrapper">
 
-  <% if params[:scope] %>
+  <% if @scope %>
     <h3>Allow <%= @app_name %> access to <%= @me.gsub(/https?:\/\//, '') %>?</h3>
 
     <div class="continue_message" style="display: none;">
-      <p>The app <b><%= params[:client_id] %></b> would like to access your site, <b><%= @me %></b>.</p>
-      <% if params[:scope] %>
+      <p>The app <b><%= @client_id %></b> would like to access your site, <b><%= @me %></b>.</p>
+      <% if @scope %>
         <p>Requested <a href="http://indiewebcamp.com/scope">scopes</a>:<br>
           <ul>
-            <%= params[:scope].split(' ').map{|s| "<li>#{s}</li>"}.join %>
+            <%= @scope.split(' ').map{|s| "<li>#{s}</li>"}.join %>
           </ul>
         </p>
       <% end %>
@@ -493,7 +549,7 @@ function start_scan() {
     <p>Ensure your profiles link back to your home page.</p>
     <p><a href="/setup">Full Setup Instructions</a></p>
   </div>
-  <% if !params[:client_id] %>
+  <% if !@client_id %>
     <div class="continue_message" style="display: none;">
       <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account on any of the providers.</p>
 
@@ -510,28 +566,21 @@ function start_scan() {
 </div>
 
 <div id="gpg-popup"><div class="in">
-  <form action="/auth/verify_gpg" method="post">
+  <form>
+    <div class="title">GPG Verification</div>
+    <div class="error">
+      <div class="alert" style="margin-bottom: 0;">Loading...</div>
+    </div>
     <div class="fields">
       <label for="plaintext">Sign this text with your private key</label>
-      <textarea rows="3" readonly="readonly" name="plaintext">foo</textarea>
+      <textarea rows="3" readonly="readonly" name="plaintext" class="plaintext"></textarea>
 
       <label for="signature">Paste signature below</label>
-      <textarea rows="3" name="signature">-----BEGIN PGP MESSAGE-----
-Version: GnuPG v1
-
-owEBOQHG/pANAwACATdF5QC0/3yxAcsJYgBToSRfZm9viQEcBAABAgAGBQJToSRf
-AAoJEDdF5QC0/3yxqlMIAKtweynxZD30WhTjWN2fzc4JCza/R9RG3oLjyKJroQtz
-BQtJR4EV/nO+vGPWjIRZ1O/a0Xta5kgdHg/P3s7sVcbvMAxNgZ1g0pRwfaYgOYgw
-KbqvDPlF924XgRO5CjiKkmkeQbMtc/EDN9qmQ9de8YvItlh590/kufw8svvyE9bW
-auHA5q6M732S3W4YE5kJuvv+vBMJqfqjU0ufFpNDm4tFkiFV41GvhOzMFopNRvGJ
-D1XHWqwS+RbPUaqCgWIzK48bAyLCRzh2DyJzQEI2hylZaS45IJefwkNKZRCsKTyK
-YHaoGLbZCvFw8LMwyZylmWyIsjtJsX0/T83NbUmviow=
-=pVfE
------END PGP MESSAGE-----</textarea>
+      <textarea rows="3" name="signature" class="signature"></textarea>
     </div>
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Verify</button>
-      <button type="button" class="btn">Cancel</button>
+      <button type="button" class="btn btn-primary">Verify</button>
+      <button type="button" class="btn btn-cancel">Cancel</button>
     </div>  
   </form>
 </div></div>
@@ -553,6 +602,7 @@ YHaoGLbZCvFw8LMwyZylmWyIsjtJsX0/T83NbUmviow=
 <style type="text/css">
 
   #gpg-popup {
+    display: none;
     position: absolute;
     top: 70px;
     left: 30px;
@@ -567,11 +617,26 @@ YHaoGLbZCvFw8LMwyZylmWyIsjtJsX0/T83NbUmviow=
     width: 400px;
     height: 300px;
   }
+  #gpg-popup .title {
+    text-align: center;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 10px;
+    padding: 6px;
+    font-weight: bold;
+    font-size: 22px;
+    color: #444;
+  }
   #gpg-popup .fields {
     padding: 6px;
   }
   #gpg-popup textarea {
     width: 374px;
+  }
+  #gpg-popup .alert {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
   }
 
   .wrapper {

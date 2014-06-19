@@ -4,7 +4,7 @@ class Controller < Sinatra::Base
     me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
     if provider.nil? or provider.code != 'sms'
-      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
+      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
     login = Login.create :user => user,
@@ -37,7 +37,7 @@ class Controller < Sinatra::Base
     me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
     if provider.nil? or provider.code != 'sms'
-      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
+      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
     login = Login.first :user => user,
@@ -48,7 +48,7 @@ class Controller < Sinatra::Base
     # TODO: Check code creation date and disallow old stuff
 
     if login.nil?
-      json_error 400, {error: 'invalid_code', error_description: 'The code could not be verified'}
+      json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
     login.complete = true
@@ -170,14 +170,14 @@ class Controller < Sinatra::Base
     @user = User.first :href => me
 
     if @user.nil?
-      json_error 400, {
+      json_error 200, {
         error: 'invalid_user',
         error_description: 'Profile was not found'
       }
     end
 
     if @user.totp_secret.nil? or @user.totp_secret == ''
-      json_error 400, {
+      json_error 200, {
         error: 'not_supported',
         error_description: 'TOTP is not yet configured for this user'
       }
@@ -215,18 +215,73 @@ class Controller < Sinatra::Base
     end
   end
 
-  post '/auth/verify_gpg' do
+  post '/auth/start_gpg.json' do
+    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
+
+    if provider.nil? or provider.code != 'gpg'
+      json_error 200, {error: 'invalid_input', error_description: 'This profile must be a link to a GPG key'}
+    end
+
+    plaintext = JWT.encode({
+      :me => me,
+      :user_id => user.id,
+      :redirect_uri => params[:redirect_uri],
+      :state => params[:state],
+      :scope => params[:scope],
+      :nonce => Random.rand(100000..999999)
+    }, SiteConfig.jwt_key)
+
+    json_response 200, {
+      plaintext: plaintext
+    }
+  end
+
+  post '/auth/verify_gpg.json' do
+    if !params[:signature]
+      json_error 200, {error: 'missing_signature', error_description: "No signature was provided"}
+    end
+
     # Verify the signature
+
     # The plaintext version is actually a JWT-signed payload that has all required info
     # (me, redirect_uri, scope, etc)
 
+    verified = false
+
+    crypto = GPGME::Crypto.new
+    signature = GPGME::Data.new(params[:signature])
+    data = crypto.verify(signature) do |sig|
+      puts sig.to_s
+      puts sig.valid?
+      verified = sig.valid?
+    end
+
     # On errors, show an error page
+    if !verified
+      json_error 200, {error: 'invalid_signature', error_description: "The signature didn't match. Please try again."}
+    else
+      # GPG signature was verified. Now decode and verify the JWT payload 
+      jwt_encoded = data.read
+      payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
 
-    # Generate a login token
+      if payload
+        jj payload
 
-    # Redirect to the callback URL
+        # Generate a login token
+        login = Login.create :user => User.get(payload['user_id'].to_i),
+          :provider => Provider.first(:code => 'gpg'),
+          :complete => true,
+          :token => Login.generate_token,
+          :redirect_uri => payload['redirect_uri'],
+          :state => payload['state'],
+          :scope => payload['scope']
 
-
+        # Redirect to the callback URL
+        json_response 200, {redirect_uri: build_redirect_uri(login)}
+      else
+        json_error 200, {error: 'unknown_error', error_description: "Something went horribly wrong!"}
+      end
+    end
   end
 
 end

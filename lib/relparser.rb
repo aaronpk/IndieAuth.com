@@ -123,7 +123,7 @@ class RelParser
 
     @page.search("a,link").each do |link|
       rels = (link.attribute("rel").to_s || '').split(/ /)
-      if rels.include?('me') || rels.include?('authorization_endpoint')
+      if rels.include?('me') || rels.include?('authorization_endpoint') || rels.include?('pgpkey')
         return true if link.attribute("href").value == profile
       end
     end

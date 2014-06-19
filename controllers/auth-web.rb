@@ -5,7 +5,7 @@ class Controller < Sinatra::Base
     me = params[:me]
 
     if me.nil? || me == ""
-      json_error 400, {error: 'invalid_input', error_description: 'parameter "me" is required'}
+      json_error 200, {error: 'invalid_input', error_description: 'parameter "me" is required'}
     end
 
     # Prepend "http" unless it's already there
@@ -17,7 +17,7 @@ class Controller < Sinatra::Base
     profile = params[:profile]
 
     if profile.nil? || profile == ""
-      json_error 400, {error: 'invalid_input', error_description: 'parameter "profile" is required'}
+      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" is required'}
     end
 
     profile
@@ -100,6 +100,9 @@ class Controller < Sinatra::Base
     if provider.code == 'sms' or provider.code == 'email'
       verified = true
       error_description = nil
+    elsif provider.code == 'gpg'
+      verified = true
+      error_description = nil
     elsif provider.code == 'indieauth'
       # Make an HTTP request to the auth server and check that it responds with an "IndieAuth: authorization_endpoint" header
       # But return verified=false if it's actually this server
@@ -139,7 +142,7 @@ class Controller < Sinatra::Base
 
     # Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
     if !me_parser.links_to profile
-      json_error 400, {error: 'invalid_input', error_description: "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\""}
+      json_error 200, {error: 'invalid_input', error_description: "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\""}
     end
 
     provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
@@ -147,6 +150,7 @@ class Controller < Sinatra::Base
   end
 
   def build_redirect_uri(login)
+    puts login.inspect
     if login.redirect_uri
       redirect_uri = URI.parse login.redirect_uri
       p = Rack::Utils.parse_query redirect_uri.query
@@ -156,7 +160,7 @@ class Controller < Sinatra::Base
       redirect_uri.query = Rack::Utils.build_query p
       redirect_uri = redirect_uri.to_s 
     else
-      redirect_uri = "/success?#{login.response_type}=#{login.token}&me=#{URI.encode_www_form_component(login.user.href)}"
+      redirect_uri = "/success?#{session[:response_type]}=#{login.token}&me=#{URI.encode_www_form_component(login.user.href)}"
       redirect_uri = "#{redirect_uri}&state=#{login.state}" if login.state
     end
     return redirect_uri
@@ -198,6 +202,9 @@ class Controller < Sinatra::Base
     session[:scope] = params[:scope]
 
     @redirect_uri = params[:redirect_uri]
+    @client_id = params[:client_id]
+    @state = params[:state]
+    @scope = params[:scope]
     @providers = Provider.all(:home_page.not => '')
 
     if params[:client_id]
@@ -391,13 +398,14 @@ class Controller < Sinatra::Base
     begin
       links = find_all_supported_providers me_parser
       auth_endpoints = find_auth_endpoints me_parser
+      gpg_keys = get_gpg_keys me_parser
     rescue Exception => e
       @message = "Unknown error retrieving #{me_parser.url}: #{e.message}"
       title "Error"
       return erb :error
     end
 
-    if !links.include?(profile) and !auth_endpoints.include?(profile)
+    if !links.include?(profile) and !auth_endpoints.include?(profile) and !gpg_keys.map{|a| a[:href]}.include?(profile)
       @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."
       title "Error"
       return erb :error
