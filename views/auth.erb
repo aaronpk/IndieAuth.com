@@ -155,7 +155,7 @@ function set_up_gpg_auth() {
     var btn = $(this);
 
     $("#gpg-popup .btn-primary").attr("disabled", "disabled");
-    $("#gpg-popup .alert").html("Loading...").removeClass("alert-error");
+    $("#gpg-popup .alert").html("Loading...").removeClass("alert-error").show();
     $("#gpg-popup .fields").hide();
     show_gpg_popup();
 
@@ -603,7 +603,7 @@ function start_scan() {
 
   #gpg-popup {
     display: none;
-    position: absolute;
+    position: fixed;
     top: 70px;
     left: 30px;
     border: 6px rgba(80,80,80,0.8) solid;
