@@ -183,12 +183,12 @@ class RelParser
     return endpoints if @page.nil?
 
     @page.search("[rel=pgpkey]").each do |link|
-      puts " --> GPG Key: #{link.attribute("href").value} rel=#{link.attribute("rel")}"
-      # Fetch the key. Assume the href links to a plaintext key
       href = link.attribute("href").value
+      puts " --> GPG Key: #{href} rel=#{link.attribute("rel")}"
+      # Fetch the key. Assume the href links to a plaintext key
       begin
-        response = @agent.get href
-        puts response.body
+        absolute = URI.join(@url, href)
+        response = @agent.get absolute
         keys << {
           :href => href,
           :key => response.body

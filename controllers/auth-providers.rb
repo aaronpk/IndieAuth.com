@@ -233,7 +233,8 @@ class Controller < Sinatra::Base
     }, SiteConfig.jwt_key)
 
     json_response 200, {
-      plaintext: plaintext
+      plaintext: plaintext,
+      key_url: profile_record.href
     }
   end
 
@@ -247,10 +248,43 @@ class Controller < Sinatra::Base
     # The plaintext version is actually a JWT-signed payload that has all required info
     # (me, redirect_uri, scope, etc)
 
+    if !params[:profile] 
+      json_error 200, {error: 'missing_profile', error_description: "No key URL was provided"}
+    end
+
+    # Look up the user for this key
+    profile = Profile.first :href => params[:profile], :provider => Provider.first(:code => 'gpg')
+    if profile.nil? 
+      json_error 200, {error: 'profile_not_found', error_description: "The key URL provided was not found"}
+    end
+
+    expected_user = profile.user
+
+    begin
+      agent = Mechanize.new {|agent|
+        agent.user_agent_alias = "Mac Safari"
+        # Default to text/html if content-type is not set
+        agent.post_connect_hooks << lambda { |_,_,response,_|
+          if response.content_type.nil? || response.content_type.empty?
+            response.content_type = 'text/plain'
+          end
+        }
+      }
+      agent.agent.http.ca_file = './lib/ca-bundle.crt'
+      absolute = URI.join profile.user.href, profile.href
+      response = agent.get absolute
+      public_key = response.body
+    rescue => e
+      json_error 200, {error: 'error_fetching_key', error_description: "There was an error fetching the key from #{profile.href}"}
+    end
+
     verified = false
 
     begin
       crypto = GPGME::Crypto.new
+
+      # Import their public key 
+      GPGME::Key.import(public_key)
       signature = GPGME::Data.new(params[:signature])
       data = crypto.verify(signature) do |sig|
         puts sig.to_s
@@ -267,23 +301,34 @@ class Controller < Sinatra::Base
     else
       # GPG signature was verified. Now decode and verify the JWT payload 
       jwt_encoded = data.read
-      payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
+      begin
+        payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
+      rescue => e
+        json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that the plaintext was copy/pasted correctly."}
+      end
 
       if payload
         jj payload
 
-        # Generate a login token
-        login = Login.create :user => User.get(payload['user_id'].to_i),
-          :provider => Provider.first(:code => 'gpg'),
-          :profile => Profile.get(payload['profile_id']),
-          :complete => true,
-          :token => Login.generate_token,
-          :redirect_uri => payload['redirect_uri'],
-          :state => payload['state'],
-          :scope => payload['scope']
+        # Signature checked out, JWT token was successfully decoded
+        # Now make sure that the profile_id referenced in the JWT was the same one that provided the public key
+        if profile.id == payload['profile_id']
+          # Generate a login token
+          login = Login.create :user => User.get(payload['user_id'].to_i),
+            :provider => Provider.first(:code => 'gpg'),
+            :profile => Profile.get(payload['profile_id']),
+            :complete => true,
+            :token => Login.generate_token,
+            :redirect_uri => payload['redirect_uri'],
+            :state => payload['state'],
+            :scope => payload['scope']
 
-        # Redirect to the callback URL
-        json_response 200, {redirect_uri: build_redirect_uri(login)}
+          # Redirect to the callback URL
+          json_response 200, {redirect_uri: build_redirect_uri(login)}
+        else
+          json_error 200, {error: 'verification_mismatch', error_description: "The challenge was signed with the wrong key."}
+        end
+
       else
         json_error 200, {error: 'unknown_error', error_description: "Something went horribly wrong!"}
       end
