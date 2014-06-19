@@ -155,6 +155,8 @@ function set_up_totp_auth() {
 }
 
 function set_up_gpg_auth() {
+  var plaintext;
+
   $(".gpg-auth").unbind("click").click(function(){
     var btn = $(this);
 
@@ -174,12 +176,14 @@ function set_up_gpg_auth() {
       state: state
     }, function(data){
       if(data.plaintext) {
-        $("#gpg-popup .plaintext").val(data.plaintext).removeAttr("disabled");
+        plaintext = data.plaintext;
+        $("#gpg-popup .signature").val(data.plaintext).removeAttr("disabled");
         $("#gpg-popup .profile").val(data.key_url);
         $("#gpg-popup .btn-primary").removeAttr("disabled");
         $("#gpg-popup .alert").html("").removeClass("alert-error").hide();
         $("#gpg-popup .fields").show();
         show_gpg_popup();
+        $("#gpg-popup .signature").focus().select();
       } else if(data.error) {
         $("#gpg-popup .alert").html(data.error_description).addClass("alert-error");
         show_gpg_popup();
@@ -202,7 +206,7 @@ function set_up_gpg_auth() {
     }, function(data) {
       if(data.error) {
         $("#gpg-popup .btn-primary").removeAttr("disabled");
-        $("#gpg-popup .signature").removeAttr("disabled").val("");
+        $("#gpg-popup .signature").removeAttr("disabled").val(plaintext);
         if(data.error_description) {
           $("#gpg-popup .alert").html(data.error_description).addClass("alert-error").show();
         } else {
@@ -218,7 +222,6 @@ function set_up_gpg_auth() {
     });
   });
   $("#gpg-popup .btn-cancel").unbind("click").click(function(){
-    $("#gpg-popup .plaintext").val("");
     $("#gpg-popup .signature").val("");
     $("#gpg-popup").hide();
     bind_keyboard_listeners();
@@ -592,11 +595,8 @@ function start_scan() {
       <div class="alert" style="margin-bottom: 0;">Loading...</div>
     </div>
     <div class="fields">
-      <label for="plaintext">Sign this text with your private key</label>
-      <textarea rows="3" readonly="readonly" name="plaintext" class="plaintext"></textarea>
-
-      <label for="signature">Paste signature below</label>
-      <textarea rows="3" name="signature" class="signature"></textarea>
+      <label for="signature">Sign this text with your private key</label>
+      <textarea rows="6" name="signature" class="signature"></textarea>
     </div>
     <div class="form-actions">
       <button type="button" class="btn btn-primary">Verify</button>

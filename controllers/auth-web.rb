@@ -67,7 +67,7 @@ class Controller < Sinatra::Base
 
     # First check if there's already a matching profile record for this user 
     existing = Profile.first :user => user, :href => profile
-    puts "Checking for existing profile: #{user}, #{profile}"
+    puts "Checking for existing profile: #{user.href}, #{profile}"
 
     if !existing
       # Checks the URL against the list of regexes to see what provider it is

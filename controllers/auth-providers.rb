@@ -243,14 +243,13 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'missing_signature', error_description: "No signature was provided"}
     end
 
-    # Verify the signature
-
-    # The plaintext version is actually a JWT-signed payload that has all required info
-    # (me, redirect_uri, scope, etc)
-
     if !params[:profile] 
       json_error 200, {error: 'missing_profile', error_description: "No key URL was provided"}
     end
+
+    # if !params[:me]
+    #   json_error 200, {error: 'missing_user', error_description: "No user was specified"}
+    # end
 
     # Look up the user for this key
     profile = Profile.first :href => params[:profile], :provider => Provider.first(:code => 'gpg')
@@ -279,6 +278,11 @@ class Controller < Sinatra::Base
     end
 
     verified = false
+
+    # Verify the signature
+
+    # The plaintext version is actually a JWT-signed payload that has all required info
+    # (me, redirect_uri, scope, etc)
 
     begin
       crypto = GPGME::Crypto.new
@@ -309,6 +313,9 @@ class Controller < Sinatra::Base
 
       if payload
         jj payload
+
+        # TODO: Expire the challenges after 5 minutes or so
+
 
         # Signature checked out, JWT token was successfully decoded
         # Now make sure that the profile_id referenced in the JWT was the same one that provided the public key
