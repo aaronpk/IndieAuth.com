@@ -249,12 +249,16 @@ class Controller < Sinatra::Base
 
     verified = false
 
-    crypto = GPGME::Crypto.new
-    signature = GPGME::Data.new(params[:signature])
-    data = crypto.verify(signature) do |sig|
-      puts sig.to_s
-      puts sig.valid?
-      verified = sig.valid?
+    begin
+      crypto = GPGME::Crypto.new
+      signature = GPGME::Data.new(params[:signature])
+      data = crypto.verify(signature) do |sig|
+        puts sig.to_s
+        puts sig.valid?
+        verified = sig.valid?
+      end
+    rescue => e
+      json_error 200, {error: 'invalid_signature', error_description: "There was an error verifying the signature. Please try again."}
     end
 
     # On errors, show an error page

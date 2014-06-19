@@ -195,7 +195,11 @@ function set_up_gpg_auth() {
       if(data.error) {
         $("#gpg-popup .btn-primary").removeAttr("disabled");
         $("#gpg-popup .signature").removeAttr("disabled").html("");
-        $("#gpg-popup .alert").html("The signature could not be verified!").addClass("alert-error").show();
+        if(data.error_description) {
+          $("#gpg-popup .alert").html(data.error_description).addClass("alert-error").show();
+        } else {
+          $("#gpg-popup .alert").html("The signature could not be verified!").addClass("alert-error").show();
+        }
         show_gpg_popup();
       } else {
         $("#gpg-popup .alert").html("Success! Redirecting...").addClass("alert-success").show();
