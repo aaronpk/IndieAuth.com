@@ -297,7 +297,6 @@ class Controller < Sinatra::Base
       signature = GPGME::Data.new(params[:signature])
       data = crypto.verify(signature) do |sig|
         puts sig.to_s
-        puts sig.valid?
         verified = sig.valid?
       end
     rescue => e
@@ -312,8 +311,10 @@ class Controller < Sinatra::Base
       jwt_encoded = data.read
       begin
         payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
-      rescue => e
+      rescue JWT::DecodeError
         json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that you signed the correct plaintext."}
+      rescue 
+        json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text."}
       end
 
       if payload
