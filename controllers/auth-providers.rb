@@ -243,21 +243,23 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'missing_signature', error_description: "No signature was provided"}
     end
 
-    if !params[:profile] 
-      json_error 200, {error: 'missing_profile', error_description: "No key URL was provided"}
+    if !params[:plaintext]
+      json_error 200, {error: 'missing_data', error_description: "The request was missing some data"}
     end
 
-    # if !params[:me]
-    #   json_error 200, {error: 'missing_user', error_description: "No user was specified"}
-    # end
-
-    # Look up the user for this key
-    profile = Profile.first :href => params[:profile], :provider => Provider.first(:code => 'gpg')
-    if profile.nil? 
-      json_error 200, {error: 'profile_not_found', error_description: "The key URL provided was not found"}
+    # Decode the request parameters. We can trust everything in "expected" because it was signed by the server.
+    begin
+      expected = JWT.decode(params[:plaintext], SiteConfig.jwt_key)
+    rescue => e
+      json_error 200, {error: 'request_error', error_description: "There was an error verifying this request."}
     end
 
-    expected_user = profile.user
+    # Look up the key to make sure we know about it already
+    profile = Profile.get expected['profile_id']
+    user = User.get expected['user_id']
+    if profile.nil? or user.nil?
+      json_error 200, {error: 'error', error_description: "Something went wrong, but this should never happen."}
+    end
 
     begin
       agent = Mechanize.new {|agent|
@@ -270,7 +272,8 @@ class Controller < Sinatra::Base
         }
       }
       agent.agent.http.ca_file = './lib/ca-bundle.crt'
-      absolute = URI.join profile.user.href, profile.href
+      # Use the key indicated by the signed JWT payload
+      absolute = URI.join user.href, profile.href
       response = agent.get absolute
       public_key = response.body
     rescue => e
@@ -281,9 +284,8 @@ class Controller < Sinatra::Base
 
     # Verify the signature
 
-    # The plaintext version is actually a JWT-signed payload that has all required info
+    # The plaintext version is actually a JWT-signed payload that has all the info about the request
     # (me, redirect_uri, scope, etc)
-
     begin
       crypto = GPGME::Crypto.new
 
@@ -303,15 +305,16 @@ class Controller < Sinatra::Base
     if !verified
       json_error 200, {error: 'invalid_signature', error_description: "The signature didn't match. Please try again."}
     else
-      # GPG signature was verified. Now decode and verify the JWT payload 
+      # GPG signature was verified. Now decode and verify the JWT payload matches the expected request details.
       jwt_encoded = data.read
       begin
         payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
       rescue => e
-        json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that the plaintext was copy/pasted correctly."}
+        json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that you signed the correct plaintext."}
       end
 
       if payload
+        puts "Expected profile ID: #{profile.id}"
         jj payload
 
         # TODO: Expire the challenges after 5 minutes or so

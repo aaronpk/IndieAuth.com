@@ -163,6 +163,7 @@ function set_up_gpg_auth() {
     $("#gpg-popup .btn-primary").attr("disabled", "disabled");
     $("#gpg-popup .alert").html("Loading...").removeClass("alert-error").show();
     $("#gpg-popup .signature").removeAttr("disabled").val("");
+    $("#gpg-popup .plaintext").val("");
     $("#gpg-popup .fields").hide();
     show_gpg_popup();
     unbind_keyboard_listeners();
@@ -178,7 +179,7 @@ function set_up_gpg_auth() {
       if(data.plaintext) {
         plaintext = data.plaintext;
         $("#gpg-popup .signature").val(data.plaintext).removeAttr("disabled");
-        $("#gpg-popup .profile").val(data.key_url);
+        $("#gpg-popup .plaintext").val(data.plaintext);
         $("#gpg-popup .btn-primary").removeAttr("disabled");
         $("#gpg-popup .alert").html("").removeClass("alert-error").hide();
         $("#gpg-popup .fields").show();
@@ -202,7 +203,7 @@ function set_up_gpg_auth() {
     show_gpg_popup();
     $.post("/auth/verify_gpg.json", {
       signature: $("#gpg-popup .signature").val(),
-      profile: $("#gpg-popup .profile").val()
+      plaintext: $("#gpg-popup .plaintext").val()
     }, function(data) {
       if(data.error) {
         $("#gpg-popup .btn-primary").removeAttr("disabled");
@@ -223,6 +224,7 @@ function set_up_gpg_auth() {
   });
   $("#gpg-popup .btn-cancel").unbind("click").click(function(){
     $("#gpg-popup .signature").val("");
+    $("#gpg-popup .plaintext").val("");
     $("#gpg-popup").hide();
     bind_keyboard_listeners();
   });
@@ -602,7 +604,7 @@ function start_scan() {
       <button type="button" class="btn btn-primary">Verify</button>
       <button type="button" class="btn btn-cancel">Cancel</button>
     </div>
-    <input type="hidden" class="profile">
+    <input type="hidden" class="plaintext">
   </form>
 </div></div>
 
