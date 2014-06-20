@@ -222,20 +222,23 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: 'This profile must be a link to a GPG key'}
     end
 
-    plaintext = JWT.encode({
+    json_response 200, {
+      plaintext: generate_gpg_challenge(me, user, profile_record, params),
+      key_url: profile_record.href
+    }
+  end
+
+  def generate_gpg_challenge(me, user, profile_record, params) 
+    JWT.encode({
       :me => me,
       :user_id => user.id,
       :profile_id => profile_record.id,
       :redirect_uri => params[:redirect_uri],
       :state => params[:state],
       :scope => params[:scope],
-      :nonce => Random.rand(100000..999999)
+      :nonce => Random.rand(100000..999999),
+      :created_at => Time.now.to_i
     }, SiteConfig.jwt_key)
-
-    json_response 200, {
-      plaintext: plaintext,
-      key_url: profile_record.href
-    }
   end
 
   post '/auth/verify_gpg.json' do

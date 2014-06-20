@@ -168,31 +168,45 @@ function set_up_gpg_auth() {
     show_gpg_popup();
     unbind_keyboard_listeners();
 
-    $.post("/auth/start_gpg.json", {
-      me: me,
-      profile: btn.attr('href'),
-      redirect_uri: redirect_uri,
-      client_id: client_id,
-      scope: scope,
-      state: state
-    }, function(data){
-      if(data.plaintext) {
-        plaintext = data.plaintext;
-        $("#gpg-popup .signature").val(data.plaintext).removeAttr("disabled");
-        $("#gpg-popup .plaintext").val(data.plaintext);
-        $("#gpg-popup .btn-primary").removeAttr("disabled");
-        $("#gpg-popup .alert").html("").removeClass("alert-error").hide();
-        $("#gpg-popup .fields").show();
-        show_gpg_popup();
-        $("#gpg-popup .signature").focus().select();
-      } else if(data.error) {
-        $("#gpg-popup .alert").html(data.error_description).addClass("alert-error");
-        show_gpg_popup();
-      } else {
-        $("#gpg-popup .alert").html("An unknown error occurred").addClass("alert-error");
-        show_gpg_popup();
-      }
-    });
+    // Check the page to see if there is a challenge pre-generated
+    var challenge;
+    var profile_url = btn.attr('href');
+    if(challenge=$(".gpg_challenge[data-profile='"+profile_url+"']").text()) {
+      plaintext = challenge;
+      $("#gpg-popup .signature").val(plaintext).removeAttr("disabled");
+      $("#gpg-popup .plaintext").val(plaintext);
+      $("#gpg-popup .btn-primary").removeAttr("disabled");
+      $("#gpg-popup .alert").html("").removeClass("alert-error").hide();
+      $("#gpg-popup .fields").show();
+      show_gpg_popup();
+      $("#gpg-popup .signature").focus();
+    } else {
+      $.post("/auth/start_gpg.json", {
+        me: me,
+        profile: btn.attr('href'),
+        redirect_uri: redirect_uri,
+        client_id: client_id,
+        scope: scope,
+        state: state
+      }, function(data){
+        if(data.plaintext) {
+          plaintext = data.plaintext;
+          $("#gpg-popup .signature").val(data.plaintext).removeAttr("disabled");
+          $("#gpg-popup .plaintext").val(data.plaintext);
+          $("#gpg-popup .btn-primary").removeAttr("disabled");
+          $("#gpg-popup .alert").html("").removeClass("alert-error").hide();
+          $("#gpg-popup .fields").show();
+          show_gpg_popup();
+          $("#gpg-popup .signature").focus();
+        } else if(data.error) {
+          $("#gpg-popup .alert").html(data.error_description).addClass("alert-error");
+          show_gpg_popup();
+        } else {
+          $("#gpg-popup .alert").html("An unknown error occurred").addClass("alert-error");
+          show_gpg_popup();
+        }
+      });
+    }
 
     return false;
   });
@@ -608,6 +622,11 @@ function start_scan() {
   </form>
 </div></div>
 
+<% if @gpg_challenges
+  @gpg_challenges.each do |challenge| 
+    %><div style="display:none;" class="gpg_challenge" data-profile="<%= challenge[:profile] %>"><%= challenge[:challenge] %></div><%
+  end
+end %>
 
 <div style="display:none;">
 <img src="/img/profile-verified.png") />

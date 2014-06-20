@@ -214,6 +214,18 @@ class Controller < Sinatra::Base
       @app_name = params[:redirect_uri].gsub(/https?:\/\//, '')
     end
 
+    # Pre-generate the GPG challenge if there is already a user record and GPG profile
+    @gpg_challenges = []
+    if @user
+      profiles = @user.profiles.all(:provider => Provider.first(:code => 'gpg'), :active => 1)
+      profiles.each do |profile|
+        @gpg_challenges << {
+          :profile => profile.href,
+          :challenge => generate_gpg_challenge(@me, @user, profile, params)
+        }
+      end
+    end
+
     halt 200, {
       'IndieAuth' => 'authorization_endpoint'
     }, erb(:auth)
