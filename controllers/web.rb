@@ -30,4 +30,9 @@ class Controller < Sinatra::Base
     erb :sign_in
   end
 
+  get '/gpg/?' do
+    title "Sign In with a GPG Key"
+    erb :gpg
+  end
+
 end

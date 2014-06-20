@@ -1,0 +1,60 @@
+
+<div class="hero-unit">
+  <h1>Set up Password-less Logins with your GPG Key</h1>
+</div>
+
+<div class="container">
+
+  <div class="section">
+
+    <h2>Setup Instructions</h2>
+
+    <div class="row">
+      <div class="span8">
+        <h3>1. Link to your GPG key on your home page</h3>
+
+        <p>On your home page, link to one or more GPG keys and add the <code>rel="pgpkey"</code> attribute to the links.</p>
+        <p>This may look something like the following:
+        <pre><code><%== '<link rel="pgpkey" href="/key.pub">' %></code></pre>
+      </div><!-- span -->
+    </div><!-- row -->
+
+    <div class="row">
+      <div class="span8">
+        <h3>2. Sign in on indieauth.com</h3>
+
+        <p>Make sure to click "re-scan" if you've previously signed in before and have just added your key.</p>
+
+        <p>When you sign in, you'll see a GPG option listed! Clicking it will present a challenge that you will need to sign with your private key.</p>
+
+        <p><img src="/img/gpg-plaintext.png" width="380" class="thumbnail"></p>
+
+        <p>Sign the text and replace it with the signed version.</p>
+
+        <h4>GPG Tools</h4>
+        <p>If you have <a href="https://gpgtools.org/">GPG Tools</a> for OS X installed, you can use the "Services" menu to quickly sign the text.</p>
+        <p><img src="/img/gpg-services-sign.png" class="thumbnail"></p>
+
+        <h4>Keybase.io</h4>
+        <p>If you are using <a href="https://keybase.io">Keybase.io</a> you can sign it on the command line with <code>keybase sign -m 'challenge text from indieauth.com'</code></p>
+
+      </div><!-- span -->
+    </div><!-- row -->
+
+    <div class="row">
+      <div class="span8">
+        <h3>3. Submit the signed text</h3>
+
+        <p>Paste the signed text in the form field and click "Verify".</p>
+        <p><img src="/img/gpg-signed.png" width="380" class="thumbnail"></p>
+        <p>After the server verifies the signature matches that of your public key you chose, you will be signed in!</p>
+
+      </div>
+    </div>
+
+
+  </div><!-- section -->
+
+</div><!-- container -->
+
+<%= partial :'partials/_footer' %>
