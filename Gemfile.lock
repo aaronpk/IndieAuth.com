@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/aaronpk/omniauth-beeminder
+  revision: feeb76cc20ae0dfb3f3a5729296357120d3e9ec1
+  specs:
+    omniauth-beeminder (0.1.0)
+      omniauth-oauth2 (>= 1.1.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -194,6 +201,7 @@ DEPENDENCIES
   microformats2
   mysql2 (= 0.3.7)
   omniauth
+  omniauth-beeminder!
   omniauth-facebook
   omniauth-flickr
   omniauth-geoloqi
