@@ -210,7 +210,7 @@ class Controller < Sinatra::Base
     if params[:client_id]
       @app_name = params[:client_id].gsub(/https?:\/\//, '').gsub(/\/$/, '')
 
-    else params[:redirect_uri]
+    elsif params[:redirect_uri]
       @app_name = params[:redirect_uri].gsub(/https?:\/\//, '')
     end
 
