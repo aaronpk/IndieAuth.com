@@ -16,7 +16,7 @@ class Controller < Sinatra::Base
 
     def display_url(url) 
       return '' if url.nil?
-      url.gsub(/https?:\/\//, '').gsub(/\/$/, '')
+      url.to_s.gsub(/https?:\/\//, '').gsub(/\/$/, '')
     end
 
     def path_class
