@@ -10,7 +10,6 @@
     <title><%= title %></title>
     <% if @_meta_description %><meta name="description" content="<%= @_meta_description %>"><% end %>
     <%= viewport %>
-    <link rel="author" href="/humans.txt">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
@@ -28,12 +27,11 @@
         })();
       </script>
     <% end %>
-    <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
     <script src="/js/jquery-1.7.1.min.js"></script>
     <script src="/bootstrap/js/bootstrap.min.js"></script>
     <script src="/js/mustache.js"></script>
   </head>
-  <body class="<%= browser.body_class %> <%= path_class %>">
+  <body class="h-x-app <%= browser.body_class %> <%= path_class %>">
 
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -43,7 +41,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/">IndieAuth</a>
+          <a class="brand p-name" href="/">IndieAuth</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="/setup">Setup</a></li>
