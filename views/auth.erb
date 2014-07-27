@@ -533,7 +533,16 @@ function start_scan() {
       <% if @app_logo %>
         <img src="<%= @app_logo %>" style="float: left; margin-right: 6px; height: 40px;">
       <% end %>
-      <h3 style="padding-top: 6px;">Sign in to <a href="<%= @client_id %>"><%= @app_name %></a> <%= (@app_name != @client_id ? "(#{display_url(@client_id)})" : '') %></h3>
+      <% 
+      if @client_id && display_url(@client_id) == display_url(@app_name)
+        display_name = "<a href=\"#{@client_id}\">#{@app_name}</a>"
+      elsif @client_id
+        display_name = "<a href=\"#{@client_id}\">#{@app_name}</a> (#{display_url(@client_id)})"
+      else
+        display_name = @app_name
+      end 
+      %>
+      <h3 style="padding-top: 6px;">Sign in to <%= display_name %></h3>
     </div>
     <div style="clear:both; margin-bottom:10px;"></div>
     <p>Authenticate using one of the methods below to sign in as <%= @me %></p>

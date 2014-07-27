@@ -219,7 +219,7 @@ class Controller < Sinatra::Base
         if ['https','http'].include? client_id.scheme and !client_id.host.nil?
           client_id.path = '/' if client_id.path == ''
           client = Microformats2.parse client_id
-          if client.x_app.name 
+          if client.x_app.name
             @app_name = client.x_app.name
           end
           if client.x_app.logo
