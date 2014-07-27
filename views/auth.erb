@@ -327,7 +327,8 @@ function update_provider_status(link, data, i) {
     set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
   } else if(data.verified) {
     set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
-    $("#profile_"+i+" .link").html('<a href="'+data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri)+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
+    var href = data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri);
+    $("#profile_"+i+" .link").html('<a href="'+href+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
   } else if(data.error) {
     var message;
     if(data.error_description) {
@@ -507,12 +508,19 @@ function start_scan() {
 <div class="wrapper">
 
   <% if @scope %>
-    <h3>Allow <%= @app_name %> access to <%= @me.gsub(/https?:\/\//, '') %>?</h3>
+    <div class="app-name">
+      <% if @app_logo %>
+        <img src="<%= @app_logo %>" style="float: left; margin-right: 6px; height: 40px;">
+      <% end %>
+      <h3 style="padding-top: 6px;">Allow <a href="<%= @client_id %>"><%= @app_name %></a> access to <%= display_url(@me) %>?</h3>
+    </div>
+    <div style="clear:both; margin-bottom:10px;"></div>
 
     <div class="continue_message" style="display: none;">
-      <p>The app <b><%= @client_id %></b> would like to access your site, <b><%= @me %></b>.</p>
+      <p>The app <b><%= @client_id %></b> would like to access your site, <b><%= @me %></b></p>
+
       <% if @scope %>
-        <p>Requested <a href="http://indiewebcamp.com/scope">scopes</a>:<br>
+        <p>The app is requesting the following <a href="http://indiewebcamp.com/scope">scopes</a>:<br>
           <ul>
             <%= @scope.split(' ').map{|s| "<li>#{s}</li>"}.join %>
           </ul>
@@ -521,8 +529,14 @@ function start_scan() {
       <p>Authenticate using one of the methods below to approve this request.</p>
     </div>
   <% else %>
-    <h3>Sign in to <%= @app_name %></h3>
-    <p>Authenticate using one of the methods below to sign in as <%= @me %>.</p>
+    <div class="app-name">
+      <% if @app_logo %>
+        <img src="<%= @app_logo %>" style="float: left; margin-right: 6px; height: 40px;">
+      <% end %>
+      <h3 style="padding-top: 6px;">Sign in to <a href="<%= @client_id %>"><%= @app_name %></a> <%= (@app_name != @client_id ? "(#{display_url(@client_id)})" : '') %></h3>
+    </div>
+    <div style="clear:both; margin-bottom:10px;"></div>
+    <p>Authenticate using one of the methods below to sign in as <%= @me %></p>
   <% end %>
 
   <div class="loading_message">
