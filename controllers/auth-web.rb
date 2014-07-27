@@ -207,8 +207,27 @@ class Controller < Sinatra::Base
     @scope = params[:scope]
     @providers = Provider.all(:home_page.not => '')
 
+    @app_name = 'Unknown App'
+    @app_logo = nil
+
     if params[:client_id]
+      # Remove visible http and trailing slash from the display name
       @app_name = params[:client_id].gsub(/https?:\/\//, '').gsub(/\/$/, '')
+      # Look for an h-card on the URL indicated by the client_id
+      begin
+        client_id = URI.parse params[:client_id]
+        if ['https','http'].include? client_id.scheme and !client_id.host.nil?
+          client_id.path = '/' if client_id.path == ''
+          client = Microformats2.parse client_id
+          if client.x_app.name 
+            @app_name = client.x_app.name
+          end
+          if client.x_app.logo
+            @app_logo = client_id + URI.parse(client.x_app.logo.to_s)
+          end
+        end
+      rescue
+      end
 
     elsif params[:redirect_uri]
       @app_name = params[:redirect_uri].gsub(/https?:\/\//, '')

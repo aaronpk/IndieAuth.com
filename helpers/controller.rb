@@ -14,6 +14,11 @@ class Controller < Sinatra::Base
       erb page, options.merge!(:layout => false)
     end
 
+    def display_url(url) 
+      return '' if url.nil?
+      url.gsub(/https?:\/\//, '').gsub(/\/$/, '')
+    end
+
     def path_class
       classes = request.path.split('/')
       classes.push('home') if request.path == '/'
