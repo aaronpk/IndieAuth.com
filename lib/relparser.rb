@@ -139,7 +139,7 @@ class RelParser
 
     @page.search("a,link").each do |link|
       rels = (link.attribute("rel").to_s || '').split(/ /)
-      if rels.include? 'me'
+      if rels.include? 'me' and link.attribute("href")
         puts " --> #{link.attribute("href").value} rel=#{link.attribute("rel")}"
         href = link.attribute("href").value
 
