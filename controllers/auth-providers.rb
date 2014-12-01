@@ -264,6 +264,8 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'error', error_description: "Something went wrong, but this should never happen."}
     end
 
+    puts "Expecting user #{user.href} (#{user.id}) to authenticate"
+
     begin
       agent = Mechanize.new {|agent|
         agent.user_agent_alias = "Mac Safari"
@@ -293,59 +295,70 @@ class Controller < Sinatra::Base
       crypto = GPGME::Crypto.new
 
       # Import their public key 
-      GPGME::Key.import(public_key)
+      result = GPGME::Key.import(public_key)
+      # Find the fingerprint of the key that was just imported (or had been previously imported)
+      fingerprint = result.imports[0].fpr
+
+      puts "Fingerprint of imported key: #{fingerprint}"
+
       signature = GPGME::Data.new(params[:signature])
       data = crypto.verify(signature) do |sig|
         puts sig.to_s
         verified = sig.valid?
+
+        if !verified
+          json_error 200, {error: 'invalid_signature', error_description: "The signature was invalid. Please try again."}
+        end
+
+        puts "Fingerprint of key that was used to sign: #{sig.fpr}"
+
+        if fingerprint != sig.fpr
+          json_error 200, {error: 'key_mismatch', error_description: "The key used to sign the challenge was not the key at #{absolute}."}
+        end
+
       end
     rescue => e
       json_error 200, {error: 'invalid_signature', error_description: "There was an error verifying the signature. Please try again."}
     end
 
-    # On errors, show an error page
-    if !verified
-      json_error 200, {error: 'invalid_signature', error_description: "The signature didn't match. Please try again."}
-    else
-      # GPG signature was verified. Now decode and verify the JWT payload matches the expected request details.
-      jwt_encoded = data.read
-      begin
-        payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
-      rescue JWT::DecodeError
-        json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that you signed the correct plaintext."}
-      rescue 
-        json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text."}
-      end
+    # GPG signature was verified. Now decode and verify the JWT payload matches the expected request details.
+    jwt_encoded = data.read
+    begin
+      payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
+    rescue JWT::DecodeError
+      json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that you signed the correct plaintext."}
+    rescue 
+      json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text."}
+    end
 
-      if payload
-        puts "Expected profile ID: #{profile.id}"
-        jj payload
+    if payload
+      puts "Expected profile ID: #{profile.id}"
+      jj payload
 
-        # TODO: Expire the challenges after 5 minutes or so
+      # TODO: Expire the challenges after 5 minutes or so
 
 
-        # Signature checked out, JWT token was successfully decoded
-        # Now make sure that the profile_id referenced in the JWT was the same one that provided the public key
-        if profile.id == payload['profile_id']
-          # Generate a login token
-          login = Login.create :user => User.get(payload['user_id'].to_i),
-            :provider => Provider.first(:code => 'gpg'),
-            :profile => Profile.get(payload['profile_id']),
-            :complete => true,
-            :token => Login.generate_token,
-            :redirect_uri => payload['redirect_uri'],
-            :state => payload['state'],
-            :scope => payload['scope']
+      # Signature checked out, JWT token was successfully decoded
+      # Now make sure that the profile_id referenced in the JWT was the same one that provided the public key
+      if profile.id == payload['profile_id']
+        # Generate a login token
+        login = Login.create :user => User.get(payload['user_id'].to_i),
+          :provider => Provider.first(:code => 'gpg'),
+          :profile => Profile.get(payload['profile_id']),
+          :complete => true,
+          :token => Login.generate_token,
+          :redirect_uri => payload['redirect_uri'],
+          :state => payload['state'],
+          :scope => payload['scope']
 
-          # Redirect to the callback URL
-          json_response 200, {redirect_uri: build_redirect_uri(login)}
-        else
-          json_error 200, {error: 'verification_mismatch', error_description: "The challenge was signed with the wrong key."}
-        end
-
+        # Redirect to the callback URL
+        json_response 200, {redirect_uri: build_redirect_uri(login)}
       else
-        json_error 200, {error: 'unknown_error', error_description: "Something went horribly wrong!"}
+        json_error 200, {error: 'verification_mismatch', error_description: "The challenge was signed with the wrong key."}
       end
+
+    else
+      json_error 200, {error: 'unknown_error', error_description: "Something went horribly wrong!"}
     end
   end
 
