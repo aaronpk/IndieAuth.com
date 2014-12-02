@@ -142,6 +142,7 @@ class RelParser
       if rels.include? 'me' and link.attribute("href")
         puts " --> #{link.attribute("href").value} rel=#{link.attribute("rel")}"
         href = link.attribute("href").value
+        href = URI.decode href
 
         if href.match RelParser.sms_regex or href.match RelParser.email_regex
           links << href
