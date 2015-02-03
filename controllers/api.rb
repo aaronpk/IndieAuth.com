@@ -93,7 +93,7 @@ class Controller < Sinatra::Base
       http_error 400, {error: "invalid_request", error_description: "The 'redirect_uri' parameter did not match"}
     end
 
-    if login.state != params[:state]
+    if login.state.to_s != params[:state].to_s
       puts "The state parameter did not match"
       http_error 400, {error: "invalid_request", error_description: "The 'state' parameter did not match"}
     end
