@@ -53,7 +53,8 @@
 
       <p>At this point you need to verify the code which will also return the domain name of the authenticated user. Make a POST request to indieauth.com/auth with the code and all the original parameters of the request, and you will get back the domain name of the authenticated user.</p>
 
-      <p><pre><code>POST https://indieauth.com/auth
+      <p><pre><code>POST https://indieauth.com/auth HTTP/1.1
+Content-Type: application/x-www-form-urlencoded;charset=UTF-8
 
 code=gk7n4opsyuUxhvF4&amp;
 redirect_uri=https://example.com/auth&amp;
