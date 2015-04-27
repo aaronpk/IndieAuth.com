@@ -253,6 +253,7 @@ class Controller < Sinatra::Base
     # Decode the request parameters. We can trust everything in "expected" because it was signed by the server.
     begin
       expected = JWT.decode(params[:plaintext], SiteConfig.jwt_key)
+      expected = expected[0] # new JWT library returns a 2-element array after decoding
     rescue => e
       json_error 200, {error: 'request_error', error_description: "There was an error verifying this request."}
     end
