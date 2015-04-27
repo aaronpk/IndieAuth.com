@@ -326,6 +326,7 @@ class Controller < Sinatra::Base
     jwt_encoded = data.read
     begin
       payload = JWT.decode(jwt_encoded, SiteConfig.jwt_key)
+      payload = payload[0]
     rescue JWT::DecodeError
       json_error 200, {error: 'decode_error', error_description: "There was an error with the signed text. Check that you signed the correct plaintext."}
     rescue 
