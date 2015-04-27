@@ -258,8 +258,8 @@ class Controller < Sinatra::Base
     end
 
     # Look up the key to make sure we know about it already
-    profile = Profile.get expected['profile_id']
-    user = User.get expected['user_id']
+    profile = Profile.get expected['profile_id'].to_i
+    user = User.get expected['user_id'].to_i
     if profile.nil? or user.nil?
       json_error 200, {error: 'error', error_description: "Something went wrong, but this should never happen."}
     end
