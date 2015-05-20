@@ -405,6 +405,7 @@ class Controller < Sinatra::Base
       profile: profile, 
       provider: provider.code, 
       verified: verified,
+      error: true,
       error_description: error_description,
       auth_path: (verified ? profile_record.auth_path : false)
     }
