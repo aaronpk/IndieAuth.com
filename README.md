@@ -26,7 +26,7 @@ By submitting code to this project, you agree to irrevocably release it under th
 
 ### License
 
-Copyright 2013 by Aaron Parecki
+Copyright 2015 by Aaron Parecki
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
