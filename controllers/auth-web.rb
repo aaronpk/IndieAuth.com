@@ -106,14 +106,12 @@ class Controller < Sinatra::Base
     elsif provider.code == 'indieauth'
       # Make an HTTP request to the auth server and check that it responds with an "IndieAuth: authorization_endpoint" header
       # But return verified=false if it's actually this server
-      # if "#{SiteConfig.root}/auth" == profile
-      #   verified = false
-      #   error_description = 'This auth server cannot be used to authenticate to itself'
-      # else
-      #   verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
-      # end
-      verified = false
-      error_description = 'Support for your own IndieAuth server is coming soon!'
+      if "#{SiteConfig.root}/auth" == profile
+        verified = false
+        error_description = 'This auth server cannot be used to authenticate to itself'
+      else
+        verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
+      end
     else
       # This does an HTTP request
       verified, error_description = me_parser.verify_link profile, profile_parser
@@ -150,7 +148,7 @@ class Controller < Sinatra::Base
   end
 
   def build_redirect_uri(login)
-    puts login.inspect
+    puts "Building redirect for login #{login.inspect}"
     if login.redirect_uri
       redirect_uri = URI.parse login.redirect_uri
       p = Rack::Utils.parse_query redirect_uri.query
@@ -467,10 +465,81 @@ class Controller < Sinatra::Base
     if params[:openid_url]
       redirect "/auth/#{provider.code}?openid_url=#{session[:me]}" # TODO: verify this works
     elsif provider.code == 'indieauth'
-      redirect "#{profile_record.href}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component 'https://indieauth.cc/auth/indieauth/callback'}"
+      redirect "#{profile_record.href}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
     else
       redirect "/auth/#{provider.code}"
     end
+  end
+
+  get '/auth/indieauth/redirect' do 
+    # apparently reading the session doesn't initialize it, so we have to modify the session first
+    session.delete 'init' 
+
+    puts params.inspect
+    puts session.inspect
+
+    # session[:attempted_profile] is the authorization server
+    begin
+      data = RestClient.post session[:attempted_profile], {
+        :state => params[:state],
+        :code => params[:code],
+        :redirect_uri => "#{SiteConfig.root}/auth/indieauth/redirect"
+      }
+      puts "Session data"
+      puts session.inspect
+      puts
+
+      puts "Reply from auth server:"
+      puts data.inspect
+      puts 
+
+
+      response = CGI::parse data
+      puts "Parsed response"
+      puts response.inspect
+      puts 
+
+      attempted_token = session[:attempted_token]
+      attempted_uri = session[:attempted_uri]
+
+      session[:attempted_userid] = nil
+      session[:attempted_profile] = nil
+      session[:attempted_username] = nil
+      session[:attempted_token] = nil
+      session[:attempted_uri] = nil
+
+      login = nil
+
+      # response['me'] is an array with the user's domain name. double check that's what we expected.
+      if response && response['me']
+        me = response['me'].first
+        if me == attempted_uri
+          # Success!
+          puts "Successful login (#{me})!"
+          login = Login.first :token => attempted_token
+          if login.nil?
+            @message = "Something went wrong, most likely the session data was lost"
+          else
+            login.complete = true
+            login.save
+            redirect_uri = build_redirect_uri login
+            puts "Redirecting to #{redirect_uri}"
+            return redirect redirect_uri
+          end
+        else
+          @message = "The authorization server replied with me=#{me} but we were expecting #{attempted_uri}"
+        end
+      else
+        @message = "Invalid response from the authorization server"
+      end
+
+    rescue => e
+      @message = "Something went horribly wrong! I'm sorry, there's nothing more I can do. You should probably <a href=\"https://github.com/aaronpk/IndieAuth.com/issues\">get in touch</a>."
+      puts e.inspect
+    end
+
+    title "Error"
+    erb :error
   end
 
   %w(get post).each do |method|
