@@ -49,19 +49,16 @@ class Controller < Sinatra::Base
     enable :logging
 
     use OmniAuth::Builder do
-      Provider.all.each do |p|
-        # puts "Configuring provider #{p['code'].to_sym} with #{p['client_id']} and #{p['client_secret']}"
-        case p['code']
+      SiteConfig.providers.each do |code, p|
+        case code
         when 'google_oauth2'
-          provider p['code'].to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'userinfo.profile,plus.me'} if p['client_id']
+          provider code.to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'profile,userinfo.profile,plus.me'} if p['client_id']
         when 'sms'
           # HI!
         else
-          provider p['code'].to_sym, p['client_id'], p['client_secret'] if p['client_id']
+          provider code.to_sym, p['client_id'], p['client_secret'] if p['client_id']
         end
       end
-      provider :open_id, :store => OpenID::Store::Filesystem.new('/tmp')
-      #provider :open_id, :store => OpenID::Store::Memcache.new(Dalli::Client.new)
     end
 
     DataMapper.finalize
