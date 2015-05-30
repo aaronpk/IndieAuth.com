@@ -14,14 +14,6 @@ class RelParser
     attr_accessor :url
   end
 
-  def self.sms_regex
-    /sms:\/?\/?([0-9\-+]+)/
-  end
-
-  def self.email_regex
-    /mailto:\/?\/?(.+@.+\..+)/
-  end
-
   attr_accessor :url
   attr_accessor :redirects
 
@@ -144,7 +136,7 @@ class RelParser
         href = link.attribute("href").value
         href = URI.decode href
 
-        if href.match RelParser.sms_regex or href.match RelParser.email_regex
+        if href.match Provider.sms_regex or href.match Provider.email_regex
           links << href
         else
           begin
@@ -203,29 +195,8 @@ class RelParser
     keys
   end
 
-  def get_provider
-    return nil if @url.nil?
-
-    if @url.match RelParser.sms_regex
-      return Provider.first :code => 'sms'
-    end
-
-    if @url.match RelParser.email_regex
-      return Provider.first :code => 'email'
-    end
-
-    Provider.all.each do |provider|
-      if provider['regex_username'] != '' && @url.match(Regexp.new provider['regex_username'])
-        # puts "Provider name for #{url} is #{provider['code']}"
-        return provider
-      end
-    end
-
-    return nil
-  end
-
   def is_supported_provider?
-    provider = self.get_provider
+    provider = Provider.provider_for_url @url
     return false if provider.nil?
     return OmniAuth.provider_supported? provider['code']
   end

@@ -3,6 +3,10 @@ module OmniAuth
     case provider_name
     when nil
       exists = false
+    when 'beeminder'
+      exists = class_exists?('Beeminder')
+    when 'eventbrite'
+      exists = class_exists?('Eventbrite')
     when 'facebook'
       exists = class_exists?('Facebook')
     when 'flickr'
@@ -17,8 +21,6 @@ module OmniAuth
       exists = class_exists?('GoogleOauth2')
     when 'twitter'
       exists = class_exists?('Twitter')
-    when 'open_id'
-      exists = class_exists?('OpenID')
     when 'appnet'
       exists = class_exists?('Appnet')
     else

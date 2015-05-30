@@ -252,7 +252,6 @@ function verify_link_back(me, link, i, use_cached) {
   if(link.provider == 'totp') {
     $("#profile_"+i+" .link").html('<button class="btn disabled">Google Authenticator</button>');
     set_provider_status(i, 'error', 'Google Authenticator logins are no longer supported. <a href="/totp">Read why</a>.');
-    set_up_totp_auth();
     provider_verification_finished();
     return;
   }

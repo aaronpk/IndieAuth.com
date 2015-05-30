@@ -442,7 +442,7 @@ class Controller < Sinatra::Base
 
     provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
 
-    match = profile_record.href.match(Regexp.new provider['regex_username'])
+    match = profile_record.href.match(Regexp.new provider.regex_username)
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]
     session[:attempted_profile] = profile
@@ -549,7 +549,7 @@ class Controller < Sinatra::Base
     actual_username = ''
     if profile.provider[:code] == 'google_oauth2'
       authed_url = auth['extra']['raw_info']['profile']
-      if authed_url && (match=authed_url.match(Regexp.new profile.provider[:regex_username]))
+      if authed_url && (match=authed_url.match(Regexp.new profile.provider.regex_username))
         actual_username = match[1]
       end
     else
