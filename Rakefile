@@ -77,10 +77,6 @@ namespace :db do
           :code => 'email'
         })
 
-    totp = Provider.create ({
-          :code => 'totp'
-        })
-
   end
   task :migrate do
     init

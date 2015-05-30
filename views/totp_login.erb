@@ -1,6 +1,6 @@
 
 <div class="hero-unit">
-  <h1>Set up Password-less Logins</h1>
+  <h1>Not Supported</h1>
 </div>
 
 <div class="container">
@@ -8,23 +8,9 @@
   <div class="section">
   <div class="row">
 
-    <form action="/auth" method="get" class="well span4">
-      <label>Web Address:</label>
-      <input type="text" name="me" class="span3" placeholder="yourdomain.com" />
-      <p><button type="submit" class="btn">Sign In</button></p>
-      <input type="hidden" name="redirect_uri" value="totp" />
-    </form>
-
-    <div class="span3">
-      <h3>Install the Google Authenticator App</h3>
-      <p>You can use the <a href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator app</a> as an authentication provider for your domain!</p>
-      <p>Sign in with your domain to generate the QR code to set up the app.</p>
-    </div>
-
-    <div class="span3">
-      <h3>Log in with your Pebble watch</h3>
-      <p>You can use your Pebble watch to generate the 6-digit codes to sign in!</p>
-      <p>You can read about how to <a href="http://aaronparecki.com/articles/2013/07/15/1/password-less-logins-via-indieauth-with-a-pebble-watch">set up your Pebble to sign in with IndieAuth</a>.</p>
+    <div style="max-width: 600px; margin: 0 auto;">
+      <h3>TOTP login (Google Authenticator) is no longer supported by indieauth.com</h3>
+      <p>As part of the effort to be able to run indieauth.com on multiple servers, TOTP logins are no longer supported. This is because in order to support TOTP logins, the server needs to store the shared secret, and since this may be running on multiple completely separate servers, there isn't a good/easy way to synchronize the secrets between the servers.</p>
     </div>
 
   </div><!-- row -->  

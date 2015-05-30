@@ -6,7 +6,6 @@ class User
   property :me_links, Text
   property :auth_endpoints, Text
   property :gpg_keys, Text
-  property :totp_secret, String, :length => 100
 
   has n, :logins
   has n, :profiles

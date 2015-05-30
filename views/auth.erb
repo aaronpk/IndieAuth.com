@@ -119,41 +119,6 @@ function set_up_email_auth() {
   });
 }
 
-function set_up_totp_auth() {
-  $(".totp-auth").unbind("click").click(function(){
-    var btn = $(this);
-    var status = $(this).parents('li').children('.status');
-    unbind_keyboard_listeners();
-
-    if(btn.text() == "Verify") {
-      btn.attr("disabled","disabled");
-      status.text("Verifying...");
-
-      $.get("/auth/verify_totp.json", {
-        me: me,
-        redirect_uri: redirect_uri,
-        code: btn.parent().children('.totp_code').val()
-      }, function(data){
-        if(data.result == "verified") {
-          status.text("Code was successfully verified! Redirecting...");
-          window.location = data.redirect;
-          bind_keyboard_listeners();
-        } else {
-          btn.parent().children('input[type=text]').val('');
-          btn.text()
-          status.text("The code you entered was invalid.");
-        }
-      });
-    } else {
-      // Swap the button for a field to enter the code
-      status.text("Enter a verification code");
-      btn.text("Verify");
-      btn.parent().prepend('<input type="text" class="span1 totp_code">').focus();
-    }
-    return false;
-  });
-}
-
 function set_up_gpg_auth() {
   var plaintext;
 
@@ -285,8 +250,8 @@ function verify_link_back(me, link, i, use_cached) {
   }
 
   if(link.provider == 'totp') {
-    $("#profile_"+i+" .link").html('<a href="#" class="btn btn-success totp-auth begin-auth">Google Authenticator</a>');
-    set_provider_status(i, 'verified', 'Click to enter a TOTP code.');
+    $("#profile_"+i+" .link").html('<button class="btn disabled">Google Authenticator</button>');
+    set_provider_status(i, 'error', 'Google Authenticator logins are no longer supported. <a href="/totp">Read why</a>.');
     set_up_totp_auth();
     provider_verification_finished();
     return;
