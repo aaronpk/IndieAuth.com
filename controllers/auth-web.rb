@@ -442,28 +442,18 @@ class Controller < Sinatra::Base
 
     provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
 
+    match = profile_record.href.match(Regexp.new provider['regex_username'])
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]
-
-    match = profile_record.href.match(Regexp.new provider['regex_username'])
-    session[:attempted_username] = match[1]
-
-    login = Login.create :user => user,
-      :provider => provider,
-      :profile => profile_record, 
-      :complete => false,
-      :token => Login.generate_token,
-      :redirect_uri => params[:redirect_uri],
-      :state => session[:state],
-      :scope => session[:scope]
-
-    session[:attempted_token] = login[:token]
     session[:attempted_profile] = profile
+    session[:attempted_profileid] = profile_record.id
+    session[:attempted_providerid] = provider.id
+    session[:attempted_username] = match[1]
+    session[:redirect_uri] = params[:redirect_uri]
+
     puts "Attempting authentication for #{session[:attempted_uri]} via #{provider['code']} (Expecting #{session[:attempted_username]})"
 
-    if params[:openid_url]
-      redirect "/auth/#{provider.code}?openid_url=#{session[:me]}" # TODO: verify this works
-    elsif provider.code == 'indieauth'
+    if provider.code == 'indieauth'
       redirect "#{profile_record.href}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
     else
       redirect "/auth/#{provider.code}"
@@ -500,14 +490,18 @@ class Controller < Sinatra::Base
 
       attempted_token = session[:attempted_token]
       attempted_uri = session[:attempted_uri]
+      redirect_uri = session[:redirect_uri]
+      attempted_providerid = session[:attempted_providerid]
+      attempted_profileid = session[:attempted_profileid]
+      attempted_userid = session[:attempted_userid]
 
       session[:attempted_userid] = nil
       session[:attempted_profile] = nil
+      session[:attempted_providerid] = nil
+      session[:attempted_profileid] = nil
       session[:attempted_username] = nil
       session[:attempted_token] = nil
       session[:attempted_uri] = nil
-
-      login = nil
 
       # response['me'] is an array with the user's domain name. double check that's what we expected.
       if response && response['me']
@@ -515,16 +509,21 @@ class Controller < Sinatra::Base
         if me == attempted_uri
           # Success!
           puts "Successful login (#{me})!"
-          login = Login.first :token => attempted_token
-          if login.nil?
-            @message = "Something went wrong, most likely the session data was lost"
-          else
-            login.complete = true
-            login.save
-            redirect_uri = build_redirect_uri login
-            puts "Redirecting to #{redirect_uri}"
-            return redirect redirect_uri
-          end
+          user = User.first :id => attempted_userid
+
+          login = Login.create :user => user,
+            :provider_id => attempted_providerid,
+            :profile_id => attempted_profileid,
+            :complete => true,
+            :token => Login.generate_token,
+            :redirect_uri => redirect_uri,
+            :state => session[:state],
+            :scope => session[:scope]
+
+          redirect_uri = build_redirect_uri login
+          puts "Redirecting to #{redirect_uri}"
+
+          return redirect redirect_uri
         else
           @message = "The authorization server replied with me=#{me} but we were expecting #{attempted_uri}"
         end
@@ -572,23 +571,24 @@ class Controller < Sinatra::Base
       title "Error"
       erb :error
     else
-      token = session[:attempted_token]
-      login = Login.first :token => token
+      user = User.first :id => session[:attempted_userid]
+
+      login = Login.create :user => user,
+        :provider_id => session[:attempted_providerid],
+        :profile_id => session[:attempted_profileid], 
+        :complete => true,
+        :token => Login.generate_token,
+        :redirect_uri => session[:redirect_uri],
+        :state => session[:state],
+        :scope => session[:scope]
 
       session[:attempted_userid] = nil
-      session[:attempted_profile] = nil
+      session[:attempted_profileid] = nil
+      session[:attempted_providerid] = nil
       session[:attempted_username] = nil
-      session[:attempted_token] = nil
+      session[:redirect_uri] = nil
 
-      if login.nil?
-        @message = "Something went horribly wrong!"
-        title "Error"
-        erb :error
-      else
-        login.complete = true
-        login.save
-        redirect build_redirect_uri login
-      end
+      redirect build_redirect_uri login
     end
   end
   end
