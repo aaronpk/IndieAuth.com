@@ -221,19 +221,7 @@ class RelParser
       end
     end
 
-    # TODO: Fix the below to re-enable OpenID
-    #return Provider.first(:code => 'indieauth')
     return nil
-
-    # Check if the URL is an OpenID endpoint
-    # rel_me_links # fetch the page contents now which populates @page
-    # # If the page contains an openID tag, use it!
-    # return nil if @page.class != Mechanize::Page
-
-    # if @page.at('/html/head/link[@rel="openid.server"]/@href') || @page.at('/html/head/link[@rel="openid2.provider"]/@href')
-    #   return Provider.first(:code => 'open_id')
-    # end
-    # return nil
   end
 
   def is_supported_provider?
