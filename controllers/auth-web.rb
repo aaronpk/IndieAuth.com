@@ -66,7 +66,7 @@ class Controller < Sinatra::Base
   def verify_user_profile(me_parser, profile, user)
 
     # First check if there's already a matching profile record for this user 
-    existing = Profile.first :user => user, :href => profile
+    existing = Profile.find :me => user.href, :profile => profile
     puts "Checking for existing profile: #{user.href}, #{profile}"
 
     if !existing
@@ -80,20 +80,9 @@ class Controller < Sinatra::Base
       end
 
       puts "No existing provider, but parsed as: #{provider}"
-
-      # Save the profile entry in the DB, mark as "unverified" if new
-      profile_record = Profile.first_or_create({ 
-        :user => user, 
-        :href => profile
-      }, 
-      { 
-        :provider => provider,
-        :verified => false
-      })
     else
       profile_parser = RelParser.new profile
-      provider = existing.provider
-      profile_record = existing
+      provider = existing['provider']
       puts "Found existing: #{provider}"
     end
 
@@ -117,13 +106,12 @@ class Controller < Sinatra::Base
       verified, error_description = me_parser.verify_link profile, profile_parser
     end
 
+    # Cache this in Redis, or remove if it's not verified
     if verified
-      profile_record.verified = true
-      profile_record.active = true
+      Profile.save({:me => user.href, :profile => profile}, {:provider => provider, :created_at => Time.now.to_i})
     else
-      profile_record.active = false  # Prevent this option from appearing next time the cached list is retrieved
+      Profile.delete :me => user.href, :profile => profile
     end
-    profile_record.save
 
     return provider, verified, error_description
   end
@@ -175,7 +163,15 @@ class Controller < Sinatra::Base
     # If there's already a user record, look up all their existing profiles
     @user = User.first :href => @me.sub(/(\/)+$/,'')
     unless @user.nil?
-      @profiles = @user.profiles.all(:active => true)
+      tmp = Profile.all :me => @me
+      @profiles = []
+      tmp.each do |profile, data|
+        data = JSON.parse data
+        @profiles << {
+          'href' => profile,
+          'provider' => data['provider']
+        }
+      end
     end
 
     save_response_type
@@ -216,12 +212,15 @@ class Controller < Sinatra::Base
     # Pre-generate the GPG challenge if there is already a user record and GPG profile
     @gpg_challenges = []
     if @user
-      profiles = @user.profiles.all(:provider => 'gpg', :active => 1)
-      profiles.each do |profile|
-        @gpg_challenges << {
-          :profile => profile.href,
-          :challenge => generate_gpg_challenge(@me, @user, profile.href, params)
-        }
+      profiles = Profile.all(:me => @me)
+      profiles.each do |profile, data|
+        data = JSON.parse data
+        if data['provider'] == 'gpg'
+          @gpg_challenges << {
+            :profile => profile,
+            :challenge => generate_gpg_challenge(@me, @user, profile, params)
+          }
+        end
       end
     end
 
@@ -280,11 +279,11 @@ class Controller < Sinatra::Base
     user.save
 
     # Delete all old profiles that aren't linked on the user's page anymore
-    user.profiles.each do |profile|
-      if profile.active and !['server'].include? profile.provider and !links.include? profile.href
-        puts "Link to #{profile.href} no longer found, deactivating"
-        profile.active = false
-        profile.save
+    Profile.all(:me => me).each do |profile,data|
+      data = JSON.parse data
+      if !['server'].include? data['provider'] and !links.include? profile
+        puts "Link to #{profile} no longer found, deactivating"
+        Profile.delete :me => me, :profile => profile
       end
       # TODO: Also deactivate old auth servers
     end
@@ -314,22 +313,12 @@ class Controller < Sinatra::Base
       }
     end
 
-    if user.auth_endpoints 
+    if auth_endpoints.length > 0
       provider = 'indieauth'
 
-      JSON.parse(user.auth_endpoints).each do |endpoint|
-        # Save the profile in the DB
-        profile = Profile.first_or_create({ 
-          :user => user, 
-          :href => endpoint
-        }, 
-        { 
-          :provider => provider,
-          :verified => false
-        })
-        profile.active = true
-        profile.save
-
+      auth_endpoints.each do |endpoint|
+        # Store it now because when we verify it with the verify_link.json request, it doesn't know what provider it is and this will tell it
+        Profile.save({:me => me, :profile => endpoint}, {:provider => 'indieauth', :created_at => Time.now.to_i})
         links_response << {
           profile: endpoint,
           provider: 'indieauth',
@@ -338,20 +327,10 @@ class Controller < Sinatra::Base
       end
     end
 
-    if user.gpg_keys
+    if gpg_keys.length > 0
       provider = 'gpg'
 
-      JSON.parse(user.gpg_keys).each do |key|
-        profile = Profile.first_or_create({
-          :user => user,
-          :href => key['href'],
-          :provider => provider
-        }, {
-          :verified => true
-        })
-        profile.active = true
-        profile.save
-
+      gpg_keys do |key|
         links_response << {
           profile: key['href'],
           provider: 'gpg',
@@ -531,12 +510,12 @@ class Controller < Sinatra::Base
   send(method, '/auth/:name/callback') do
     auth = request.env['omniauth.auth']
 
-    profile = Profile.first :user_id => session[:attempted_userid], :href => session[:attempted_profile]
+    profile = Profile.find :me => session[:attempted_uri], :profile => session[:attempted_profile]
     attempted_username = session[:attempted_username]
     actual_username = ''
-    if profile.provider == 'google_oauth2'
+    if profile['provider'] == 'google_oauth2'
       authed_url = auth['extra']['raw_info']['profile']
-      if authed_url && (match=authed_url.match(Regexp.new Provider.regexes[profile.provider]))
+      if authed_url && (match=authed_url.match(Regexp.new Provider.regexes[profile['provider']]))
         actual_username = match[1]
       end
     else

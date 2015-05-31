@@ -8,7 +8,7 @@ class Controller < Sinatra::Base
     end
 
     sms_code = Login.generate_sms_code
-    R.set "indieauth:sms:#{me}", sms_code, :ex => 300 # valid for 300 seconds
+    R.set "indieauth::sms::#{me}", sms_code, :ex => 300 # valid for 300 seconds
 
     # Send the SMS now!
     twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
@@ -31,7 +31,7 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
-    if params[:code] != R.get("indieauth:sms:#{me}")
+    if params[:code] != R.get("indieauth::sms::#{me}")
       json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
@@ -171,11 +171,11 @@ class Controller < Sinatra::Base
       }
       agent.agent.http.ca_file = './lib/ca-bundle.crt'
       # Use the key indicated by the signed JWT payload
-      absolute = URI.join user.href, profile.href
+      absolute = URI.join expected['me'], expected['profile']
       response = agent.get absolute
       public_key = response.body
     rescue => e
-      json_error 200, {error: 'error_fetching_key', error_description: "There was an error fetching the key from #{profile.href}"}
+      json_error 200, {error: 'error_fetching_key', error_description: "There was an error fetching the key from #{expected['profile']}"}
     end
 
     verified = false
@@ -226,7 +226,7 @@ class Controller < Sinatra::Base
     end
 
     if payload
-      puts "Expected profile ID: #{profile.id} (#{profile.href})"
+      puts "Expected profile: #{expected['profile']}"
       jj payload
 
       # TODO: Expire the challenges after 5 minutes or so

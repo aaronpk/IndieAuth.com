@@ -1,14 +1,22 @@
 class Profile
-  include DataMapper::Resource
-  property :id, Serial
 
-  belongs_to :user
+  def self.find(opts)
+    data = R.hget "indieauth::profile::#{opts[:me]}", opts[:profile]
+    return JSON.parse data if data
+    nil
+  end
 
-  property :href, String, :length => 255
-  property :verified, Boolean, :default => false
-  property :provider, String, :length => 100
-  property :active, Boolean, :default => true
+  def self.all(opts)
+    data = R.hgetall "indieauth::profile::#{opts[:me]}"
+  end
 
-  property :created_at, DateTime
-  property :updated_at, DateTime
+  def self.save(opts, data)
+    R.hset "indieauth::profile::#{opts[:me]}", opts[:profile], data.to_json
+    R.expire "indieauth::profile::#{opts[:me]}", 86400*30
+  end
+
+  def self.delete(opts)
+    R.hdel "indieauth::profile::#{opts[:me]}", opts[:profile]
+  end
+
 end

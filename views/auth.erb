@@ -557,10 +557,10 @@ function start_scan() {
       # The database will only return URLs that are valid providers, not the complete list of rel-me links on the person's site.
     %>
     <% @profiles.each_with_index do |profile,i| %>
-      <% next if @redirect_uri == 'totp' and profile.provider == 'totp' %>
-      <li class="profile <%= profile.provider %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider %>" data-auth-path="<%= Provider.auth_path(profile.provider, profile[:href], @me) %>">
-        <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
-        <span class="link"><%= profile[:href] %></span>
+      <% next if @redirect_uri == 'totp' and profile['provider'] == 'totp' %>
+      <li class="profile <%= profile['provider'] %>" id="profile_<%= i %>" data-profile="<%= profile['href'] %>" data-verified="true" data-provider="<%= profile['provider'] %>" data-auth-path="<%= Provider.auth_path(profile['provider'], profile['href'], @me) %>">
+        <span class="status_img verified"></span>
+        <span class="link"><%= profile['href'] %></span>
         <div class="status">Verifying...</div>
       </li>
     <% end %>
