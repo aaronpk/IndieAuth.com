@@ -3,7 +3,7 @@ class Controller < Sinatra::Base
   get '/auth/send_sms.json' do
     me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
-    if provider.nil? or provider.code != 'sms'
+    if provider.nil? or provider != 'sms'
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
@@ -27,7 +27,7 @@ class Controller < Sinatra::Base
   get '/auth/verify_sms.json' do
     me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
-    if provider.nil? or provider.code != 'sms'
+    if provider.nil? or provider != 'sms'
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
@@ -44,11 +44,11 @@ class Controller < Sinatra::Base
       :scope => session[:scope]
     })
 
-    
+
     json_response 200, {
       me: me,
       profile: profile,
-      provider: provider.code,
+      provider: provider,
       result: 'verified',
       redirect: redirect_uri
     }
@@ -107,7 +107,7 @@ class Controller < Sinatra::Base
   post '/auth/start_gpg.json' do
     me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
 
-    if provider.nil? or provider.code != 'gpg'
+    if provider.nil? or provider != 'gpg'
       json_error 200, {error: 'invalid_input', error_description: 'This profile must be a link to a GPG key'}
     end
 

@@ -3,11 +3,10 @@ class Profile
   property :id, Serial
 
   belongs_to :user
-  belongs_to :provider
 
   property :href, String, :length => 255
   property :verified, Boolean, :default => false
-
+  property :provider, String, :length => 100
   property :active, Boolean, :default => true
 
   property :created_at, DateTime
@@ -18,7 +17,7 @@ class Profile
   end
 
   def sms_number
-    if provider.code == 'sms'
+    if provider == 'sms'
       href.gsub /sms:\/?\/?/, ''
     end
   end

@@ -198,7 +198,7 @@ class RelParser
   def is_supported_provider?
     provider = Provider.provider_for_url @url
     return false if provider.nil?
-    return OmniAuth.provider_supported? provider['code']
+    return OmniAuth.provider_supported? provider
   end
 
   def verify_auth_endpoint(link, site_parser=nil)

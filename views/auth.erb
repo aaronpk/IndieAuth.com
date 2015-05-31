@@ -557,8 +557,8 @@ function start_scan() {
       # The database will only return URLs that are valid providers, not the complete list of rel-me links on the person's site.
     %>
     <% @profiles.each_with_index do |profile,i| %>
-      <% next if @redirect_uri == 'totp' and profile.provider.code == 'totp' %>
-      <li class="profile <%= profile.provider.code %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider.code %>" data-auth-path="<%= profile.auth_path %>">
+      <% next if @redirect_uri == 'totp' and profile.provider == 'totp' %>
+      <li class="profile <%= profile.provider %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider %>" data-auth-path="<%= profile.auth_path %>">
         <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
         <span class="link"><%= profile[:href] %></span>
         <div class="status">Verifying...</div>
@@ -572,13 +572,6 @@ function start_scan() {
     <p><a href="https://indieauth.com/setup">Full Setup Instructions</a></p>
   </div>
   <div class="unsupported_links_error" style="display: none;">
-    <p>Currently only the following providers are supported:
-      <ul>
-        <% @providers.each do |provider| %>
-          <li><a href="<%= provider[:home_page] %>"><%= provider[:name] %></a></li>
-        <% end %>
-      </ul>
-    </p>
     <p>Add links on your home page to your various social profiles (Twitter, Github, etc) with the attribute rel="me"</p>
     <p>Ensure your profiles link back to your home page.</p>
     <p><a href="/setup">Full Setup Instructions</a></p>

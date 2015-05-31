@@ -79,7 +79,7 @@ class Controller < Sinatra::Base
         json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
       end
 
-      puts "No existing provider, but parsed as: #{provider.code}"
+      puts "No existing provider, but parsed as: #{provider}"
 
       # Save the profile entry in the DB, mark as "unverified" if new
       profile_record = Profile.first_or_create({ 
@@ -94,16 +94,16 @@ class Controller < Sinatra::Base
       profile_parser = RelParser.new profile
       provider = existing.provider
       profile_record = existing
-      puts "Found existing: #{provider.code}"
+      puts "Found existing: #{provider}"
     end
 
-    if provider.code == 'sms' or provider.code == 'email'
+    if provider == 'sms' or provider == 'email'
       verified = true
       error_description = nil
-    elsif provider.code == 'gpg'
+    elsif provider == 'gpg'
       verified = true
       error_description = nil
-    elsif provider.code == 'indieauth'
+    elsif provider == 'indieauth'
       # Make an HTTP request to the auth server and check that it responds with an "IndieAuth: authorization_endpoint" header
       # But return verified=false if it's actually this server
       if "#{SiteConfig.root}/auth" == profile
@@ -186,7 +186,6 @@ class Controller < Sinatra::Base
     @client_id = params[:client_id]
     @state = params[:state]
     @scope = params[:scope]
-    @providers = Provider.all(:home_page.not => '')
 
     @app_name = 'Unknown App'
     @app_logo = nil
@@ -217,7 +216,7 @@ class Controller < Sinatra::Base
     # Pre-generate the GPG challenge if there is already a user record and GPG profile
     @gpg_challenges = []
     if @user
-      profiles = @user.profiles.all(:provider => Provider.first(:code => 'gpg'), :active => 1)
+      profiles = @user.profiles.all(:provider => 'gpg', :active => 1)
       profiles.each do |profile|
         @gpg_challenges << {
           :profile => profile.href,
@@ -282,7 +281,7 @@ class Controller < Sinatra::Base
 
     # Delete all old profiles that aren't linked on the user's page anymore
     user.profiles.each do |profile|
-      if profile.active and !['server'].include? profile.provider.code and !links.include? profile.href
+      if profile.active and !['server'].include? profile.provider and !links.include? profile.href
         puts "Link to #{profile.href} no longer found, deactivating"
         profile.active = false
         profile.save
@@ -301,7 +300,7 @@ class Controller < Sinatra::Base
       profile_parser = RelParser.new link
       provider = profile_parser.get_provider
 
-      if provider && (provider.code == 'sms' or provider.code == 'email')
+      if provider && (provider == 'sms' or provider == 'email')
         verified = true
         # Run verify_user_profile which will save the profile in the DB. Since it's only
         # running for SMS and Email profiles, it won't trigger an HTTP request.
@@ -310,13 +309,13 @@ class Controller < Sinatra::Base
 
       links_response << {
         profile: link,
-        provider: (provider ? provider.code : nil),
+        provider: (provider ? provider : nil),
         verified: verified
       }
     end
 
     if user.auth_endpoints 
-      provider = Provider.first(:code => 'indieauth')
+      provider = 'indieauth'
 
       JSON.parse(user.auth_endpoints).each do |endpoint|
         # Save the profile in the DB
@@ -340,7 +339,7 @@ class Controller < Sinatra::Base
     end
 
     if user.gpg_keys
-      provider = Provider.first(:code => 'gpg')
+      provider = 'gpg'
 
       JSON.parse(user.gpg_keys).each do |key|
         profile = Profile.first_or_create({
@@ -383,7 +382,7 @@ class Controller < Sinatra::Base
     response = {
       me: me, 
       profile: profile, 
-      provider: provider.code, 
+      provider: provider, 
       verified: verified,
       error: true,
       error_description: error_description,
@@ -425,22 +424,21 @@ class Controller < Sinatra::Base
 
     provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
 
-    match = profile_record.href.match(Regexp.new provider.regex_username)
+    match = profile_record.href.match(Regexp.new Provider.regexes[provider])
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]
     session[:attempted_profile] = profile
     session[:attempted_profileid] = profile_record.id
-    session[:attempted_provider] = provider.code
-    session[:attempted_providerid] = provider.id
+    session[:attempted_provider] = provider
     session[:attempted_username] = match[1]
     session[:redirect_uri] = params[:redirect_uri]
 
-    puts "Attempting authentication for #{session[:attempted_uri]} via #{provider['code']} (Expecting #{session[:attempted_username]})"
+    puts "Attempting authentication for #{session[:attempted_uri]} via #{provider} (Expecting #{session[:attempted_username]})"
 
-    if provider.code == 'indieauth'
+    if provider == 'indieauth'
       redirect "#{profile_record.href}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
     else
-      redirect "/auth/#{provider.code}"
+      redirect "/auth/#{provider}"
     end
   end
 
@@ -482,7 +480,6 @@ class Controller < Sinatra::Base
       session[:attempted_userid] = nil
       session[:attempted_profile] = nil
       session[:attempted_provider] = nil
-      session[:attempted_providerid] = nil
       session[:attempted_profileid] = nil
       session[:attempted_username] = nil
       session[:attempted_token] = nil
@@ -532,9 +529,9 @@ class Controller < Sinatra::Base
     profile = Profile.first :user_id => session[:attempted_userid], :href => session[:attempted_profile]
     attempted_username = session[:attempted_username]
     actual_username = ''
-    if profile.provider[:code] == 'google_oauth2'
+    if profile.provider == 'google_oauth2'
       authed_url = auth['extra']['raw_info']['profile']
-      if authed_url && (match=authed_url.match(Regexp.new profile.provider.regex_username))
+      if authed_url && (match=authed_url.match(Regexp.new Provider.regexes[profile.provider]))
         actual_username = match[1]
       end
     else
@@ -571,7 +568,6 @@ class Controller < Sinatra::Base
       session[:attempted_userid] = nil
       session[:attempted_profileid] = nil
       session[:attempted_provider] = nil
-      session[:attempted_providerid] = nil
       session[:attempted_username] = nil
       session[:redirect_uri] = nil
 

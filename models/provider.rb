@@ -1,16 +1,4 @@
-class Provider # < Hash
-  #include Hashie::Extensions::MethodAccess
-  include DataMapper::Resource
-  property :id, Serial
-
-  property :name, String, :length => 50
-  property :home_page, String, :length => 100
-  property :code, String, :length => 20
-  property :client_id, String, :length => 255
-  property :client_secret, String, :length => 255
-
-  property :created_at, DateTime
-  property :updated_at, DateTime
+class Provider
 
   def self.sms_regex
     /sms:\/?\/?([0-9\-+]+)/
@@ -60,14 +48,4 @@ class Provider # < Hash
     return_regex
   end
 
-  def username_for_url(url)
-    #puts "username_for_url #{url}"
-    parser = RelParser.new url
-    provider = parser.get_provider
-    return nil if provider.nil?
-    return url if provider['code'] == 'open_id'
-    url.match provider['regex_username']
-    #puts "Username for #{url} is #{$1}"
-    return $1
-  end
 end
