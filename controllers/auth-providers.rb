@@ -1,20 +1,20 @@
 class Controller < Sinatra::Base
 
   get '/auth/send_sms.json' do
-    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
+    me, profile, user, provider, verified, error_description = auth_param_setup
 
     if provider.nil? or provider != 'sms'
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
     sms_code = Login.generate_sms_code
-    R.set "sms:#{me}", sms_code, :ex => 300 # valid for 300 seconds
+    R.set "indieauth:sms:#{me}", sms_code, :ex => 300 # valid for 300 seconds
 
     # Send the SMS now!
     twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
     # twilio.account.messages.create(
     #   :from => SiteConfig.twilio.number,
-    #   :to => profile_record.sms_number,
+    #   :to => Provider.number_from_sms_uri(profile),
     #   :body => "Your IndieAuth verification code is: #{sms_code}"
     # )
 
@@ -25,13 +25,13 @@ class Controller < Sinatra::Base
   end
 
   get '/auth/verify_sms.json' do
-    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
+    me, profile, user, provider, verified, error_description = auth_param_setup
 
     if provider.nil? or provider != 'sms'
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
-    if params[:code] != R.get("sms:#{me}")
+    if params[:code] != R.get("indieauth:sms:#{me}")
       json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
@@ -105,24 +105,22 @@ class Controller < Sinatra::Base
   end
 
   post '/auth/start_gpg.json' do
-    me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
+    me, profile, user, provider, verified, error_description = auth_param_setup
 
     if provider.nil? or provider != 'gpg'
       json_error 200, {error: 'invalid_input', error_description: 'This profile must be a link to a GPG key'}
     end
 
     json_response 200, {
-      plaintext: generate_gpg_challenge(me, user, profile_record, params),
-      key_url: profile_record.href
+      plaintext: generate_gpg_challenge(me, user, profile, params),
+      key_url: profile
     }
   end
 
-  def generate_gpg_challenge(me, user, profile_record, params) 
+  def generate_gpg_challenge(me, user, profile, params) 
     JWT.encode({
       :me => me,
-      :user_id => user.id,
-      :profile_id => profile_record.id,
-      :profile => profile_record.href,
+      :profile => profile,
       :redirect_uri => params[:redirect_uri],
       :state => params[:state],
       :scope => params[:scope],
@@ -149,13 +147,17 @@ class Controller < Sinatra::Base
     end
 
     # Look up the key to make sure we know about it already
-    user = User.get expected['user_id'].to_i
-    profile = Profile.first :user_id => expected['user_id'].to_i, :href => expected['profile']
+    user = User.first :href => expected['me']
+    profile = Profile.first :user_id => user.id, :href => expected['profile']
     if profile.nil? or user.nil?
+      puts "User:"
+      puts user.inspect
+      puts "Profile:"
+      puts profile.inspect
       json_error 200, {error: 'error', error_description: "Something went wrong, but this should never happen."}
     end
 
-    puts "Expecting user #{user.href} (#{user.id}) to authenticate"
+    puts "Expecting user #{user.href} to authenticate"
 
     begin
       agent = Mechanize.new {|agent|

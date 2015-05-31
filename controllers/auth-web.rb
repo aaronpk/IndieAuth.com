@@ -125,7 +125,7 @@ class Controller < Sinatra::Base
     end
     profile_record.save
 
-    return provider, profile_record, verified, error_description
+    return provider, verified, error_description
   end
 
   def auth_param_setup
@@ -143,8 +143,8 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\""}
     end
 
-    provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
-    return me, profile, user, provider, profile_record, verified, error_description
+    provider, verified, error_description = verify_user_profile me_parser, profile, user
+    return me, profile, user, provider, verified, error_description
   end
 
   def save_response_type
@@ -220,7 +220,7 @@ class Controller < Sinatra::Base
       profiles.each do |profile|
         @gpg_challenges << {
           :profile => profile.href,
-          :challenge => generate_gpg_challenge(@me, @user, profile, params)
+          :challenge => generate_gpg_challenge(@me, @user, profile.href, params)
         }
       end
     end
@@ -370,7 +370,7 @@ class Controller < Sinatra::Base
   get '/auth/verify_link.json' do
 
     begin
-      me, profile, user, provider, profile_record, verified, error_description = auth_param_setup
+      me, profile, user, provider, verified, error_description = auth_param_setup
     rescue RelParser::InsecureRedirectError => e
       json_error 200, {error: 'insecure_redirect', error_description: e.message}
     rescue RelParser::SSLError => e
@@ -386,7 +386,7 @@ class Controller < Sinatra::Base
       verified: verified,
       error: true,
       error_description: error_description,
-      auth_path: (verified ? profile_record.auth_path : false)
+      auth_path: (verified ? Provider.auth_path(provider, profile, me) : false)
     }
 
     if error_description
@@ -422,19 +422,18 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
+    provider, verified, error_description = verify_user_profile me_parser, profile, user
 
     if params[:provider] == 'indieauth'
       attempted_username = me
     else
-      match = profile_record.href.match(Regexp.new Provider.regexes[provider])
+      match = profile.match(Regexp.new Provider.regexes[provider])
       attempted_username = match[1]
     end
 
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]
     session[:attempted_profile] = profile
-    session[:attempted_profileid] = profile_record.id
     session[:attempted_provider] = provider
     session[:attempted_username] = attempted_username
     session[:redirect_uri] = params[:redirect_uri]
@@ -442,7 +441,7 @@ class Controller < Sinatra::Base
     puts "Attempting authentication for #{session[:attempted_uri]} via #{provider} (Expecting #{session[:attempted_username]})"
 
     if provider == 'indieauth'
-      redirect "#{profile_record.href}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
+      redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
     else
       redirect "/auth/#{provider}"
     end

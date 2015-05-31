@@ -558,7 +558,7 @@ function start_scan() {
     %>
     <% @profiles.each_with_index do |profile,i| %>
       <% next if @redirect_uri == 'totp' and profile.provider == 'totp' %>
-      <li class="profile <%= profile.provider %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider %>" data-auth-path="<%= profile.auth_path %>">
+      <li class="profile <%= profile.provider %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider %>" data-auth-path="<%= Provider.auth_path(profile.provider, profile[:href], @me) %>">
         <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
         <span class="link"><%= profile[:href] %></span>
         <div class="status">Verifying...</div>
@@ -623,7 +623,7 @@ end %>
 </div>
 
 <script id="profile_link_template" type="text/template">
-<li id="profile_{{index}}">
+<li class="profile" id="profile_{{index}}">
   <span class="status_img loading"></span>
   <span class="link">{{link}}</span>
   <div class="status">Verifying...</div>

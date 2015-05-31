@@ -4,6 +4,10 @@ class Provider
     /sms:\/?\/?([0-9\-+]+)/
   end
 
+  def self.number_from_sms_uri(uri)
+    uri.gsub /sms:\/?\/?/, ''
+  end
+
   def self.email_regex
     /mailto:\/?\/?(.+@.+\..+)/
   end
@@ -39,14 +43,8 @@ class Provider
     }
   end
 
-  def regex_username
-    return_regex = nil
-    Provider.regexes.each do |c,regex|
-      if self.code == c
-        return_regex = regex
-      end
-    end
-    return_regex
+  def self.auth_path(provider, profile, me)
+    "/auth/start?me=#{URI.encode_www_form_component me}&provider=#{provider}&profile=#{URI.encode_www_form_component profile}"
   end
 
 end
