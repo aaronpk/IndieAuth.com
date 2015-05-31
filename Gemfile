@@ -39,14 +39,6 @@ gem 'encryptor'
 
 gem 'microformats2'
 
-gem 'mysql2',          '0.3.7'
-gem 'dm-core'
-gem 'dm-timestamps'
-gem 'dm-migrations'
-gem 'dm-aggregates'
-gem 'dm-mysql-adapter'
-gem 'dm-pager'
-
 group :development do
   gem 'shotgun',                :require => nil
   gem 'thin',                   :require => nil

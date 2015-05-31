@@ -58,16 +58,11 @@ class Controller < Sinatra::Base
     keys
   end
 
-  def save_user_record(me)
-    # Remove trailing "/" when storing and looking up the user
-    User.first_or_create :href => me.sub(/(\/)+$/,'')
-  end
-
-  def verify_user_profile(me_parser, profile, user)
+  def verify_user_profile(me_parser, profile, me)
 
     # First check if there's already a matching profile record for this user 
-    existing = Profile.find :me => user.href, :profile => profile
-    puts "Checking for existing profile: #{user.href}, #{profile}"
+    existing = Profile.find :me => me, :profile => profile
+    puts "Checking for existing profile: #{me}, #{profile}"
 
     if !existing
       # Checks the URL against the list of regexes to see what provider it is
@@ -108,9 +103,9 @@ class Controller < Sinatra::Base
 
     # Cache this in Redis, or remove if it's not verified
     if verified
-      Profile.save({:me => user.href, :profile => profile}, {:provider => provider, :created_at => Time.now.to_i})
+      Profile.save({:me => me, :profile => profile}, {:provider => provider, :created_at => Time.now.to_i})
     else
-      Profile.delete :me => user.href, :profile => profile
+      Profile.delete :me => me, :profile => profile
     end
 
     return provider, verified, error_description
@@ -122,8 +117,6 @@ class Controller < Sinatra::Base
     me = verify_me_param
     profile = verify_profile_param
 
-    user = save_user_record me
-
     me_parser = RelParser.new me
 
     # Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
@@ -131,8 +124,8 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\""}
     end
 
-    provider, verified, error_description = verify_user_profile me_parser, profile, user
-    return me, profile, user, provider, verified, error_description
+    provider, verified, error_description = verify_user_profile me_parser, profile, me
+    return me, profile, provider, verified, error_description
   end
 
   def save_response_type
@@ -160,18 +153,14 @@ class Controller < Sinatra::Base
     end
     
     @profiles = []
-    # If there's already a user record, look up all their existing profiles
-    @user = User.first :href => @me.sub(/(\/)+$/,'')
-    unless @user.nil?
-      tmp = Profile.all :me => @me
-      @profiles = []
-      tmp.each do |profile, data|
-        data = JSON.parse data
-        @profiles << {
-          'href' => profile,
-          'provider' => data['provider']
-        }
-      end
+    # Look up their cached profiles
+    profiles = Profile.all :me => @me
+    profiles.each do |profile, data|
+      data = JSON.parse data
+      @profiles << {
+        'href' => profile,
+        'provider' => data['provider']
+      }
     end
 
     save_response_type
@@ -209,18 +198,16 @@ class Controller < Sinatra::Base
       @app_name = params[:redirect_uri].gsub(/https?:\/\//, '')
     end
 
-    # Pre-generate the GPG challenge if there is already a user record and GPG profile
+    # Pre-generate the GPG challenge if there is already a GPG profile for this user
     @gpg_challenges = []
-    if @user
-      profiles = Profile.all(:me => @me)
-      profiles.each do |profile, data|
-        data = JSON.parse data
-        if data['provider'] == 'gpg'
-          @gpg_challenges << {
-            :profile => profile,
-            :challenge => generate_gpg_challenge(@me, @user, profile, params)
-          }
-        end
+    profiles = Profile.all(:me => @me)
+    profiles.each do |profile, data|
+      data = JSON.parse data
+      if data['provider'] == 'gpg'
+        @gpg_challenges << {
+          :profile => profile,
+          :challenge => generate_gpg_challenge(@me, profile, params)
+        }
       end
     end
 
@@ -234,8 +221,6 @@ class Controller < Sinatra::Base
   #  * me=example.com
   get '/auth/supported_providers.json' do
     me = verify_me_param
-
-    user = save_user_record me
 
     me_parser = RelParser.new me
 
@@ -252,9 +237,6 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}: #{e.message}"}
     end
 
-    # Save the complete list of links to the user object
-    user.me_links = links.to_json
-
     # Check if the website points to its own IndieAuth server
     auth_endpoints = []
     begin
@@ -263,9 +245,6 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'unknown', error_description: "Unknown error retrieving #{me_parser.url}: #{e.message}"}
     end
 
-    # Save the auth endpoint (will delete any existing ones if none was found now)
-    user.auth_endpoints = auth_endpoints.to_json
-
     gpg_keys = []
     begin
       gpg_keys = get_gpg_keys me_parser
@@ -273,10 +252,7 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'unknown', error_description: "Unknown error retrieving GPG keys for #{me_parser.url}: #{e.message}"}
     end
 
-    user.gpg_keys = gpg_keys.to_json
-
-    user.last_refresh_at = DateTime.now
-    user.save
+    User.set_last_refresh me, Time.now.to_i
 
     # Delete all old profiles that aren't linked on the user's page anymore
     Profile.all(:me => me).each do |profile,data|
@@ -303,7 +279,7 @@ class Controller < Sinatra::Base
         verified = true
         # Run verify_user_profile which will save the profile in the DB. Since it's only
         # running for SMS and Email profiles, it won't trigger an HTTP request.
-        verify_user_profile me_parser, link, user
+        verify_user_profile me_parser, link, me
       end
 
       links_response << {
@@ -330,7 +306,7 @@ class Controller < Sinatra::Base
     if gpg_keys.length > 0
       provider = 'gpg'
 
-      gpg_keys do |key|
+      gpg_keys.each do |key|
         links_response << {
           profile: key['href'],
           provider: 'gpg',
@@ -349,7 +325,7 @@ class Controller < Sinatra::Base
   get '/auth/verify_link.json' do
 
     begin
-      me, profile, user, provider, verified, error_description = auth_param_setup
+      me, profile, provider, verified, error_description = auth_param_setup
     rescue RelParser::InsecureRedirectError => e
       json_error 200, {error: 'insecure_redirect', error_description: e.message}
     rescue RelParser::SSLError => e
@@ -381,8 +357,6 @@ class Controller < Sinatra::Base
     me = verify_me_param
     profile = verify_profile_param
 
-    user = save_user_record me
-
     me_parser = RelParser.new me
 
     begin
@@ -401,7 +375,7 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    provider, verified, error_description = verify_user_profile me_parser, profile, user
+    provider, verified, error_description = verify_user_profile me_parser, profile, me
 
     if params[:provider] == 'indieauth'
       attempted_username = me
@@ -411,7 +385,6 @@ class Controller < Sinatra::Base
     end
 
     session[:attempted_uri] = me
-    session[:attempted_userid] = user[:id]
     session[:attempted_profile] = profile
     session[:attempted_provider] = provider
     session[:attempted_username] = attempted_username
@@ -459,9 +432,7 @@ class Controller < Sinatra::Base
       redirect_uri = session[:redirect_uri]
       attempted_provider = session[:attempted_provider]
       attempted_profile = session[:attempted_profile]
-      attempted_userid = session[:attempted_userid]
 
-      session[:attempted_userid] = nil
       session[:attempted_profile] = nil
       session[:attempted_provider] = nil
       session[:attempted_profileid] = nil
@@ -475,7 +446,6 @@ class Controller < Sinatra::Base
         if me == attempted_uri
           # Success!
           puts "Successful login (#{me})!"
-          user = User.first :id => attempted_userid
 
           redirect_uri = Login.build_redirect_uri({
             :me => me,
@@ -537,11 +507,9 @@ class Controller < Sinatra::Base
       title "Error"
       erb :error
     else
-      user = User.first :id => session[:attempted_userid]
-
       # Authentication succeeded, send them to the client
       redirect_uri = Login.build_redirect_uri({
-        :me => user.href,
+        :me => session[:attempted_uri],
         :provider => session[:attempted_provider],
         :profile => session[:attempted_profile],
         :redirect_uri => session[:redirect_uri],
@@ -549,7 +517,7 @@ class Controller < Sinatra::Base
         :scope => session[:scope]
       }, session[:response_type])
 
-      session[:attempted_userid] = nil
+      session[:attempted_uri] = nil
       session[:attempted_profileid] = nil
       session[:attempted_provider] = nil
       session[:attempted_username] = nil

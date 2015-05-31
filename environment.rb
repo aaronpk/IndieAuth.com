@@ -63,9 +63,6 @@ class Controller < Sinatra::Base
       end
     end
 
-    DataMapper.finalize
-    DataMapper.setup :default, SiteConfig.database_url
-
     set :views, 'views'
     set :erubis,          :escape_html => true
     set :public_folder, File.dirname(__FILE__) + '/public'

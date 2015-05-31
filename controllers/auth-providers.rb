@@ -1,7 +1,7 @@
 class Controller < Sinatra::Base
 
   get '/auth/send_sms.json' do
-    me, profile, user, provider, verified, error_description = auth_param_setup
+    me, profile, provider, verified, error_description = auth_param_setup
 
     if provider.nil? or provider != 'sms'
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
@@ -12,11 +12,11 @@ class Controller < Sinatra::Base
 
     # Send the SMS now!
     twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
-    # twilio.account.messages.create(
-    #   :from => SiteConfig.twilio.number,
-    #   :to => Provider.number_from_sms_uri(profile),
-    #   :body => "Your IndieAuth verification code is: #{sms_code}"
-    # )
+    twilio.account.messages.create(
+      :from => SiteConfig.twilio.number,
+      :to => Provider.number_from_sms_uri(profile),
+      :body => "Your IndieAuth verification code is: #{sms_code}"
+    )
 
     json_response 200, {
       result: 'sent',
@@ -25,7 +25,7 @@ class Controller < Sinatra::Base
   end
 
   get '/auth/verify_sms.json' do
-    me, profile, user, provider, verified, error_description = auth_param_setup
+    me, profile, provider, verified, error_description = auth_param_setup
 
     if provider.nil? or provider != 'sms'
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
@@ -65,8 +65,7 @@ class Controller < Sinatra::Base
       me = params[:me].sub(/(\/)+$/,'')
       me = "http://#{me}" unless me.match /^https?:\/\//
 
-      user = User.first :href => me
-      profile = user.profiles.first :href => "mailto:#{response['email']}"
+      profile = Profile.find :me => me, :profile => "mailto:#{response['email']}"
       if profile.nil?
         json_error 200, {
           status: 'mismatch',
@@ -75,7 +74,7 @@ class Controller < Sinatra::Base
       else
 
         redirect_uri = Login.build_redirect_uri({
-          :me => user.href,
+          :me => me,
           :provider => 'email',
           :profile => "mailto:#{response['email']}",
           :redirect_uri => params[:redirect_uri],
@@ -105,19 +104,19 @@ class Controller < Sinatra::Base
   end
 
   post '/auth/start_gpg.json' do
-    me, profile, user, provider, verified, error_description = auth_param_setup
+    me, profile, provider, verified, error_description = auth_param_setup
 
     if provider.nil? or provider != 'gpg'
       json_error 200, {error: 'invalid_input', error_description: 'This profile must be a link to a GPG key'}
     end
 
     json_response 200, {
-      plaintext: generate_gpg_challenge(me, user, profile, params),
+      plaintext: generate_gpg_challenge(me, profile, params),
       key_url: profile
     }
   end
 
-  def generate_gpg_challenge(me, user, profile, params) 
+  def generate_gpg_challenge(me, profile, params) 
     JWT.encode({
       :me => me,
       :profile => profile,
@@ -147,17 +146,7 @@ class Controller < Sinatra::Base
     end
 
     # Look up the key to make sure we know about it already
-    user = User.first :href => expected['me']
-    profile = Profile.first :user_id => user.id, :href => expected['profile']
-    if profile.nil? or user.nil?
-      puts "User:"
-      puts user.inspect
-      puts "Profile:"
-      puts profile.inspect
-      json_error 200, {error: 'error', error_description: "Something went wrong, but this should never happen."}
-    end
-
-    puts "Expecting user #{user.href} to authenticate"
+    puts "Expecting user #{expected['me']} to authenticate"
 
     begin
       agent = Mechanize.new {|agent|
