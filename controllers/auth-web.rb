@@ -183,7 +183,16 @@ class Controller < Sinatra::Base
         client_id = URI.parse params[:client_id]
         if ['https','http'].include? client_id.scheme and !client_id.host.nil?
           client_id.path = '/' if client_id.path == ''
-          client = Microformats2.parse client_id
+
+          # Fetch the HTML
+          response = HTTParty.get client_id, {
+            # For testing slow connections, use https://www.npmjs.com/package/crapify and set it as a proxy
+            # :http_proxyaddr => "localhost", 
+            # :http_proxyport => 5000,
+            :timeout => 3
+          }
+
+          client = Microformats2.parse response.body
           if client.x_app.name
             @app_name = client.x_app.name
           end
@@ -191,7 +200,8 @@ class Controller < Sinatra::Base
             @app_logo = client_id + URI.parse(client.x_app.logo.to_s)
           end
         end
-      rescue
+      rescue => e
+        puts e.message
       end
 
     elsif params[:redirect_uri]
