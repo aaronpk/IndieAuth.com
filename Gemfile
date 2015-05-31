@@ -35,6 +35,7 @@ gem 'redis'
 gem 'base32'
 gem 'gpgme'
 gem 'jwt'
+gem 'encryptor'
 
 gem 'microformats2'
 

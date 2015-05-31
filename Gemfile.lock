@@ -43,6 +43,7 @@ GEM
       data_objects (= 0.10.15)
     domain_name (0.5.24)
       unf (>= 0.0.5, < 1.0.0)
+    encryptor (1.3.0)
     erubis (2.7.0)
     eventmachine (1.0.7)
     faraday (0.9.1)
@@ -199,6 +200,7 @@ DEPENDENCIES
   dm-mysql-adapter
   dm-pager
   dm-timestamps
+  encryptor
   erubis
   gpgme
   hashie

@@ -1,10 +1,18 @@
 class Login
 
   def self.generate_auth_code(params)
-    JWT.encode(params.merge({
+    jwt = JWT.encode(params.merge({
       :nonce => Random.rand(100000..999999),
       :created_at => Time.now.to_i
     }), SiteConfig.jwt_key)
+
+    salt = Time.now.to_i.to_s
+    iv = OpenSSL::Cipher::Cipher.new('aes-256-cbc').random_iv
+    encrypted = Encryptor.encrypt(jwt, :key => SiteConfig.jwt_key, :iv => iv, :salt => salt)
+    iv64 = Base64.urlsafe_encode64 iv
+    encrypted64 = Base64.urlsafe_encode64 encrypted
+
+    "#{salt}.#{encrypted64}.#{iv64}"
   end
 
   def self.build_redirect_uri(params, response_type='code')
@@ -29,7 +37,14 @@ class Login
 
   def self.decode_auth_code(code)
     begin
-      login = JWT.decode(code, SiteConfig.jwt_key)
+      salt, encrypted64, iv64 = code.split '.'
+
+      encrypted = Base64.urlsafe_decode64 encrypted64
+      iv = Base64.urlsafe_decode64 iv64
+
+      decrypted_code = Encryptor.decrypt(encrypted, :key => SiteConfig.jwt_key, :iv => iv, :salt => salt)
+
+      login = JWT.decode(decrypted_code, SiteConfig.jwt_key)
       login = login.first # new JWT library returns a 2-element array after decoding
     rescue => e
       nil
