@@ -30,21 +30,15 @@ gem 'mechanize'
 gem 'unshorten',	">=0.2.1"
 gem 'rest-client'
 gem 'twilio-ruby'
+gem 'redis'
+gem 'rufus-scheduler'
 
 gem 'base32'
-gem 'google_authenticator_auth'
 gem 'gpgme'
 gem 'jwt'
+gem 'encryptor'
 
 gem 'microformats2'
-
-gem 'mysql2',          '0.3.7'
-gem 'dm-core'
-gem 'dm-timestamps'
-gem 'dm-migrations'
-gem 'dm-aggregates'
-gem 'dm-mysql-adapter'
-gem 'dm-pager'
 
 group :development do
   gem 'shotgun',                :require => nil

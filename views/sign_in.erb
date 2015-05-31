@@ -2,7 +2,7 @@
 <div class="container">
   <div class="narrow">
 
-      <form action="https://indieauth.com/auth" method="get" class="well" style="margin: 20px 0;">
+      <form action="<%= SiteConfig.root %>/auth" method="get" class="well" style="margin: 20px 0;">
         <label for="indie_auth_url">Web Address:</label>
         <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
         <p><button type="submit" class="btn">Sign In</button></p>
@@ -16,7 +16,7 @@
       
       <ul class="thumbnails">
         <li>
-          <a class="thumbnail" href="/setup">
+          <a class="thumbnail" href="https://indieauth.com/setup">
             <img src="/img/code-sample.png" width="370" height="154" />
           </a>
         </li>
@@ -25,7 +25,7 @@
         <li>Add a link on your home page to your various social profiles with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
         <li>Ensure your profiles link back to your home page</li>
       </ul>
-      <a href="/setup">Full setup instructions</a>
+      <a href="https://indieauth.com/setup">Full setup instructions</a>
 
 
   </div>

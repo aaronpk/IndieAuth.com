@@ -1,25 +1,22 @@
 class Profile
-  include DataMapper::Resource
-  property :id, Serial
 
-  belongs_to :user
-  belongs_to :provider
-
-  property :href, String, :length => 255
-  property :verified, Boolean, :default => false
-
-  property :active, Boolean, :default => true
-
-  property :created_at, DateTime
-  property :updated_at, DateTime
-
-  def auth_path
-    "/auth/start?me=#{URI.encode_www_form_component user.href}&profile=#{URI.encode_www_form_component href}"
+  def self.find(opts)
+    data = R.hget "indieauth::profile::#{opts[:me]}", opts[:profile]
+    return JSON.parse data if data
+    nil
   end
 
-  def sms_number
-    if provider.code == 'sms'
-      href.gsub /sms:\/?\/?/, ''
-    end
+  def self.all(opts)
+    data = R.hgetall "indieauth::profile::#{opts[:me]}"
   end
+
+  def self.save(opts, data)
+    R.hset "indieauth::profile::#{opts[:me]}", opts[:profile], data.to_json
+    R.expire "indieauth::profile::#{opts[:me]}", 86400*30
+  end
+
+  def self.delete(opts)
+    R.hdel "indieauth::profile::#{opts[:me]}", opts[:profile]
+  end
+
 end

@@ -1,26 +1,50 @@
 class Provider
-  include DataMapper::Resource
-  property :id, Serial
 
-  property :name, String, :length => 50
-  property :home_page, String, :length => 100
-  property :code, String, :length => 20
-  property :client_id, String, :length => 255
-  property :client_secret, String, :length => 255
-  property :regex_username, String, :length => 255
-  property :profile_url_template, String, :length => 255
-
-  property :created_at, DateTime
-  property :updated_at, DateTime
-
-  def username_for_url(url)
-    #puts "username_for_url #{url}"
-    parser = RelParser.new url
-    provider = parser.get_provider
-    return nil if provider.nil?
-    return url if provider['code'] == 'open_id'
-    url.match provider['regex_username']
-    #puts "Username for #{url} is #{$1}"
-    return $1
+  def self.sms_regex
+    /sms:\/?\/?([0-9\-+]+)/
   end
+
+  def self.number_from_sms_uri(uri)
+    uri.gsub /sms:\/?\/?/, ''
+  end
+
+  def self.email_regex
+    /mailto:\/?\/?(.+@.+\..+)/
+  end
+
+  def self.provider_for_url(url)
+    if url.match Provider.sms_regex
+      return 'sms'
+    end
+
+    if url.match Provider.email_regex
+      return 'email'
+    end
+
+    Provider.regexes.each do |code,regex|
+      if regex != '' && url.match(Regexp.new(regex))
+        return code
+      end
+    end
+
+    nil
+  end
+
+  def self.regexes
+    {
+      'beeminder' => 'https?:\/\/(?:www\.)?beeminder\.com\/(.+)',
+      'eventbrite' => 'https?:\/\/(.+)\.eventbrite\.com',
+      'flickr' => 'https?:\/\/(?:www\.)?flickr\.com\/(?:people\/)?([^\/]+)',
+      'geoloqi' => 'https?:\/\/(?:www\.)?geoloqi\.com\/([^\/]+)',
+      'github' => 'https?:\/\/(?:www\.)?github\.com\/([^\/]+)',
+      'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
+      'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
+      'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)',
+    }
+  end
+
+  def self.auth_path(provider, profile, me)
+    "/auth/start?me=#{URI.encode_www_form_component me}&provider=#{provider}&profile=#{URI.encode_www_form_component profile}"
+  end
+
 end

@@ -116,10 +116,25 @@ h3 {
 }
 
 
+.profile {
+  margin-bottom: 6px;
+}
 
 .narrow.providers li {
   float: left;
   margin-right: 8px;
+}
+
+#sms_code_input {
+  margin-right: 6px;
+  margin-bottom: 0;
+}
+
+.tinyfooter {
+  border-top: 1px rgba(0,0,0,0.1) solid;
+  text-align: center;
+  font-size: 10px;
+  padding-bottom: 10px;
 }
 
 

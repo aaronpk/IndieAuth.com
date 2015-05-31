@@ -4,6 +4,7 @@ var redirect_uri = "<%= @redirect_uri %>";
 var client_id = "<%= @client_id %>";
 var state = "<%= @state %>";
 var scope = "<%= @scope %>";
+var sms_verification;
 
 function set_provider_status(index, status, error) {
   $("#profile_"+index+" .status_img").addClass(status).removeClass("loading");
@@ -46,7 +47,7 @@ function set_up_sms_auth() {
       btn.attr("disabled","disabled");
       status.text("Verifying...");
 
-      $.get("/auth/verify_sms.json", {
+      $.get(sms_verification+"/auth/verify_sms.json", {
         me: me,
         profile: $(this).attr('href'),
         code: btn.parent().children('.sms_code').val()
@@ -71,10 +72,17 @@ function set_up_sms_auth() {
         redirect_uri: redirect_uri
       }, function(data){
         if(data.result == "sent") {
+          sms_verification = data.verify;
           // Swap the button for a field to enter the code
-          btn.text("Verify").removeAttr("disabled");
+          btn.text("Verify").removeAttr("disabled").addClass("pending");
           status.text("Sent! Enter the verification code you received above.");
-          btn.parent().prepend('<input type="text" class="span1 sms_code">').focus();
+          btn.parent().prepend('<input type="text" id="sms_code_input" class="span1 sms_code">')
+          $("#sms_code_input").focus();
+          $("#sms_code_input").on('keydown', function(e){
+            if(e.keyCode == 13) {
+              $(".sms-auth.pending").click();
+            }
+          });
         }
       });
     }
@@ -252,7 +260,6 @@ function verify_link_back(me, link, i, use_cached) {
   if(link.provider == 'totp') {
     $("#profile_"+i+" .link").html('<button class="btn disabled">Google Authenticator</button>');
     set_provider_status(i, 'error', 'Google Authenticator logins are no longer supported. <a href="/totp">Read why</a>.');
-    set_up_totp_auth();
     provider_verification_finished();
     return;
   }
@@ -533,7 +540,7 @@ function start_scan() {
     <div class="alert alert-success">
       <span id="num_providers">1</span> supported and verified providers were found!
       <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
-      <span class="last-refresh"><%= (@user ? @user.last_refresh : '') %></span>
+      <span class="last-refresh"><%= (@me ? User.last_refresh(@me) : '') %></span>
     </div>
   </div>
 
@@ -550,10 +557,10 @@ function start_scan() {
       # The database will only return URLs that are valid providers, not the complete list of rel-me links on the person's site.
     %>
     <% @profiles.each_with_index do |profile,i| %>
-      <% next if @redirect_uri == 'totp' and profile.provider.code == 'totp' %>
-      <li class="profile <%= profile.provider.code %>" id="profile_<%= i %>" data-profile="<%= profile[:href] %>" data-verified="<%= profile.verified ? true : false %>" data-provider="<%= profile.provider.code %>" data-auth-path="<%= profile.auth_path %>">
-        <span class="status_img <%= profile.verified ? 'verified' : 'error' %>"></span>
-        <span class="link"><%= profile[:href] %></span>
+      <% next if @redirect_uri == 'totp' and profile['provider'] == 'totp' %>
+      <li class="profile <%= profile['provider'] %>" id="profile_<%= i %>" data-profile="<%= profile['href'] %>" data-verified="true" data-provider="<%= profile['provider'] %>" data-auth-path="<%= Provider.auth_path(profile['provider'], profile['href'], @me) %>">
+        <span class="status_img verified"></span>
+        <span class="link"><%= profile['href'] %></span>
         <div class="status">Verifying...</div>
       </li>
     <% end %>
@@ -565,13 +572,6 @@ function start_scan() {
     <p><a href="https://indieauth.com/setup">Full Setup Instructions</a></p>
   </div>
   <div class="unsupported_links_error" style="display: none;">
-    <p>Currently only the following providers are supported:
-      <ul>
-        <% @providers.each do |provider| %>
-          <li><a href="<%= provider[:home_page] %>"><%= provider[:name] %></a></li>
-        <% end %>
-      </ul>
-    </p>
     <p>Add links on your home page to your various social profiles (Twitter, Github, etc) with the attribute rel="me"</p>
     <p>Ensure your profiles link back to your home page.</p>
     <p><a href="/setup">Full Setup Instructions</a></p>
@@ -623,7 +623,7 @@ end %>
 </div>
 
 <script id="profile_link_template" type="text/template">
-<li id="profile_{{index}}">
+<li class="profile" id="profile_{{index}}">
   <span class="status_img loading"></span>
   <span class="link">{{link}}</span>
   <div class="status">Verifying...</div>

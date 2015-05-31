@@ -2,7 +2,6 @@
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 
   <head>
@@ -41,7 +40,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand p-name" href="/">IndieAuth</a>
+          <a class="brand p-name" href="/">IndieAuth.com</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="/setup">Setup</a></li>
@@ -49,12 +48,16 @@
               <li><a href="/faq">FAQ</a></li>
               <li><a href="/history">History</a></li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
     </div>
 
     <%= yield %>
+
+    <div class="tinyfooter">
+      This server is hosted by <%= SiteConfig.credit %>. v15.150.1
+    </div>
 
     <script src="https://login.persona.org/include.js"></script>
   </body>
