@@ -176,6 +176,23 @@ class Controller < Sinatra::Base
     @app_logo = nil
 
     if params[:client_id]
+      # Check for valid client ID. Must be either a URL or a string
+      valid = false
+      begin
+        client_id = URI.parse params[:client_id]
+        if ['http','https'].include? client_id.scheme and client_id.host
+          valid = true
+        end
+      rescue
+      end
+
+      if !valid
+        @error_title = "Invalid client_id"
+        @message = "The client_id must be a valid URL."
+        @error_details = "The client_id provided was:<br><code>#{CGI.escapeHTML params[:client_id]}</code>"
+        halt 400, erb(:error)
+      end
+
       # Remove visible http and trailing slash from the display name
       @app_name = params[:client_id].gsub(/https?:\/\//, '').gsub(/\/$/, '')
       # Look for an h-card on the URL indicated by the client_id
@@ -201,7 +218,7 @@ class Controller < Sinatra::Base
           end
         end
       rescue => e
-        puts e.message
+        puts "Error retrieving client_id: #{e.message}"
       end
 
     elsif params[:redirect_uri]

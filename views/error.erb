@@ -1,6 +1,6 @@
 
 <div class="hero-unit">
-  <h1>There was a problem!</h1>
+  <h1><%== @error_title ? @error_title : "There was a problem!" %></h1>
 </div>
 
 <div class="container">
@@ -8,6 +8,7 @@
   <div class="row" style="margin-bottom: 50px;">
     <div class="span12">
       <h2 style="text-align: center;"><%== @message %></h2>
+      <p style="text-align: center;"><%= @error_details %></p>
     </div>
   </div><!-- row -->
 
