@@ -35,7 +35,7 @@ class Controller < Sinatra::Base
       json_error 404, {error: "invalid_token", error_description: "The token provided was not found"}
     end
 
-    # TODO: Record the login
+    Log.save login
 
     json_response 200, {:me => login['me']}
   end
@@ -56,7 +56,7 @@ class Controller < Sinatra::Base
       json_error 400, {error: "expired_code", error_description: "The code provided has already been used"}
     end
 
-    # TODO: Record the login
+    Log.save login
 
     json_response 200, {:me => login['me']}
   end
@@ -95,7 +95,7 @@ class Controller < Sinatra::Base
       http_error 400, {error: "invalid_request", error_description: "The 'state' parameter did not match"}
     end
 
-    # TODO: Record the login
+    Log.save login
     
     puts "Successful auth code verification"
 

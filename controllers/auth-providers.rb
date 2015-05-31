@@ -20,7 +20,7 @@ class Controller < Sinatra::Base
 
     json_response 200, {
       result: 'sent',
-      verify: SiteConfig.this_server
+      verify: "https://#{SiteConfig.this_server}"
     }
   end
 
@@ -43,7 +43,6 @@ class Controller < Sinatra::Base
       :state => session[:state],
       :scope => session[:scope]
     })
-
 
     json_response 200, {
       me: me,

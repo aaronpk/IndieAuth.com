@@ -75,3 +75,8 @@ require_relative './controller.rb'
 Dir.glob(['controllers'].map! {|d| File.join d, '*.rb'}).each do |f| 
   require_relative f
 end
+
+scheduler = Rufus::Scheduler.new
+scheduler.every '15s' do
+  Log.flush
+end

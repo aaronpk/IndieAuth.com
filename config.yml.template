@@ -1,6 +1,9 @@
 development:
   root: https://localhost:9292
-  database_url: "mysql://root:pass@127.0.0.1/indieauth"
+  this_server: primary.example.com
+  stats:
+    server: https://stats.example.com
+    token: "000000"
   session_secret: "PUT SOMETHING HERE"
   jwt_key: "PUT SOMETHING HERE"
   ga_id: UA-XXXXXXXX

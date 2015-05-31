@@ -126,6 +126,7 @@ GEM
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
     ruby-openid (2.7.0)
+    rufus-scheduler (3.1.2)
     shotgun (0.9.1)
       rack (>= 1.0)
     sinatra (1.4.6)
@@ -197,6 +198,7 @@ DEPENDENCIES
   redis
   rest-client
   ruby-openid
+  rufus-scheduler
   shotgun
   sinatra
   sinatra-namespace

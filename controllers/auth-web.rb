@@ -551,7 +551,7 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    # TODO: record the login
+    Log.save login
 
     @domain = login['me']
     title "Successfully Signed In!"

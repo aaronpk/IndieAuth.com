@@ -31,6 +31,7 @@ gem 'unshorten',	">=0.2.1"
 gem 'rest-client'
 gem 'twilio-ruby'
 gem 'redis'
+gem 'rufus-scheduler'
 
 gem 'base32'
 gem 'gpgme'
