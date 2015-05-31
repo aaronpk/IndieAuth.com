@@ -13,7 +13,7 @@ class Profile
   property :updated_at, DateTime
 
   def auth_path
-    "/auth/start?me=#{URI.encode_www_form_component user.href}&profile=#{URI.encode_www_form_component href}"
+    "/auth/start?me=#{URI.encode_www_form_component user.href}&provider=#{provider}&profile=#{URI.encode_www_form_component href}"
   end
 
   def sms_number

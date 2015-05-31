@@ -10,18 +10,20 @@ class Provider
 
   def self.provider_for_url(url)
     if url.match Provider.sms_regex
-      return Provider.first :code => 'sms'
+      return 'sms'
     end
 
     if url.match Provider.email_regex
-      return Provider.first :code => 'email'
+      return 'email'
     end
 
-    Provider.regexes.each do |c,regex|
+    Provider.regexes.each do |code,regex|
       if regex != '' && url.match(Regexp.new(regex))
-        return Provider.first :code => c
+        return code
       end
     end
+
+    nil
   end
 
   def self.regexes
@@ -34,7 +36,6 @@ class Provider
       'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
       'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
       'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)',
-      'indieauth' => '(.+)'
     }
   end
 

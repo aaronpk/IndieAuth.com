@@ -73,7 +73,7 @@ class Controller < Sinatra::Base
       # Checks the URL against the list of regexes to see what provider it is
       # Does not fetch the page contents
       profile_parser = RelParser.new profile
-      provider = profile_parser.get_provider
+      provider = Provider.provider_for_url profile
 
       if provider.nil?
         json_error 200, {error: 'unsupported_provider', error_description: 'The specified link is not a supported provider'}
@@ -298,7 +298,7 @@ class Controller < Sinatra::Base
       # Checks the URL against the list of regexes to see what provider it is
       # Does not fetch the page contents
       profile_parser = RelParser.new link
-      provider = profile_parser.get_provider
+      provider = Provider.provider_for_url link
 
       if provider && (provider == 'sms' or provider == 'email')
         verified = true
@@ -424,13 +424,19 @@ class Controller < Sinatra::Base
 
     provider, profile_record, verified, error_description = verify_user_profile me_parser, profile, user
 
-    match = profile_record.href.match(Regexp.new Provider.regexes[provider])
+    if params[:provider] == 'indieauth'
+      attempted_username = me
+    else
+      match = profile_record.href.match(Regexp.new Provider.regexes[provider])
+      attempted_username = match[1]
+    end
+
     session[:attempted_uri] = me
     session[:attempted_userid] = user[:id]
     session[:attempted_profile] = profile
     session[:attempted_profileid] = profile_record.id
     session[:attempted_provider] = provider
-    session[:attempted_username] = match[1]
+    session[:attempted_username] = attempted_username
     session[:redirect_uri] = params[:redirect_uri]
 
     puts "Attempting authentication for #{session[:attempted_uri]} via #{provider} (Expecting #{session[:attempted_username]})"
@@ -494,7 +500,7 @@ class Controller < Sinatra::Base
           user = User.first :id => attempted_userid
 
           redirect_uri = Login.build_redirect_uri({
-            :me => user.href,
+            :me => me,
             :provider => attempted_provider,
             :profile => attempted_profile,
             :redirect_uri => redirect_uri,
