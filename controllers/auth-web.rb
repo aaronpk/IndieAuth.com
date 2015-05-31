@@ -147,23 +147,6 @@ class Controller < Sinatra::Base
     return me, profile, user, provider, profile_record, verified, error_description
   end
 
-  def build_redirect_uri(login)
-    puts "Building redirect for login #{login.inspect}"
-    if login.redirect_uri
-      redirect_uri = URI.parse login.redirect_uri
-      p = Rack::Utils.parse_query redirect_uri.query
-      p[session[:response_type]] = login.token
-      p['me'] = login.user.href
-      p['state'] = login.state if login.state
-      redirect_uri.query = Rack::Utils.build_query p
-      redirect_uri = redirect_uri.to_s 
-    else
-      redirect_uri = "/success?#{session[:response_type]}=#{login.token}&me=#{URI.encode_www_form_component(login.user.href)}"
-      redirect_uri = "#{redirect_uri}&state=#{login.state}" if login.state
-    end
-    return redirect_uri
-  end
-
   def save_response_type
     # If a client_id is specified, assume this is a new client and use "code" for the name instead
     session[:response_type] = 'token'
@@ -447,6 +430,7 @@ class Controller < Sinatra::Base
     session[:attempted_userid] = user[:id]
     session[:attempted_profile] = profile
     session[:attempted_profileid] = profile_record.id
+    session[:attempted_provider] = provider.code
     session[:attempted_providerid] = provider.id
     session[:attempted_username] = match[1]
     session[:redirect_uri] = params[:redirect_uri]
@@ -491,12 +475,13 @@ class Controller < Sinatra::Base
       attempted_token = session[:attempted_token]
       attempted_uri = session[:attempted_uri]
       redirect_uri = session[:redirect_uri]
-      attempted_providerid = session[:attempted_providerid]
-      attempted_profileid = session[:attempted_profileid]
+      attempted_provider = session[:attempted_provider]
+      attempted_profile = session[:attempted_profile]
       attempted_userid = session[:attempted_userid]
 
       session[:attempted_userid] = nil
       session[:attempted_profile] = nil
+      session[:attempted_provider] = nil
       session[:attempted_providerid] = nil
       session[:attempted_profileid] = nil
       session[:attempted_username] = nil
@@ -511,16 +496,15 @@ class Controller < Sinatra::Base
           puts "Successful login (#{me})!"
           user = User.first :id => attempted_userid
 
-          login = Login.create :user => user,
-            :provider_id => attempted_providerid,
-            :profile_id => attempted_profileid,
-            :complete => true,
-            :token => Login.generate_token,
+          redirect_uri = Login.build_redirect_uri({
+            :me => user.href,
+            :provider => attempted_provider,
+            :profile => attempted_profile,
             :redirect_uri => redirect_uri,
             :state => session[:state],
             :scope => session[:scope]
+          })
 
-          redirect_uri = build_redirect_uri login
           puts "Redirecting to #{redirect_uri}"
 
           return redirect redirect_uri
@@ -532,8 +516,9 @@ class Controller < Sinatra::Base
       end
 
     rescue => e
-      @message = "Something went horribly wrong! I'm sorry, there's nothing more I can do. You should probably <a href=\"https://github.com/aaronpk/IndieAuth.com/issues\">get in touch</a>."
+      @message = "Something went horribly wrong! I'm sorry, there's not much other information available. You should probably file an issue: https://github.com/aaronpk/IndieAuth.com/issues."
       puts e.inspect
+      puts e.backtrace
     end
 
     title "Error"
@@ -573,22 +558,24 @@ class Controller < Sinatra::Base
     else
       user = User.first :id => session[:attempted_userid]
 
-      login = Login.create :user => user,
-        :provider_id => session[:attempted_providerid],
-        :profile_id => session[:attempted_profileid], 
-        :complete => true,
-        :token => Login.generate_token,
+      # Authentication succeeded, send them to the client
+      redirect_uri = Login.build_redirect_uri({
+        :me => user.href,
+        :provider => session[:attempted_provider],
+        :profile => session[:attempted_profile],
         :redirect_uri => session[:redirect_uri],
         :state => session[:state],
         :scope => session[:scope]
+      }, session[:response_type])
 
       session[:attempted_userid] = nil
       session[:attempted_profileid] = nil
+      session[:attempted_provider] = nil
       session[:attempted_providerid] = nil
       session[:attempted_username] = nil
       session[:redirect_uri] = nil
 
-      redirect build_redirect_uri login
+      redirect redirect_uri
     end
   end
   end
@@ -608,7 +595,7 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    login = Login.first :token => code
+    login = Login.decode_auth_code code
 
     if login.nil?
       @message = "The code provided was not found"
@@ -616,11 +603,9 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    login.last_used_at = Time.now
-    login.used_count = login.used_count + 1
-    login.save
+    # TODO: record the login
 
-    @domain = login.user['href']
+    @domain = login['me']
     title "Successfully Signed In!"
     erb :success
   end

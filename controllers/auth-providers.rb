@@ -7,29 +7,20 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
-    login = Login.create :user => user,
-      :provider => provider,
-      :profile => profile_record, 
-      :complete => false,
-      :token => Login.generate_token,
-      :redirect_uri => params[:redirect_uri],
-      :sms_code => Login.generate_sms_code,
-      :state => session[:state],
-      :scope => session[:scope]
+    sms_code = Login.generate_sms_code
+    R.set "sms:#{me}", sms_code, :ex => 300 # valid for 300 seconds
 
     # Send the SMS now!
-    @twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
-    @twilio.account.sms.messages.create(
-      :from => SiteConfig.twilio.number,
-      :to => profile_record.sms_number,
-      :body => "Your IndieAuth verification code is: #{login.sms_code}"
-    )
+    twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
+    # twilio.account.messages.create(
+    #   :from => SiteConfig.twilio.number,
+    #   :to => profile_record.sms_number,
+    #   :body => "Your IndieAuth verification code is: #{sms_code}"
+    # )
 
     json_response 200, {
-      me: me, 
-      profile: profile, 
-      provider: provider.code,
-      result: 'sent'
+      result: 'sent',
+      verify: SiteConfig.this_server
     }
   end
 
@@ -40,22 +31,20 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
     end
 
-    login = Login.first :user => user,
-      :provider => provider,
-      :sms_code => params[:code],
-      :complete => false
-
-    # TODO: Check code creation date and disallow old stuff
-
-    if login.nil?
+    if params[:code] != R.get("sms:#{me}")
       json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
-    login.complete = true
-    login.save
+    redirect_uri = Login.build_redirect_uri({
+      :me => me,
+      :provider => 'sms',
+      :profile => profile,
+      :redirect_uri => params[:redirect_uri],
+      :state => session[:state],
+      :scope => session[:scope]
+    })
 
-    redirect_uri = build_redirect_uri login
-
+    
     json_response 200, {
       me: me,
       profile: profile,
@@ -85,16 +74,14 @@ class Controller < Sinatra::Base
         }
       else
 
-        login = Login.create :user => user,
-          :provider => Provider.first(:code => 'email'),
-          :profile => profile,
-          :complete => true,
-          :token => Login.generate_token,
+        redirect_uri = Login.build_redirect_uri({
+          :me => user.href,
+          :provider => 'email',
+          :profile => "mailto:#{response['email']}",
           :redirect_uri => params[:redirect_uri],
           :state => session[:state],
           :scope => session[:scope]
-
-        redirect_uri = build_redirect_uri login
+        })
 
         json_response 200, {
           status: response['status'],
@@ -135,6 +122,7 @@ class Controller < Sinatra::Base
       :me => me,
       :user_id => user.id,
       :profile_id => profile_record.id,
+      :profile => profile_record.href,
       :redirect_uri => params[:redirect_uri],
       :state => params[:state],
       :scope => params[:scope],
@@ -161,8 +149,8 @@ class Controller < Sinatra::Base
     end
 
     # Look up the key to make sure we know about it already
-    profile = Profile.get expected['profile_id'].to_i
     user = User.get expected['user_id'].to_i
+    profile = Profile.first :user_id => expected['user_id'].to_i, :href => expected['profile']
     if profile.nil? or user.nil?
       json_error 200, {error: 'error', error_description: "Something went wrong, but this should never happen."}
     end
@@ -236,7 +224,7 @@ class Controller < Sinatra::Base
     end
 
     if payload
-      puts "Expected profile ID: #{profile.id}"
+      puts "Expected profile ID: #{profile.id} (#{profile.href})"
       jj payload
 
       # TODO: Expire the challenges after 5 minutes or so
@@ -244,19 +232,19 @@ class Controller < Sinatra::Base
 
       # Signature checked out, JWT token was successfully decoded
       # Now make sure that the profile_id referenced in the JWT was the same one that provided the public key
-      if profile.id == payload['profile_id']
+      if expected['profile'] == payload['profile']
         # Generate a login token
-        login = Login.create :user => User.get(payload['user_id'].to_i),
-          :provider => Provider.first(:code => 'gpg'),
-          :profile => Profile.get(payload['profile_id']),
-          :complete => true,
-          :token => Login.generate_token,
+        redirect_uri = Login.build_redirect_uri({
+          :me => payload['me'],
+          :provider => 'gpg',
+          :profile => expected['profile'],
           :redirect_uri => payload['redirect_uri'],
           :state => payload['state'],
           :scope => payload['scope']
+        })
 
         # Redirect to the callback URL
-        json_response 200, {redirect_uri: build_redirect_uri(login)}
+        json_response 200, {redirect_uri: redirect_uri}
       else
         json_error 200, {error: 'verification_mismatch', error_description: "The challenge was signed with the wrong key."}
       end

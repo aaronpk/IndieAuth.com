@@ -30,9 +30,9 @@ gem 'mechanize'
 gem 'unshorten',	">=0.2.1"
 gem 'rest-client'
 gem 'twilio-ruby'
+gem 'redis'
 
 gem 'base32'
-gem 'google_authenticator_auth'
 gem 'gpgme'
 gem 'jwt'
 

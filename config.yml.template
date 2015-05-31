@@ -4,6 +4,10 @@ development:
   session_secret: "PUT SOMETHING HERE"
   jwt_key: "PUT SOMETHING HERE"
   ga_id: UA-XXXXXXXX
+  credit: <a href="http://indiewebcamp.com/sponsors">sponsors</a> of IndieWebCamp events
+  redis:
+    host: 127.0.0.1
+    port: 6379
   twilio:
     sid: 
     token: 

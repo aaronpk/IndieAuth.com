@@ -71,7 +71,7 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    login = Login.first :token => code
+    login = Login.decode_auth_code code
 
     if login.nil?
       @message = "The code provided was not found"
@@ -79,11 +79,9 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    login.last_used_at = Time.now
-    login.used_count = login.used_count + 1
-    login.save
+    # TODO: record the login
 
-    @domain = login.user['href']
+    @domain = login['me']
 
     # Successfully authenticated as @domain
 

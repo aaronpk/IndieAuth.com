@@ -7,7 +7,6 @@ class User
   property :auth_endpoints, Text
   property :gpg_keys, Text
 
-  has n, :logins
   has n, :profiles
 
   property :last_refresh_at, DateTime

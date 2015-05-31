@@ -47,8 +47,6 @@ GEM
     eventmachine (1.0.7)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
-    google_authenticator_auth (1.0.0)
-      builder
     gpgme (2.0.8)
       mini_portile (>= 0.5.0)
     hashie (3.4.1)
@@ -145,6 +143,7 @@ GEM
       unicorn (~> 4.8)
     raindrops (0.13.0)
     rake (10.4.2)
+    redis (3.2.1)
     rest-client (1.7.3)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
@@ -201,7 +200,6 @@ DEPENDENCIES
   dm-pager
   dm-timestamps
   erubis
-  google_authenticator_auth
   gpgme
   hashie
   httparty
@@ -224,6 +222,7 @@ DEPENDENCIES
   puma
   rainbows
   rake
+  redis
   rest-client
   ruby-openid
   shotgun

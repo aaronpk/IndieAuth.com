@@ -21,6 +21,8 @@ end
 
 SiteConfig = RelMeAuth::SiteConfig.new YAML.load_file('config.yml')[ENV['RACK_ENV']] if File.exists?('config.yml')
 
+R = Redis.new :host => SiteConfig.redis.host, :port => SiteConfig.redis.port
+
 class Controller < Sinatra::Base
   # before do
   #   puts "================================="

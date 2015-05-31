@@ -7,7 +7,8 @@ class Controller < Sinatra::Base
   def json_response(code, data)
     halt code, {
         'Content-Type' => 'application/json;charset=UTF-8',
-        'Cache-Control' => 'no-store'
+        'Cache-Control' => 'no-store',
+        'Access-Control-Allow-Origin' => '*'
       }, 
       data.to_json
   end
@@ -29,16 +30,14 @@ class Controller < Sinatra::Base
       json_error 400, {error: "invalid_request", error_description: "Missing 'token' parameter"}
     end
 
-    login = Login.first :token => params[:token]
+    login = Login.decode_auth_code params[:token]
     if login.nil?
       json_error 404, {error: "invalid_token", error_description: "The token provided was not found"}
     end
 
-    login.last_used_at = Time.now
-    login.used_count = login.used_count + 1
-    login.save
+    # TODO: Record the login
 
-    json_response 200, {:me => login.user['href']}
+    json_response 200, {:me => login['me']}
   end
 
   get '/verify' do
@@ -48,20 +47,18 @@ class Controller < Sinatra::Base
       json_error 400, {error: "invalid_request", error_description: "Missing 'code' parameter"}
     end
 
-    login = Login.first :token => code
+    login = Login.decode_auth_code code
     if login.nil?
       json_error 404, {error: "invalid_code", error_description: "The code provided was not found"}
     end
 
-    if login.used_count > 0
+    if Login.expired? login
       json_error 400, {error: "expired_code", error_description: "The code provided has already been used"}
     end
 
-    login.last_used_at = Time.now
-    login.used_count = login.used_count + 1
-    login.save
+    # TODO: Record the login
 
-    json_response 200, {:me => login.user['href']}
+    json_response 200, {:me => login['me']}
   end
 
   # This is the POST route that handles verifying auth codes. It needs to match the name of the authorization URL
@@ -77,36 +74,34 @@ class Controller < Sinatra::Base
       http_error 400, {error: "invalid_request", error_description: "Missing 'code' parameter"}
     end
 
-    login = Login.first :token => code
+    login = Login.decode_auth_code code
     if login.nil?
       puts "Invalid code provided"
       http_error 404, {error: "invalid_request", error_description: "Invalid code provided"}
     end
 
-    if login.created_at.to_time.to_i < Time.now.to_i - 60  # auth codes are only valid for 60 seconds
+    if Login.expired? login
       puts "The auth code expired"
       http_error 400, {error: "invalid_request", error_description: "The auth code has expired (valid for 60 seconds)"}
     end
 
-    if login.redirect_uri != params[:redirect_uri]
+    if login['redirect_uri'] != params[:redirect_uri]
       puts "The redirect_uri parameter did not match"
       http_error 400, {error: "invalid_request", error_description: "The 'redirect_uri' parameter did not match"}
     end
 
-    if login.state.to_s != params[:state].to_s
+    if login['state'].to_s != params[:state].to_s
       puts "The state parameter did not match"
       http_error 400, {error: "invalid_request", error_description: "The 'state' parameter did not match"}
     end
 
-    login.last_used_at = Time.now
-    login.used_count = login.used_count + 1
-    login.save
+    # TODO: Record the login
     
     puts "Successful auth code verification"
 
     http_response 200, {
-      :me => login.user['href'],
-      :scope => login.scope
+      :me => login['me'],
+      :scope => login['scope']
     }
   end
 

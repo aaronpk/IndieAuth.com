@@ -4,6 +4,7 @@ var redirect_uri = "<%= @redirect_uri %>";
 var client_id = "<%= @client_id %>";
 var state = "<%= @state %>";
 var scope = "<%= @scope %>";
+var sms_verification;
 
 function set_provider_status(index, status, error) {
   $("#profile_"+index+" .status_img").addClass(status).removeClass("loading");
@@ -46,7 +47,7 @@ function set_up_sms_auth() {
       btn.attr("disabled","disabled");
       status.text("Verifying...");
 
-      $.get("/auth/verify_sms.json", {
+      $.get(sms_verification+"/auth/verify_sms.json", {
         me: me,
         profile: $(this).attr('href'),
         code: btn.parent().children('.sms_code').val()
@@ -71,10 +72,17 @@ function set_up_sms_auth() {
         redirect_uri: redirect_uri
       }, function(data){
         if(data.result == "sent") {
+          sms_verification = data.verify;
           // Swap the button for a field to enter the code
-          btn.text("Verify").removeAttr("disabled");
+          btn.text("Verify").removeAttr("disabled").addClass("pending");
           status.text("Sent! Enter the verification code you received above.");
-          btn.parent().prepend('<input type="text" class="span1 sms_code">').focus();
+          btn.parent().prepend('<input type="text" id="sms_code_input" class="span1 sms_code">')
+          $("#sms_code_input").focus();
+          $("#sms_code_input").on('keydown', function(e){
+            if(e.keyCode == 13) {
+              $(".sms-auth.pending").click();
+            }
+          });
         }
       });
     }
