@@ -44,7 +44,13 @@ class Provider
   end
 
   def self.auth_path(provider, profile, me)
-    "/auth/start?me=#{URI.encode_www_form_component me}&provider=#{provider}&profile=#{URI.encode_www_form_component profile}"
+    path = "/auth/start?me=#{URI.encode_www_form_component me}&provider=#{provider}&profile=#{URI.encode_www_form_component profile}"
+    if provider == 'twitter'
+      match = profile.match Regexp.new(self.regexes['twitter'])
+      twitter_username = match[1]
+      path = "#{path}&screen_name=#{twitter_username}"
+    end
+    path
   end
 
 end
