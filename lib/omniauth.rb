@@ -13,8 +13,6 @@ module OmniAuth
       exists = class_exists?('Flickr')
     when 'foursquare'
       exists = class_exists?('Foursquare')
-    when 'geoloqi'
-      exists = class_exists?('Geoloqi')
     when 'github'
       exists = class_exists?('GitHub')
     when 'google_oauth2'
