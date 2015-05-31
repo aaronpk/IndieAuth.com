@@ -6,11 +6,19 @@ class Controller < Sinatra::Base
 
   def json_response(code, data)
     halt code, {
-        'Content-Type' => 'application/json;charset=UTF-8',
-        'Cache-Control' => 'no-store',
-        'Access-Control-Allow-Origin' => '*'
-      }, 
-      data.to_json
+      'Content-Type' => 'application/json;charset=UTF-8',
+      'Cache-Control' => 'no-store',
+      'Access-Control-Allow-Origin' => '*'
+    }, 
+    data.to_json
+  end
+
+  def form_encoded_response(code, data)
+    halt code, {
+      'Content-Type' => 'application/x-www-form-urlencoded',
+      'Cache-Control' => 'no-store'
+    },
+    URI.encode_www_form(data)
   end
 
   def http_error(code, data)
@@ -18,11 +26,17 @@ class Controller < Sinatra::Base
   end
 
   def http_response(code, data)
-    halt code, {
-      'Content-Type' => 'application/x-www-form-urlencoded',
-      'Cache-Control' => 'no-store'
-    },
-    URI.encode_www_form(data)
+    accept = env['rack-accept.request']
+    if accept.media_type? 'application/x-www-form-urlencoded'
+      # First check for form-encoded accept, which matches `Accept: */*` first
+      form_encoded_response code, data
+    elsif accept.media_type? 'application/json'
+      # If they explicitly request application/json then return json
+      json_response code, data
+    else
+      # Otherwise fall back to form-encoded
+      form_encoded_response code, data
+    end
   end
 
   get '/session' do

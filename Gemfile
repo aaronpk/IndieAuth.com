@@ -3,6 +3,7 @@ source 'https://rubygems.org/'
 gem 'sinatra',             :require => 'sinatra/base'
 gem 'sinatra-namespace',   :require => 'sinatra/namespace'
 gem 'sinatra-support',     :require => 'sinatra/support'
+gem 'rack-accept',         :require => 'rack/accept'
 
 gem 'erubis'
 gem 'rainbows', :require => nil

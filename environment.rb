@@ -45,6 +45,8 @@ class Controller < Sinatra::Base
                                :expire_after => 2592000,
                                :secret => SiteConfig.session_secret
 
+    use Rack::Accept
+
     set :root, File.dirname(__FILE__)
     set :show_exceptions, true
     set :raise_errors,    true
