@@ -14,7 +14,6 @@ class Controller < Sinatra::Base
       uri.scheme = 'http' if uri.scheme.nil?
 
       if !uri.host.nil? and ['http','https'].include? uri.scheme
-        uri.path = '/' if uri.path == ''
         return uri.normalize.to_s
       end
     rescue

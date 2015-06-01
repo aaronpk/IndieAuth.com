@@ -351,11 +351,8 @@ class RelParser
     
     if response.headers['location']
       begin
-        redirect = URI.parse response.headers['location']
-        redirect.scheme = uri.scheme if redirect.scheme == nil 
-        redirect.host = uri.host if redirect.host == nil
-        redirect.path = '/' if redirect.path == ''
-        return redirect
+        redirect = Addressable::URI.join uri.to_s, response.headers['location']
+        return redirect.normalize.to_s
       rescue URI::InvalidURIError => e
         return nil
       end
