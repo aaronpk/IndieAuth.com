@@ -2,19 +2,20 @@ class Controller < Sinatra::Base
 
   def normalize_me(me)
     begin
-      uri = URI.parse me
+      uri = Addressable::URI.parse me
+
+      # Bare domains get parsed as just a relative path, so fix that here
+      if uri.scheme.nil? and uri.host.nil? and !uri.path.nil?
+        host = uri.path
+        uri.path = '/'
+        uri.host = host
+      end
 
       uri.scheme = 'http' if uri.scheme.nil?
 
-      # Bare domains get parsed as just a path
-      if uri.host.nil? and !uri.path.nil?
-        uri.host = uri.path
-        uri.path = '/'
-      end
-
       if !uri.host.nil? and ['http','https'].include? uri.scheme
         uri.path = '/' if uri.path == ''
-        return uri.to_s
+        return uri.normalize.to_s
       end
     rescue
     end
@@ -502,8 +503,6 @@ class Controller < Sinatra::Base
         me = response['me'].first
         if me == attempted_uri
           # Success!
-          puts "Successful login (#{me})!"
-
           redirect_uri = Login.build_redirect_uri({
             :me => me,
             :provider => attempted_provider,
@@ -512,6 +511,7 @@ class Controller < Sinatra::Base
             :state => session[:state],
             :scope => session[:scope]
           })
+          puts "Successful login (#{me}) redirecting to #{redirect_uri}"
 
           puts "Redirecting to #{redirect_uri}"
 
@@ -573,6 +573,8 @@ class Controller < Sinatra::Base
         :state => session[:state],
         :scope => session[:scope]
       }, session[:response_type])
+
+      puts "Successful login (#{session[:attempted_uri]}) redirecting to #{redirect_uri}"
 
       session[:attempted_uri] = nil
       session[:attempted_profileid] = nil

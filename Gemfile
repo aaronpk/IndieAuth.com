@@ -37,6 +37,7 @@ gem 'base32'
 gem 'gpgme'
 gem 'jwt'
 gem 'encryptor'
+gem 'addressable',  :require => 'addressable/uri'
 
 gem 'microformats2'
 
