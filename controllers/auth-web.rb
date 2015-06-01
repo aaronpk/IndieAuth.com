@@ -6,6 +6,12 @@ class Controller < Sinatra::Base
 
       uri.scheme = 'http' if uri.scheme.nil?
 
+      # Bare domains get parsed as just a path
+      if uri.host.nil? and !uri.path.nil?
+        uri.host = uri.path
+        uri.path = '/'
+      end
+
       if !uri.host.nil? and ['http','https'].include? uri.scheme
         uri.path = '/' if uri.path == ''
         return uri.to_s
