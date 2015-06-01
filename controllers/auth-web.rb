@@ -314,11 +314,22 @@ class Controller < Sinatra::Base
     # Delete all old profiles that aren't linked on the user's page anymore
     Profile.all(:me => me).each do |profile,data|
       data = JSON.parse data
-      if !['server'].include? data['provider'] and !links.include? profile
-        puts "Link to #{profile} no longer found, deactivating"
-        Profile.delete :me => me, :profile => profile
+      if data['provider'] == 'indieauth'
+        if !auth_endpoints.include? profile
+          puts "Link to IndieAuth server #{profile} no longer found, deactivating"
+          Profile.delete :me => me, :profile => profile
+        end
+      elsif data['provider'] == 'gpg'
+        if !gpg_keys.map{|k| k[:href]}.include? profile
+          puts "Link to GPG key #{profile} no longer found, deactivating"
+          Profile.delete :me => me, :profile => profile
+        end
+      else 
+        if !links.include? profile
+          puts "Link to #{profile} no longer found, deactivating"
+          Profile.delete :me => me, :profile => profile
+        end
       end
-      # TODO: Also deactivate old auth servers
     end
 
     # Check each link to see if it's a supported provider
@@ -332,7 +343,7 @@ class Controller < Sinatra::Base
       profile_parser = RelParser.new link
       provider = Provider.provider_for_url link
 
-      if provider && (provider == 'sms' or provider == 'email')
+      if provider && ['sms','email'].include?(provider)
         verified = true
         # Run verify_user_profile which will save the profile in the DB. Since it's only
         # running for SMS and Email profiles, it won't trigger an HTTP request.
@@ -364,8 +375,10 @@ class Controller < Sinatra::Base
       provider = 'gpg'
 
       gpg_keys.each do |key|
+        # Store it now because when we verify it with the verify_link.json request, it doesn't know what provider it is and this will tell it
+        Profile.save({:me => me, :profile => key[:href]}, {:provider => 'gpg', :created_at => Time.now.to_i})
         links_response << {
-          profile: key['href'],
+          profile: key[:href],
           provider: 'gpg',
           verified: true
         }
