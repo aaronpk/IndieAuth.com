@@ -463,7 +463,7 @@ class Controller < Sinatra::Base
     puts "Attempting authentication for #{session[:attempted_uri]} via #{provider} (Expecting #{session[:attempted_username]})"
 
     if provider == 'indieauth'
-      redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
+      redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&client_id=#{SiteConfig.root}%2F&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
     else
       redirect "/auth/#{provider}"
     end
