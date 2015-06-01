@@ -39,8 +39,7 @@ class RelParser
     end
   
     # Normalize
-    #@meURI.scheme = "http" if @meURI.scheme == "https"
-    @meURI.path = "/" if @meURI.path == ""  
+    @meURI.path = "/" if @meURI.path == ""
   end
 
   def agent 

@@ -61,8 +61,7 @@ class Controller < Sinatra::Base
     response = JSON.parse data
     if response and response['status'] == 'okay'
 
-      me = params[:me].sub(/(\/)+$/,'')
-      me = "http://#{me}" unless me.match /^https?:\/\//
+      me = verify_me_param
 
       profile = Profile.find :me => me, :profile => "mailto:#{response['email']}"
       if profile.nil?

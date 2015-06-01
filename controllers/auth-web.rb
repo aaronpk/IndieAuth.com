@@ -1,5 +1,20 @@
 class Controller < Sinatra::Base
 
+  def normalize_me(me)
+    begin
+      uri = URI.parse me
+
+      uri.scheme = 'http' if uri.scheme.nil?
+
+      if !uri.host.nil? and ['http','https'].include? uri.scheme
+        uri.path = '/' if uri.path == ''
+        return uri.to_s
+      end
+    rescue
+    end
+
+    return nil
+  end
 
   def verify_me_param
     me = params[:me]
@@ -8,9 +23,13 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: 'parameter "me" is required'}
     end
 
-    # Prepend "http" unless it's already there
-    me = "http://#{me}" unless me.start_with?('http')
-    me
+    me = normalize_me me
+
+    if me.nil?
+      json_error 200, {error: 'invalid_input', error_description: 'invalid value for me, must be a URL'}
+    else 
+      me
+    end
   end
 
   def verify_profile_param
@@ -148,8 +167,13 @@ class Controller < Sinatra::Base
       }, erb(:auth_about)
     end
 
-    if !@me.match(/^http/)
-      @me = "http://#{@me}"
+    @me = normalize_me @me
+
+    if @me.nil?
+      @error_title = "Invalid \"me\" value"
+      @message = "Your identifier must be a valid URL."
+      @error_details = "The value provided was:<br><code>#{CGI.escapeHTML params[:me]}</code>"
+      halt 400, erb(:error)
     end
     
     @profiles = []
@@ -194,7 +218,7 @@ class Controller < Sinatra::Base
       end
 
       # Remove visible http and trailing slash from the display name
-      @app_name = params[:client_id].gsub(/https?:\/\//, '').gsub(/\/$/, '')
+      @app_name = display_url params[:client_id]
       # Look for an h-card on the URL indicated by the client_id
       begin
         client_id = URI.parse params[:client_id]
@@ -222,7 +246,7 @@ class Controller < Sinatra::Base
       end
 
     elsif params[:redirect_uri]
-      @app_name = params[:redirect_uri].gsub(/https?:\/\//, '')
+      @app_name = display_url params[:redirect_uri]
     end
 
     # Pre-generate the GPG challenge if there is already a GPG profile for this user
