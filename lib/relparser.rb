@@ -219,7 +219,7 @@ class RelParser
       if @page.header['indieauth'] == 'authorization_endpoint'
         return true, nil
       else
-        return false, 'Endpoint did not acknowledge it is an authorization endpoint. The endpoint should return an "IndieAuth: authorization" header.'
+        return false, 'Endpoint did not acknowledge it is an authorization endpoint. The endpoint should return an "IndieAuth: authorization_endpoint" header.'
       end
     rescue OpenSSL::SSL::SSLError => e
       puts "!!!! SSL ERROR: #{e.message}"
