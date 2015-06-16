@@ -481,6 +481,7 @@ class Controller < Sinatra::Base
       data = RestClient.post session[:attempted_profile], {
         :state => params[:state],
         :code => params[:code],
+        :client_id => "#{SiteConfig.root}/",
         :redirect_uri => "#{SiteConfig.root}/auth/indieauth/redirect"
       }
       puts "Session data"
