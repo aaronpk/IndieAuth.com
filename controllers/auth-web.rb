@@ -473,6 +473,10 @@ class Controller < Sinatra::Base
     # apparently reading the session doesn't initialize it, so we have to modify the session first
     session.delete 'init' 
 
+    if session[:attempted_profile].nil?
+      return redirect '/'
+    end
+
     puts params.inspect
     puts session.inspect
 
@@ -549,6 +553,10 @@ class Controller < Sinatra::Base
   %w(get post).each do |method|
   send(method, '/auth/:name/callback') do
     auth = request.env['omniauth.auth']
+
+    if session[:attempted_profile].nil?
+      return redirect '/'
+    end
 
     profile = Profile.find :me => session[:attempted_uri], :profile => session[:attempted_profile]
     attempted_username = session[:attempted_username]

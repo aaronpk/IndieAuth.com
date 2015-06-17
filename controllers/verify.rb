@@ -67,7 +67,7 @@ class Controller < Sinatra::Base
     end
 
     if Login.expired? login
-      json_error 400, {error: "expired_code", error_description: "The code provided has already been used"}
+      json_error 400, {error: "expired_code", error_description: "The code provided has expired (valid for 60 seconds)"}
     end
 
     Log.save login
