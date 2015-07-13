@@ -7,6 +7,11 @@ h3 {
   line-height: 28px;
 }
 
+/* old bootstrap has a bug in firefox */
+.thumbnails li {
+  float: none;
+}
+
 @media (max-width: 767px) {
   body {
     padding-left: 0px;
