@@ -33,7 +33,7 @@ class Controller < Sinatra::Base
 
     if me.nil?
       json_error 200, {error: 'invalid_input', error_description: 'invalid value for me, must be a URL'}
-    else 
+    else
       me
     end
   end
@@ -63,7 +63,7 @@ class Controller < Sinatra::Base
     links
   end
 
-  def find_auth_endpoints(me_parser) 
+  def find_auth_endpoints(me_parser)
     begin
       endpoints = me_parser.auth_endpoints
     rescue SocketError
@@ -85,7 +85,7 @@ class Controller < Sinatra::Base
 
   def verify_user_profile(me_parser, profile, me)
 
-    # First check if there's already a matching profile record for this user 
+    # First check if there's already a matching profile record for this user
     existing = Profile.find :me => me, :profile => profile
     puts "Checking for existing profile: #{me}, #{profile}"
 
@@ -181,7 +181,7 @@ class Controller < Sinatra::Base
       @error_details = "The value provided was:<br><code>#{CGI.escapeHTML params[:me]}</code>"
       halt 400, erb(:error)
     end
-    
+
     @profiles = []
     # Look up their cached profiles
     profiles = Profile.all :me => @me
@@ -234,7 +234,7 @@ class Controller < Sinatra::Base
           # Fetch the HTML
           response = HTTParty.get client_id, {
             # For testing slow connections, use https://www.npmjs.com/package/crapify and set it as a proxy
-            # :http_proxyaddr => "localhost", 
+            # :http_proxyaddr => "localhost",
             # :http_proxyport => 5000,
             :timeout => 3
           }
@@ -274,7 +274,7 @@ class Controller < Sinatra::Base
   end
 
   # 2. Return all supported providers on the given page
-  # Params: 
+  # Params:
   #  * me=example.com
   get '/auth/supported_providers.json' do
     me = verify_me_param
@@ -324,7 +324,7 @@ class Controller < Sinatra::Base
           puts "Link to GPG key #{profile} no longer found, deactivating"
           Profile.delete :me => me, :profile => profile
         end
-      else 
+      else
         if !links.include? profile
           puts "Link to #{profile} no longer found, deactivating"
           Profile.delete :me => me, :profile => profile
@@ -405,11 +405,11 @@ class Controller < Sinatra::Base
     end
 
     response = {
-      me: me, 
-      profile: profile, 
-      provider: provider, 
+      me: me,
+      profile: profile,
+      provider: provider,
       verified: verified,
-      error: true,
+      error: (error_description ? true : false),
       error_description: error_description,
       auth_path: (verified ? Provider.auth_path(provider, profile, me) : false)
     }
@@ -469,9 +469,9 @@ class Controller < Sinatra::Base
     end
   end
 
-  get '/auth/indieauth/redirect' do 
+  get '/auth/indieauth/redirect' do
     # apparently reading the session doesn't initialize it, so we have to modify the session first
-    session.delete 'init' 
+    session.delete 'init'
 
     if session[:attempted_profile].nil?
       return redirect '/'
@@ -494,13 +494,13 @@ class Controller < Sinatra::Base
 
       puts "Reply from auth server:"
       puts data.inspect
-      puts 
+      puts
 
 
       response = CGI::parse data
       puts "Parsed response"
       puts response.inspect
-      puts 
+      puts
 
       attempted_token = session[:attempted_token]
       attempted_uri = session[:attempted_uri]
