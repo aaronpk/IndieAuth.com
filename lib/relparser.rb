@@ -300,17 +300,25 @@ class RelParser
               puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
             elsif siteURI.scheme == "https" && unshortened.scheme == "http"
               # Allow http -> https redirects but prevent https -> http
-              stop = true
-              puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
-              # If this link is otherwise a match, surface the redirect error
-              a = unshortened.clone
-              b = @meURI.clone
-              a.scheme = "http"
-              b.scheme = "http"
-              if a == b
-                insecure_redirect_present = "Insecure redirect error. To fix this, link to #{insecure_redirect_present} directly."
+              # Allow https://t.co to redirect insecurely to http sites since all t.co links are https now.
+              # https://github.com/aaronpk/IndieAuth.com/issues/107
+              if siteURI.host == "t.co"
+                puts "Insecure t.co redirect: #{siteURI} -> #{unshortened}"
+                siteURI = unshortened
+                previous << unshortened
               else
-                insecure_redirect_present = "Insecure redirect error. #{siteURI} redirected to #{unshortened}"
+                stop = true
+                puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
+                # If this link is otherwise a match, surface the redirect error
+                a = unshortened.clone
+                b = @meURI.clone
+                a.scheme = "http"
+                b.scheme = "http"
+                if a == b
+                  insecure_redirect_present = "Insecure redirect error. To fix this, link to #{insecure_redirect_present} directly."
+                else
+                  insecure_redirect_present = "Insecure redirect error. #{siteURI} redirected to #{unshortened}"
+                end
               end
             else
               puts "Redirect found: #{siteURI} -> #{unshortened}"
