@@ -278,7 +278,7 @@ function verify_link_back(me, link, i, use_cached) {
 
     if(profile.data('provider') == 'email' || profile.data('provider') == 'sms') {
       return;
-    } 
+    }
 
     update_provider_status(link, {
       verified: profile.data('verified'),
@@ -290,7 +290,7 @@ function verify_link_back(me, link, i, use_cached) {
     // Verify the url links back to the rel="me" link specified
     $.get("/auth/verify_link.json", {me: me, profile: link.profile}, function(data){
       update_provider_status(link, data, i);
-    });    
+    });
   }
 }
 
@@ -300,11 +300,15 @@ function update_provider_status(link, data, i) {
   } else if(data.verified) {
     set_provider_status(i, 'verified', 'Ok! Click to authenticate using this provider.');
     var href = data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri);
-    $("#profile_"+i+" .link").html('<a href="'+href+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');              
+    $("#profile_"+i+" .link").html('<a href="'+href+'" class="btn btn-success">'+link.profile.replace(/^(https|http|sms):\/\//, "")+'</a>');
   } else if(data.error) {
     var message;
     if(data.error_description) {
-      message = data.error_description;
+      if(data.error_description == 'This auth server cannot be used to authenticate to itself') {
+        $("#profile_"+i).hide();
+      } else {
+        message = data.error_description;
+      }
     } else {
       message = 'There was an error verifying this provider. Confirm you have a rel="me" link on this site pointing to your website.';
     }
@@ -334,7 +338,7 @@ function provider_verification_finished() {
     $(".continue_message .rescan-button").show();
     complete_progress_bar();
   } else {
-    $(".continue_message .rescan-button").hide();    
+    $(".continue_message .rescan-button").hide();
   }
 }
 
@@ -409,7 +413,7 @@ $(function(){
   $(".rescan-button").click(function(){
     // Erase all existing profiles
     $("#profiles li").remove();
-    
+
     // Re-set the notices
     $("#progress_bar .bar-loading").css("width", "5%");
     $("#progress_bar .bar-verified").css("width", "0");
@@ -442,7 +446,7 @@ function start_scan() {
     // for email and sms profiles, but set to "use_cached" to avoid making HTTP requests
     $("#profiles li").each(function(){
       verify_link_back(me, {
-        profile: $(this).data('profile'), 
+        profile: $(this).data('profile'),
         verified: $(this).data('verified'),
         provider: $(this).data('provider')
       }, $(this).attr('id').split('_')[1], true);
@@ -505,14 +509,14 @@ function start_scan() {
       <% if @app_logo %>
         <img src="<%= @app_logo %>" style="float: left; margin-right: 6px; height: 40px;">
       <% end %>
-      <% 
+      <%
       if @client_id && display_url(@client_id) == display_url(@app_name)
         display_name = "<a href=\"#{@client_id}\">#{@app_name}</a>"
       elsif @client_id
         display_name = "<a href=\"#{@client_id}\">#{@app_name}</a> (#{display_url(@client_id)})"
       else
         display_name = @app_name
-      end 
+      end
       %>
       <h3 style="padding-top: 6px;">Sign in to <%= display_name %></h3>
     </div>
@@ -523,7 +527,7 @@ function start_scan() {
   <div class="loading_message">
     <div class="alert alert-info">Finding rel="me" links on <%= @me %></div>
   </div>
-  
+
   <div class="no_links_error" style="display: none;">
     <div class="alert alert-error">
       <span class="message">No rel="me" links were found on your site!</span>
@@ -552,8 +556,8 @@ function start_scan() {
   </div>
 
   <ul id="profiles">
-    <% 
-      # If they are a returning visitor, the database already has their list of profiles. Populate with that now. 
+    <%
+      # If they are a returning visitor, the database already has their list of profiles. Populate with that now.
       # The database will only return URLs that are valid providers, not the complete list of rel-me links on the person's site.
     %>
     <% @profiles.each_with_index do |profile,i| %>
@@ -611,7 +615,7 @@ function start_scan() {
 </div></div>
 
 <% if @gpg_challenges
-  @gpg_challenges.each do |challenge| 
+  @gpg_challenges.each do |challenge|
     %><div style="display:none;" class="gpg_challenge" data-profile="<%= challenge[:profile] %>"><%= challenge[:challenge] %></div><%
   end
 end %>

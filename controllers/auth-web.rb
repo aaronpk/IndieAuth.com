@@ -414,10 +414,6 @@ class Controller < Sinatra::Base
       auth_path: (verified ? Provider.auth_path(provider, profile, me) : false)
     }
 
-    if error_description
-      response[:error] = 'self'
-    end
-
     json_response 200, response
   end
 
