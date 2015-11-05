@@ -346,7 +346,7 @@ class RelParser
     if insecure_redirect_present
       error_description = insecure_redirect_present
     else
-      error_description = nil
+      error_description = "No rel=me link was found on #{link} to #{@meURI}"
     end
     return false, error_description
   end
