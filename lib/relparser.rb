@@ -37,12 +37,12 @@ class RelParser
       # Could not parse URI
       return nil
     end
-  
+
     # Normalize
     @meURI.path = "/" if @meURI.path == ""
   end
 
-  def agent 
+  def agent
     @agent
   end
 
@@ -202,7 +202,7 @@ class RelParser
 
   def verify_auth_endpoint(link, site_parser=nil)
     site_parser = RelParser.new link if site_parser.nil?
-    begin 
+    begin
     rescue SocketError
       return false, "Error trying to connect to #{link}"
     rescue InsecureRedirectError => e
@@ -240,11 +240,13 @@ class RelParser
   def verify_link(link, site_parser=nil)
     # Scan the external site for rel="me" links
     site_parser = RelParser.new link if site_parser.nil?
+
     begin
       links_to = site_parser.rel_me_links
     rescue SocketError
       return false, "Error trying to connect to #{link}"
     rescue InsecureRedirectError => e
+      puts "verify_link: insecure redirect"
       return false, e.message
     end
 
@@ -253,7 +255,7 @@ class RelParser
     puts "Links to: #{links_to}"
     puts "Looking for: #{@meURI} Redirects: #{@redirects}"
     puts
-    
+
     # Find any that match the user's entered "me" link
 
     # First check if it's in the array so we can skip making HTTP requests to check for redirects
@@ -297,7 +299,7 @@ class RelParser
               stop = true
               puts "Stopping because we've already seen the URL :: #{unshortened} is in #{previous}"
             elsif siteURI.scheme == "https" && unshortened.scheme == "http"
-              # Allow http -> https redirects
+              # Allow http -> https redirects but prevent https -> http
               stop = true
               puts "Stopping because an insecure redirect was found :: #{siteURI} -> #{unshortened}"
               # If this link is otherwise a match, surface the redirect error
@@ -306,7 +308,9 @@ class RelParser
               a.scheme = "http"
               b.scheme = "http"
               if a == b
-                insecure_redirect_present = unshortened
+                insecure_redirect_present = "Insecure redirect error. To fix this, link to #{insecure_redirect_present} directly."
+              else
+                insecure_redirect_present = "Insecure redirect error. #{siteURI} redirected to #{unshortened}"
               end
             else
               puts "Redirect found: #{siteURI} -> #{unshortened}"
@@ -332,7 +336,7 @@ class RelParser
 
     # Returns here only if no links were found on the site
     if insecure_redirect_present
-      error_description = "Insecure redirect error. To fix this, link to #{insecure_redirect_present} directly."
+      error_description = insecure_redirect_present
     else
       error_description = nil
     end
@@ -348,7 +352,7 @@ class RelParser
     rescue => e
       return nil
     end
-    
+
     if response.headers['location']
       begin
         redirect = Addressable::URI.join uri.to_s, response.headers['location']
