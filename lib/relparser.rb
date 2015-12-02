@@ -19,7 +19,7 @@ class RelParser
 
   def initialize(opts={})
     @agent = Mechanize.new {|agent|
-      agent.user_agent_alias = "Mac Safari"
+      agent.user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
       # Default to text/html if content-type is not set
       agent.post_connect_hooks << lambda { |_,_,response,_|
         if response.content_type.nil? || response.content_type.empty?
