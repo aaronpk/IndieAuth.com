@@ -40,6 +40,8 @@ GEM
     json (1.8.2)
     jwt (1.4.1)
     kgio (2.9.3)
+    mailgun (0.8)
+      rest-client
     mechanize (2.7.3)
       domain_name (~> 0.5, >= 0.5.1)
       http-cookie (~> 1.0)
@@ -183,6 +185,7 @@ DEPENDENCIES
   httparty
   json
   jwt
+  mailgun
   mechanize
   microformats2
   omniauth

@@ -91,39 +91,55 @@ function set_up_sms_auth() {
 }
 
 function set_up_email_auth() {
-  $(".persona-login").unbind("click").click(function(){
-    var img = $(this);
+  $(".email-auth").unbind("click").click(function(){
+    var btn = $(this);
     var status = $(this).parents('li').children('.status');
+    unbind_keyboard_listeners();
 
-    img.attr("src", "/img/email_sign_in_disabled.png");
-    status.text("Launching Persona login");
+    if(btn.text() == "Verify") {
+      btn.attr("disabled","disabled");
+      status.text("Verifying...");
 
-    navigator.id.get(function(assertion){
+      $.get(sms_verification+"/auth/verify_email.json", {
+        me: me,
+        profile: $(this).attr('href'),
+        code: btn.parent().children('.email_code').val()
+      }, function(data){
+        if(data.result == "verified") {
+          status.text("Code was successfully verified! Redirecting...");
+          window.location = data.redirect;
+        } else {
+          bind_keyboard_listeners();
+          btn.parent().children('input[type=text]').val('');
+          btn.text()
+          status.text("The code you entered did not match, or the code expired.");
+        }
+      });
+    } else {
+      btn.attr("disabled","disabled");
+      status.text("Sending verification code...");
 
-      if(assertion == null) {
-        img.attr("src", "/img/email_sign_in_blue.png");
-        status.text("Ok! Click to authenticate using "+img.data('email').replace(/mailto:/,''));
-      } else {
-        status.text("Verifying login...");
-
-        $.post("/auth/verify_email.json", {
-          me: me,
-          profile: img.data('email'),
-          redirect_uri: redirect_uri,
-          assertion: assertion
-        }, function(data) {
-          if(data.status == "okay") {
-            status.text("Login succeeded! Redirecting...");
-            window.location = data.redirect;
-          } else {
-            status.text("Auth failed: " + data.reason);
-            img.attr("src", "/img/email_sign_in_blue.png");
-          }
-        });
-      }
-    }, {
-      siteName: "IndieAuth"
-    });
+      $.get("/auth/send_email.json", {
+        me: me,
+        profile: btn.attr('href'),
+        redirect_uri: redirect_uri
+      }, function(data){
+        if(data.result == "sent") {
+          sms_verification = data.verify;
+          // Swap the button for a field to enter the code
+          btn.text("Verify").removeAttr("disabled").addClass("pending");
+          status.text("Sent! Enter the verification code you received above.");
+          btn.parent().prepend('<input type="text" id="email_code_input" class="span1 email_code">')
+          $("#email_code_input").focus();
+          $("#email_code_input").on('keydown', function(e){
+            if(e.keyCode == 13) {
+              $(".email-auth.pending").click();
+            }
+          });
+        }
+      });
+    }
+    return false;
   });
 }
 
@@ -242,8 +258,8 @@ function verify_link_back(me, link, i, use_cached) {
 
   // Don't need to verify email or SMS links, provide the buttons immediately
   if(link.provider == 'email') {
-    $("#profile_"+i+" .link").html('<img src="/img/email_sign_in_blue.png" class="persona-login begin-auth" data-email="'+link.profile+'" />');
-    set_provider_status(i, 'verified', 'Click to authenticate using '+link.profile.replace(/mailto:/,''));
+    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success email-auth begin-auth">'+link.profile.replace(/mailto:/,'')+'</a>');
+    set_provider_status(i, 'verified', 'Click to receive a verification code at '+link.profile.replace(/mailto:/,''));
     set_up_email_auth();
     provider_verification_finished();
     return;

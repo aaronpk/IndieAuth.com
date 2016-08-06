@@ -1,5 +1,6 @@
 development:
   root: https://localhost:9292
+  openid_root: https://openid.example.com
   this_server: primary.example.com
   stats:
     server: https://stats.example.com
@@ -15,6 +16,10 @@ development:
     sid: 
     token: 
     number: 
+  mailgun:
+    api_key: xxx
+    domain: mail.example.com
+    from: "login@indieauth.com"
   providers:
     flickr:
       client_id: 

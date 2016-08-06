@@ -12,6 +12,10 @@ class Provider
     /mailto:\/?\/?(.+@.+\..+)/
   end
 
+  def self.email_from_mailto_uri(uri)
+    uri.gsub /mailto:\/?\/?/, ''
+  end
+
   def self.provider_for_url(url)
     if url.match Provider.sms_regex
       return 'sms'

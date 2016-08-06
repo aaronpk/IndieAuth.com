@@ -15,7 +15,7 @@ class Controller < Sinatra::Base
     twilio.account.messages.create(
       :from => SiteConfig.twilio.number,
       :to => Provider.number_from_sms_uri(profile),
-      :body => "Your IndieAuth verification code is: #{sms_code}"
+      :body => "Your IndieAuth.com verification code is: #{sms_code}"
     )
 
     json_response 200, {
@@ -53,45 +53,60 @@ class Controller < Sinatra::Base
     }
   end
 
-  post '/auth/verify_email.json' do
-    data = RestClient.post 'https://verifier.login.persona.org/verify', {
-      :audience => SiteConfig.root,
-      :assertion => params[:assertion]
-    }
-    response = JSON.parse data
-    if response and response['status'] == 'okay'
+  get '/auth/send_email.json' do
+    me, profile, provider, verified, error_description = auth_param_setup
 
-      me = verify_me_param
-
-      profile = Profile.find :me => me, :profile => "mailto:#{response['email']}"
-      if profile.nil?
-        json_error 200, {
-          status: 'mismatch',
-          reason: 'logged in as a different user'
-        }
-      else
-
-        redirect_uri = Login.build_redirect_uri({
-          :me => me,
-          :provider => 'email',
-          :profile => "mailto:#{response['email']}",
-          :redirect_uri => params[:redirect_uri],
-          :state => session[:state],
-          :scope => session[:scope]
-        })
-
-        json_response 200, {
-          status: response['status'],
-          email: response['email'],
-          redirect: redirect_uri
-        }
-      end
-    else
-      json_error 200, {
-        status: response['status'],
-        reason: response['reason']
-      }
+    if provider.nil? or provider != 'email'
+      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be email'}
     end
+
+    code = Login.generate_sms_code
+    R.set "indieauth::email::#{me}", code, :ex => 300 # valid for 300 seconds
+
+    email = Provider.email_from_mailto_uri(profile)
+
+    # Send the email now!
+    mailgun = Mailgun()
+    mailgun.messages.send_email({
+      to: email,
+      from: SiteConfig.mailgun.from,
+      subject: "Your IndieAuth.com verification code",
+      text: "Your IndieAuth.com verification code is: #{code}"
+    })
+
+    json_response 200, {
+      result: 'sent',
+      verify: "https://#{SiteConfig.this_server}"
+    }
+  end
+
+  get '/auth/verify_email.json' do
+    me, profile, provider, verified, error_description = auth_param_setup
+
+    if provider.nil? or provider != 'email'
+      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be email'}
+    end
+
+    if params[:code] != R.get("indieauth::email::#{me}")
+      json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
+    end
+
+    redirect_uri = Login.build_redirect_uri({
+      :me => me,
+      :provider => 'email',
+      :profile => profile,
+      :redirect_uri => params[:redirect_uri],
+      :state => session[:state],
+      :scope => session[:scope]
+    })
+
+    json_response 200, {
+      me: me,
+      profile: profile,
+      provider: provider,
+      result: 'verified',
+      redirect: redirect_uri
+    }
   end
 
   get '/totp' do
