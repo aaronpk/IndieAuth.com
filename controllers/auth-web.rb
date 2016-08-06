@@ -106,7 +106,7 @@ class Controller < Sinatra::Base
       puts "Found existing: #{provider}"
     end
 
-    if provider == 'sms' or provider == 'email'
+    if provider == 'sms' or provider == 'email' or provider == 'clef'
       verified = true
       error_description = nil
     elsif provider == 'gpg'
@@ -444,6 +444,8 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
+    # TODO: if the user had only one auth endpoint and they were redirected here skipping the prompt,
+    # then we need to clear the cache and re-check for an endpoint for them.
     if !links.include?(profile) and !auth_endpoints.include?(profile) and !gpg_keys.map{|a| a[:href]}.include?(profile)
       @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."
       title "Error"
@@ -454,6 +456,10 @@ class Controller < Sinatra::Base
 
     if params[:provider] == 'indieauth'
       attempted_username = me
+    elsif params[:provider] == 'clef'
+      match = profile.match(Regexp.new Provider.regexes['clef'])
+      attempted_username = match[1]
+      provider = 'clef'
     else
       match = profile.match(Regexp.new Provider.regexes[provider])
       attempted_username = match[1]
@@ -468,9 +474,70 @@ class Controller < Sinatra::Base
 
     if provider == 'indieauth'
       redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&client_id=#{SiteConfig.root}%2F&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}", 302
+    elsif provider == 'clef'
+      session[:state] = SecureRandom.hex(24)
+      redirect "https://clef.io/iframes/qr?app_id=#{SiteConfig.providers.clef.client_id}&redirect_url="+URI.encode_www_form_component("#{SiteConfig.root}/auth/clef/redirect")+"&state=#{session[:state]}", 302
     else
       redirect "/auth/#{provider}", 302
     end
+  end
+
+  get '/auth/clef/redirect' do
+    session.delete 'init'
+
+    if session[:attempted_profile].nil?
+      return redirect '/?error=missing_session'
+    end
+
+    if params[:state] != session[:state]
+      return redirect '/?error=invalid_state'
+    end
+
+    profile = Profile.find :me => session[:attempted_uri], :profile => session[:attempted_profile]
+    attempted_username = session[:attempted_username]
+
+    clef = HTTParty.post "https://clef.io/api/v1/authorize", {
+      body: {
+        code: params[:code],
+        app_id: SiteConfig.providers.clef.client_id,
+        app_secret: SiteConfig.providers.clef.client_secret,
+      }
+    }
+    access_token = clef['access_token']
+    auth = HTTParty.get("https://clef.io/api/v1/info?access_token=#{access_token}")
+
+    actual_username = auth['info']['email']
+
+    puts "Auth complete!"
+    puts "Email: #{actual_username}"
+
+    if !actual_username || !attempted_username || attempted_username.downcase != actual_username.downcase  # case in-sensitive compare
+      @message = "You just authenticated as '#{actual_username}' but your website linked to '#{session[:attempted_profile]}'"
+      puts "ERROR: #{@message}"
+      title "Error"
+      erb :error
+    else
+      # Authentication succeeded, send them to the client
+      redirect_uri = Login.build_redirect_uri({
+        :me => session[:attempted_uri],
+        :provider => session[:attempted_provider],
+        :profile => session[:attempted_profile],
+        :redirect_uri => session[:redirect_uri],
+        :state => session[:state],
+        :scope => session[:scope]
+      }, session[:response_type])
+
+      puts "Successful login (#{session[:attempted_uri]}) redirecting to #{redirect_uri}"
+
+      session[:attempted_uri] = nil
+      session[:attempted_profileid] = nil
+      session[:attempted_provider] = nil
+      session[:attempted_username] = nil
+      session[:redirect_uri] = nil
+
+      redirect redirect_uri
+    end
+
   end
 
   get '/auth/indieauth/redirect' do

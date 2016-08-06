@@ -43,6 +43,7 @@ class Provider
       'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
       'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
       'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)',
+      'clef' => 'mailto:(.+)'
     }
   end
 

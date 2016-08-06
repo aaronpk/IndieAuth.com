@@ -43,3 +43,6 @@ development:
     eventbrite:
       client_id: 
       client_secret: 
+    clef:
+      client_id: 
+      client_secret: 

@@ -258,8 +258,11 @@ function verify_link_back(me, link, i, use_cached) {
 
   // Don't need to verify email or SMS links, provide the buttons immediately
   if(link.provider == 'email') {
-    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success email-auth begin-auth">'+link.profile.replace(/mailto:/,'')+'</a>');
-    set_provider_status(i, 'verified', 'Click to receive a verification code at '+link.profile.replace(/mailto:/,''));
+    var email = link.profile.replace(/mailto:/,'');
+    var clef_auth = $("#profile_"+i).data('auth-path').replace('provider=email','provider=clef');
+    $("#profile_"+i+" .link").html('<a href="'+link.profile+'" class="btn btn-success email-auth begin-auth">'+email+'</a>'
+      + ' <a class="btn btn-success clef-auth" href="'+clef_auth+'">Log in with Clef</a>');
+    set_provider_status(i, 'verified', 'Receive a verification code via email, or log in with Clef');
     set_up_email_auth();
     provider_verification_finished();
     return;

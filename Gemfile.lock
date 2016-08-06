@@ -77,6 +77,8 @@ GEM
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
+    omniauth-clef (1.0.3)
+      omniauth-oauth2 (~> 1.1)
     omniauth-eventbrite (0.0.5)
       omniauth-oauth2 (~> 1.1.0)
     omniauth-facebook (1.6.0)
@@ -190,6 +192,7 @@ DEPENDENCIES
   microformats2
   omniauth
   omniauth-beeminder!
+  omniauth-clef
   omniauth-eventbrite
   omniauth-facebook
   omniauth-flickr
