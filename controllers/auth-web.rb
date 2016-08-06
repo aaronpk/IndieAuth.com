@@ -123,6 +123,7 @@ class Controller < Sinatra::Base
       end
     else
       # This does an HTTP request
+      puts "::=> verifying link"
       verified, error_description = me_parser.verify_link profile, profile_parser
     end
 
@@ -163,6 +164,7 @@ class Controller < Sinatra::Base
 
   # 1. Begin the auth process
   get '/auth' do
+
     title "IndieAuth - Sign in with your domain name"
     @me = params[:me]
 
@@ -196,6 +198,7 @@ class Controller < Sinatra::Base
     save_response_type
     session[:state] = params[:state]
     session[:scope] = params[:scope]
+    session[:redirect_uri] = params[:redirect_uri]
 
     @redirect_uri = params[:redirect_uri]
     @client_id = params[:client_id]
@@ -460,14 +463,13 @@ class Controller < Sinatra::Base
     session[:attempted_profile] = profile
     session[:attempted_provider] = provider
     session[:attempted_username] = attempted_username
-    session[:redirect_uri] = params[:redirect_uri]
 
     puts "Attempting authentication for #{session[:attempted_uri]} via #{provider} (Expecting #{session[:attempted_username]})"
 
     if provider == 'indieauth'
-      redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&client_id=#{SiteConfig.root}%2F&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}"
+      redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&client_id=#{SiteConfig.root}%2F&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}", 302
     else
-      redirect "/auth/#{provider}"
+      redirect "/auth/#{provider}", 302
     end
   end
 
