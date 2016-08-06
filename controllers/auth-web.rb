@@ -487,7 +487,6 @@ class Controller < Sinatra::Base
     # session[:attempted_profile] is the authorization server
     begin
       data = RestClient.post session[:attempted_profile], {
-        :state => params[:state],
         :code => params[:code],
         :client_id => "#{SiteConfig.root}/",
         :redirect_uri => "#{SiteConfig.root}/auth/indieauth/redirect"
