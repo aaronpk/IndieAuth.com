@@ -39,7 +39,7 @@ class Controller < Sinatra::Base
       :me => me,
       :provider => 'sms',
       :profile => profile,
-      :redirect_uri => params[:redirect_uri],
+      :redirect_uri => session[:redirect_uri],
       :state => session[:state],
       :scope => session[:scope]
     })
@@ -95,7 +95,7 @@ class Controller < Sinatra::Base
       :me => me,
       :provider => 'email',
       :profile => profile,
-      :redirect_uri => params[:redirect_uri],
+      :redirect_uri => session[:redirect_uri],
       :state => session[:state],
       :scope => session[:scope]
     })
