@@ -35,6 +35,8 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
+    session.delete 'init'
+
     redirect_uri = Login.build_redirect_uri({
       :me => me,
       :provider => 'sms',
