@@ -268,9 +268,15 @@ class Controller < Sinatra::Base
       end
     end
 
-    halt 200, {
-      'IndieAuth' => 'authorization_endpoint'
-    }, erb(:auth)
+    # If only one profile is set, and it's an indieauth authorization endpoint, then skip directly to it
+    if @profiles.length == 1 && @profiles[0]['provider'] == 'indieauth'
+      profile = @profiles[0]
+      redirect Provider.auth_path(profile['provider'], profile['href'], @me)
+    else
+      halt 200, {
+        'IndieAuth' => 'authorization_endpoint'
+      }, erb(:auth)
+    end
   end
 
   # 2. Return all supported providers on the given page
