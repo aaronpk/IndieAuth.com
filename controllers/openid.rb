@@ -3,7 +3,7 @@ class Controller < Sinatra::Base
   before do
     @server ||= OpenID::Server::Server.new(
         OpenID::Store::Memcache.new(Dalli::Client.new),
-        "#{SiteConfig.root}/openid")
+        "#{SiteConfig.openid_root}/openid")
   end
 
   def render_openid_response(oidresp)
