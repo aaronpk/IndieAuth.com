@@ -162,7 +162,7 @@ class RelParser
 
     return endpoints if @page.nil?
 
-    @page.search("[rel=authorization_endpoint]").each do |link|
+    @page.search("[rel~=authorization_endpoint]").each do |link|
       puts " --> IndieAuth: #{link.attribute("href").value} rel=#{link.attribute("rel")}"
       endpoints << link.attribute("href").value
     end
@@ -177,7 +177,7 @@ class RelParser
 
     return endpoints if @page.nil?
 
-    @page.search("[rel=pgpkey]").each do |link|
+    @page.search("[rel~=pgpkey]").each do |link|
       href = link.attribute("href").value
       puts " --> GPG Key: #{href} rel=#{link.attribute("rel")}"
       # Fetch the key. Assume the href links to a plaintext key
