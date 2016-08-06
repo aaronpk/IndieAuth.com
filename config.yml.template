@@ -2,6 +2,7 @@ development:
   root: https://localhost:9292
   openid_root: https://openid.example.com
   this_server: primary.example.com
+  cookie_domain: ".example.com"
   stats:
     server: https://stats.example.com
     token: "000000"
