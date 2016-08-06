@@ -271,7 +271,7 @@ class Controller < Sinatra::Base
     # If only one profile is set, and it's an indieauth authorization endpoint, then skip directly to it
     if @profiles.length == 1 && @profiles[0]['provider'] == 'indieauth'
       profile = @profiles[0]
-      redirect Provider.auth_path(profile['provider'], profile['href'], @me)
+      redirect Provider.auth_path(profile['provider'], profile['href'], @me), 302
     else
       halt 200, {
         'IndieAuth' => 'authorization_endpoint'
