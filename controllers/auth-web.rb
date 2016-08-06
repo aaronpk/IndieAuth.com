@@ -476,7 +476,7 @@ class Controller < Sinatra::Base
       redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&client_id=#{SiteConfig.root}%2F&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}", 302
     elsif provider == 'clef'
       session[:state] = SecureRandom.hex(24)
-      redirect "https://clef.io/iframes/qr?app_id=#{SiteConfig.providers.clef.client_id}&redirect_url="+URI.encode_www_form_component("#{SiteConfig.root}/auth/clef/redirect")+"&state=#{session[:state]}", 302
+      redirect "https://clef.io/iframes/qr?app_id=#{SiteConfig.providers.clef.client_id}&state=#{session[:state]}&redirect_url="+URI.encode_www_form_component("#{SiteConfig.root}/auth/clef/redirect"), 302
     else
       redirect "/auth/#{provider}", 302
     end
