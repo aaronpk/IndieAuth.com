@@ -12,6 +12,7 @@ gem 'hashie'
 gem 'json'
 gem 'dalli'
 gem 'httparty'
+gem 'escape_utils'
 
 gem 'omniauth'
 gem 'omniauth-facebook'

@@ -24,6 +24,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     encryptor (1.3.0)
     erubis (2.7.0)
+    escape_utils (1.2.1)
     eventmachine (1.0.7)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
@@ -176,6 +177,7 @@ DEPENDENCIES
   dalli
   encryptor
   erubis
+  escape_utils
   gpgme
   hashie
   httparty
@@ -208,3 +210,6 @@ DEPENDENCIES
   thin
   twilio-ruby
   unshorten (>= 0.2.1)
+
+BUNDLED WITH
+   1.11.2

@@ -2,8 +2,8 @@
 var me = "<%= @me %>";
 var redirect_uri = "<%= @redirect_uri %>";
 var client_id = "<%= @client_id %>";
-var state = "<%= @state %>";
-var scope = "<%= @scope %>";
+var state = "<%= EscapeUtils.escape_javascript @state %>";
+var scope = "<%= EscapeUtils.escape_javascript @scope %>";
 var sms_verification;
 
 function set_provider_status(index, status, error) {
