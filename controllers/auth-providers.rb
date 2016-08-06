@@ -9,6 +9,11 @@ class Controller < Sinatra::Base
 
     sms_code = Login.generate_sms_code
     R.set "indieauth::sms::#{me}", sms_code, :ex => 300 # valid for 300 seconds
+    R.set "indieauth::sms::#{me}::session", {
+      redirect_uri: session[:redirect_uri],
+      state: session[:state],
+      scope: session[:scope],
+    }.to_json, :ex => 300
 
     # Send the SMS now!
     twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
@@ -35,15 +40,15 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
-    session.delete 'init'
+    data = JSON.parse R.get("indieauth::email::#{me}::session")
 
     redirect_uri = Login.build_redirect_uri({
       :me => me,
       :provider => 'sms',
       :profile => profile,
-      :redirect_uri => session[:redirect_uri],
-      :state => session[:state],
-      :scope => session[:scope]
+      :redirect_uri => data['redirect_uri'],
+      :state => data['state'],
+      :scope => data['scope']
     })
 
     json_response 200, {
@@ -64,6 +69,11 @@ class Controller < Sinatra::Base
 
     code = Login.generate_sms_code
     R.set "indieauth::email::#{me}", code, :ex => 300 # valid for 300 seconds
+    R.set "indieauth::email::#{me}::session", {
+      redirect_uri: session[:redirect_uri],
+      state: session[:state],
+      scope: session[:scope],
+    }.to_json, :ex => 300
 
     email = Provider.email_from_mailto_uri(profile)
 
@@ -93,15 +103,15 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
     end
 
-    session.delete 'init'
+    data = JSON.parse R.get("indieauth::email::#{me}::session")
 
     redirect_uri = Login.build_redirect_uri({
       :me => me,
       :provider => 'email',
       :profile => profile,
-      :redirect_uri => session[:redirect_uri],
-      :state => session[:state],
-      :scope => session[:scope]
+      :redirect_uri => data['redirect_uri'],
+      :state => data['state'],
+      :scope => data['scope']
     })
 
     json_response 200, {
