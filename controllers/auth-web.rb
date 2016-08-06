@@ -540,6 +540,10 @@ class Controller < Sinatra::Base
 
   end
 
+  post '/auth/clef/logout' do
+    'ok'
+  end
+
   get '/auth/indieauth/redirect' do
     # apparently reading the session doesn't initialize it, so we have to modify the session first
     session.delete 'init'
