@@ -44,7 +44,7 @@ class Controller < Sinatra::Base
     register Sinatra::Namespace
     helpers  Sinatra::UserAgentHelpers
 
-    use Rack::Session::Cookie, :key => 'indieauth.com',
+    use Rack::Session::Cookie, :key => 'indieauth-session',
                                :domain => SiteConfig.cookie_domain,
                                :path => '/',
                                :expire_after => 2592000,
