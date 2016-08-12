@@ -198,7 +198,7 @@ class Controller < Sinatra::Base
     save_response_type
     session[:state] = params[:state]
     session[:scope] = params[:scope]
-    session[:redirect_uri] = params[:redirect_uri]
+    session[:redirect_uri] = URI.encode params[:redirect_uri]
 
     @redirect_uri = params[:redirect_uri]
     @client_id = params[:client_id]

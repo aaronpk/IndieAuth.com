@@ -147,7 +147,7 @@ class Controller < Sinatra::Base
     JWT.encode({
       :me => me,
       :profile => profile,
-      :redirect_uri => params[:redirect_uri],
+      :redirect_uri => URI.encode(params[:redirect_uri]),
       :state => params[:state],
       :scope => params[:scope],
       :nonce => Random.rand(100000..999999),
