@@ -230,7 +230,11 @@ class RelParser
       er.url = link
       raise er
     rescue Mechanize::ResponseCodeError => e
-      return false, "Endpoint did not return HTTP 200 for the initial query. (Returned #{e.response_code} instead)"
+      if e.page && e.page.header && e.page.header['indieauth'] == 'authorization_endpoint'
+        puts "IndieAuth: #{e.page.header['indieauth']}"
+        return true, nil
+      end
+      return false, "Endpoint returned #{e.response_code} and did not include the 'IndieAuth' header"
     rescue => e # catch all errors and return a blank list
       puts "!!!!! #{e}"
       puts e.class
