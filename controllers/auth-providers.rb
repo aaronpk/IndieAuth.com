@@ -178,7 +178,10 @@ class Controller < Sinatra::Base
     begin
       agent = Mechanize.new {|agent|
         agent.user_agent_alias = "Mac Safari"
-        # Default to text/html if content-type is not set
+        agent.request_headers = {
+          'Accept' => 'text/plain'
+        }
+        # Default to text/plain parsing if content-type is not set
         agent.post_connect_hooks << lambda { |_,_,response,_|
           if response.content_type.nil? || response.content_type.empty?
             response.content_type = 'text/plain'
