@@ -515,7 +515,7 @@ function start_scan() {
       <p>The app <b><%= @client_id %></b> would like to access your site, <b><%= @me %></b></p>
 
       <% if @scope %>
-        <p>The app is requesting the following <a href="http://indiewebcamp.com/scope">scopes</a>:<br>
+        <p>The app is requesting the following <a href="https://indieweb.org/scope">scopes</a>:<br>
           <ul>
             <%= @scope.split(' ').map{|s| "<li>#{s}</li>"}.join %>
           </ul>
