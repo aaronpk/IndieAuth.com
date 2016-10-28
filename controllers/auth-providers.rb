@@ -208,10 +208,15 @@ class Controller < Sinatra::Base
 
       # Import their public key 
       result = GPGME::Key.import(public_key)
-      # Find the fingerprint of the key that was just imported (or had been previously imported)
-      fingerprint = result.imports[0].fpr
 
-      puts "Fingerprint of imported key: #{fingerprint}"
+      # Get the Key object for the key that was just imported
+      key = GPGME::Key.find(:public, result.imports[0].fpr).first
+
+      # Find the fingerprint of the key that was just imported (or had been previously imported)
+      fingerprint = key.fingerprint
+      puts "Fingerprint of imported key: #{key.fingerprint}"
+      puts "Subkeys:"
+      puts key.subkeys
 
       signature = GPGME::Data.new(params[:signature])
       data = crypto.verify(signature) do |sig|
@@ -223,13 +228,27 @@ class Controller < Sinatra::Base
         end
 
         puts "Fingerprint of key that was used to sign: #{sig.fpr}"
+        # Check the fingerprint of any subkeys
+        valid = false
+        if fingerprint == sig.fpr
+          puts "Matched the master key fingerprint"
+          valid = true
+        end
+        key.subkeys.each do |subkey|
+          if subkey.fingerprint == sig.fpr
+            puts "Matched subkey #{subkey.fingerprint}"
+            valid = true
+          end
+        end
 
-        if fingerprint != sig.fpr
+        if !valid
           json_error 200, {error: 'key_mismatch', error_description: "The key used to sign the challenge was not the key at #{absolute}."}
         end
 
       end
     rescue => e
+      puts "EXCEPTION:"
+      puts e.inspect
       json_error 200, {error: 'invalid_signature', error_description: "There was an error verifying the signature. Please try again."}
     end
 
