@@ -27,9 +27,8 @@ class Controller < Sinatra::Base
 
   get_or_post '/openid' do
     if params.empty?
-      @message = "Invalid request"
-      title "OpenID Error"
-      return erb :error
+      title "OpenID"
+      return erb :openid
     end
 
     params['openid.session_type'] = 'no-encryption' if params['openid.session_type'] == ''

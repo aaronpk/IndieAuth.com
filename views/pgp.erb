@@ -1,19 +1,21 @@
 
 <div class="hero-unit">
-  <h1>Set up Password-less Logins with your GPG Key</h1>
+  <h1>Set up Password-less Logins with your PGP Key</h1>
 </div>
 
 <div class="container">
 
   <div class="section">
 
-    <h2>Setup Instructions</h2>
+    <h2>PGP Key Setup Instructions</h2>
+
+    <p>You can sign in on indieauth.com without relying on any external providers by signing a challenge with your PGP key.</p>
 
     <div class="row">
       <div class="span8">
-        <h3>1. Link to your GPG key on your home page</h3>
+        <h3>1. Link to your PGP key on your home page</h3>
 
-        <p>On your home page, link to one or more GPG keys and add the <code>rel="pgpkey"</code> attribute to the links.</p>
+        <p>On your home page, link to one or more PGP keys and add the <code>rel="pgpkey"</code> attribute to the links.</p>
         <p>This may look something like the following:
         <pre><code><%== '<link rel="pgpkey" href="/key.pub">' %></code></pre>
       </div><!-- span -->
@@ -25,7 +27,7 @@
 
         <p>Make sure to click "re-scan" if you've previously signed in before and have just added your key.</p>
 
-        <p>When you sign in, you'll see a GPG option listed! Clicking it will present a challenge that you will need to sign with your private key.</p>
+        <p>When you sign in, you'll see a PGP option listed! Clicking it will present a challenge that you will need to sign with your private key.</p>
 
         <p><img src="/img/gpg-plaintext.png" width="380" class="thumbnail"></p>
 

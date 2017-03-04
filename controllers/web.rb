@@ -31,8 +31,12 @@ class Controller < Sinatra::Base
   end
 
   get '/gpg/?' do
-    title "Sign In with a GPG Key"
-    erb :gpg
+    redirect '/pgp'
+  end
+
+  get '/pgp/?' do
+    title "Sign In with a PGP Key"
+    erb :pgp
   end
 
 end

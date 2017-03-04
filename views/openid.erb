@@ -1,0 +1,51 @@
+
+<div class="hero-unit">
+  <h1>Use indieauth.com as your OpenID Provider</h1>
+</div>
+
+<div class="container">
+
+  <div class="section">
+
+    <h2>OpenID Provider Setup Instructions</h2>
+
+    <div class="row">
+      <div class="span8">
+        <h3>1. Delegate to indieauth.com</h3>
+
+        <p>To use indieauth.com as an OpenID delegate for the OpenID identifier of your site, add the following two link tags to the HTML (inside the &lt;head&gt; element) of your website, replacing "example.com" with your domain.</p>
+
+        <pre><code>&lt;link rel="openid.delegate" href="https://example.com/" /&gt;
+&lt;link rel="openid.server" href="https://openid.indieauth.com/openid" /&gt;</code></pre>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="span8">
+        <h3>2. Configure a login provider for indieauth.com</h3>
+
+        <p>Follow the <a href="/setup">setup instructions</a> to set up one or more login provider for indieauth.com. (indieauth.com does not provide its own accounts, instead it relies on you having accounts at other providers.)</p>
+
+        <p>To use Twitter as your login provider, simply add a link like the following to your home page.</p>
+
+        <pre><code><%== '<a href="https://twitter.com/aaronpk" rel="me">@aaronpk on Twitter</a>' %></code></pre>
+
+        <p>Additionally, you can avoid needing an account with a third party by using either the email or <a href="/pgp">PGP</a> providers.</p>
+
+        <pre><code><%== '<link rel="pgpkey" href="/key.txt">
+<a href="mailto:me@example.com" rel="me">me@example.com</a>' %></code></pre>
+
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="span8">
+        <h3>3. You're Done!</h3>
+
+        <p>Try signing in on a website that supports OpenID! The website will discover your OpenID server (indieauth.com) and redirect you here. You'll be presented with a challenge to authenticate using one of the providers you've configured.</p>
+      </div>
+    </div>
+
+
+  </div>
+</div>

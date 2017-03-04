@@ -45,6 +45,8 @@
           <div class="nav-collapse">
             <ul class="nav">
               <li><a href="/setup">Setup</a></li>
+              <li><a href="/pgp">PGP</a></li>
+              <li><a href="/openid">OpenID</a></li>
               <li><a href="/developers">Developers</a></li>
               <li><a href="/faq">FAQ</a></li>
               <li><a href="/history">History</a></li>
@@ -57,7 +59,7 @@
     <%= yield %>
 
     <div class="tinyfooter">
-      This server is hosted by <%= SiteConfig.credit %>. v16.219.1
+      This server is hosted by <%= SiteConfig.credit %>. v17.063.1 <%= "#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}" %>
     </div>
   </body>
 </html>

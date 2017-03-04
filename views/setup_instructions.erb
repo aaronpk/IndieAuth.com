@@ -17,16 +17,18 @@
 '<ul>
   <li><a href="https://twitter.com/aaronpk" rel="me">@aaronpk on Twitter</a></li>
   <li><a href="https://github.com/aaronpk" rel="me">Github</a></li>
-  <li><a href="https://plus.google.com/+aaronpk/p/pub" rel="me">Google</a></li>
   <li><a href="sms:+15035551212" rel="me">(503) 555-1212</a></li>
   <li><a href="mailto:me@example.com" rel="me">me@example.com</a></li>
 </ul>
+<link rel="pgpkey" href="/key.txt">
 ' %></code></pre>
       </p>
 
       <p>Note: If you don't want visible links on your home page, you can instead use <code>&lt;link&gt;</code> tags in your html header.</p>
 
       <pre><code><%=='<link href="https://twitter.com/aaronpk" rel="me">' %></code></pre>
+
+      <p>You can also <a href="/pgp">sign in with a PGP key</a> if you don't wish to use a third party service.</p>
 
     </div><!-- span -->
     <div class="span4">
@@ -40,18 +42,17 @@
     <div class="span8">
       <h3>2. On each service, ensure there is a link back to your home page</h3>
 
-      <p>
-        You'll need to verify that each service has a link back to your home page. For convenience the "edit profile" links for some supported services are below.
+      <p>You'll need to verify that each service has a link back to your home page. For convenience the "edit profile" links for some supported services are below.</p>
 
-        <div style="float: right;"><img src="/img/twitter-website-settings.png" width="394" height="102" /></div>
+      <div style="float: right;"><img src="/img/twitter-website-settings.png" width="394" height="102" /></div>
 
-        <ul>
-          <li><a href="https://twitter.com/settings/profile">Twitter</a></li>
-          <li><a href="https://plus.google.com/me/about/edit/d">Google</a></li>
-          <li><a href="https://github.com/settings/profile">Github</a></li>
-        </ul>
+      <ul>
+        <li><a href="https://twitter.com/settings/profile">Twitter</a></li>
+        <li><a href="https://plus.google.com/me/about/edit/d">Google</a></li>
+        <li><a href="https://github.com/settings/profile">Github</a></li>
+      </ul>
 
-      </p>
+      <p>For links such as Email, SMS and PGP keys, there is obviously no way to "link back" from those, so you will be presented with a challenge when you sign in.</p>
 
     </div>
   </div><!-- row -->
@@ -60,6 +61,16 @@
     <div class="span8">
       <h3>3. You're done!</h3>
       <p>That's it! You're done! Now you can use your domain to sign in to any sites that support IndieAuth!</p>
+
+      <h4>Try it now</h4>
+      <form action="/auth" method="get" class="well">
+        <label for="indie_auth_url">Web Address:</label>
+        <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
+        <p><button type="submit" class="btn">Sign In</button></p>
+        <input type="hidden" name="client_id" value="<%= SiteConfig.root %>" />
+        <input type="hidden" name="redirect_uri" value="<%= SiteConfig.root %>/success" />
+      </form>
+
     </div>
   </div><!-- row -->
 
