@@ -2,13 +2,13 @@ Redis
 =====
 
 
-## SMS Codes
+## Email Codes
 
-SMS verification codes are cached temporarily in Redis using a simple key/value store.
+Email verification codes are cached temporarily in Redis using a simple key/value store.
 
 The keys are of the pattern:
 
-`indieauth::sms::{url}`
+`indieauth::email::{url}`
 
 
 ## Cached Profiles

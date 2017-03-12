@@ -1,13 +1,5 @@
 class Provider
 
-  def self.sms_regex
-    /sms:\/?\/?([0-9\-+]+)/
-  end
-
-  def self.number_from_sms_uri(uri)
-    uri.gsub /sms:\/?\/?/, ''
-  end
-
   def self.email_regex
     /mailto:\/?\/?(.+@.+\..+)/
   end
@@ -17,10 +9,6 @@ class Provider
   end
 
   def self.provider_for_url(url)
-    if url.match Provider.sms_regex
-      return 'sms'
-    end
-
     if url.match Provider.email_regex
       return 'email'
     end
@@ -42,8 +30,7 @@ class Provider
       'github' => 'https?:\/\/(?:www\.)?github\.com\/([^\/]+)',
       'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
       'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
-      'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)',
-      'clef' => 'mailto:(.+)'
+      'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'
     }
   end
 

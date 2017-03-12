@@ -19,4 +19,8 @@ class Profile
     R.hdel "indieauth::profile::#{opts[:me]}", opts[:profile]
   end
 
+  def self.delete_profile(me)
+    R.del "indieauth::profile::#{me}"
+  end
+
 end

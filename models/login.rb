@@ -61,7 +61,7 @@ class Login
     SecureRandom.urlsafe_base64(36)
   end
 
-  def self.generate_sms_code
+  def self.generate_verification_code
     Random.rand(1000..9999)
   end
 end

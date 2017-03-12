@@ -1,65 +1,5 @@
 class Controller < Sinatra::Base
 
-  get '/auth/send_sms.json' do
-    me, profile, provider, verified, error_description = auth_param_setup
-
-    if provider.nil? or provider != 'sms'
-      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
-    end
-
-    sms_code = Login.generate_sms_code
-    R.set "indieauth::sms::#{me}", sms_code, :ex => 300 # valid for 300 seconds
-    R.set "indieauth::sms::#{me}::session", {
-      redirect_uri: session[:redirect_uri],
-      state: session[:state],
-      scope: session[:scope],
-    }.to_json, :ex => 300
-
-    # Send the SMS now!
-    twilio = Twilio::REST::Client.new SiteConfig.twilio.sid, SiteConfig.twilio.token
-    twilio.account.messages.create(
-      :from => SiteConfig.twilio.number,
-      :to => Provider.number_from_sms_uri(profile),
-      :body => "Your IndieAuth.com verification code is: #{sms_code}"
-    )
-
-    json_response 200, {
-      result: 'sent',
-      verify: "https://#{SiteConfig.this_server}"
-    }
-  end
-
-  get '/auth/verify_sms.json' do
-    me, profile, provider, verified, error_description = auth_param_setup
-
-    if provider.nil? or provider != 'sms'
-      json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be SMS'}
-    end
-
-    if params[:code] != R.get("indieauth::sms::#{me}")
-      json_error 200, {error: 'invalid_code', error_description: 'The code could not be verified'}
-    end
-
-    data = JSON.parse R.get("indieauth::email::#{me}::session")
-
-    redirect_uri = Login.build_redirect_uri({
-      :me => me,
-      :provider => 'sms',
-      :profile => profile,
-      :redirect_uri => data['redirect_uri'],
-      :state => data['state'],
-      :scope => data['scope']
-    })
-
-    json_response 200, {
-      me: me,
-      profile: profile,
-      provider: provider,
-      result: 'verified',
-      redirect: redirect_uri
-    }
-  end
-
   get '/auth/send_email.json' do
     me, profile, provider, verified, error_description = auth_param_setup
 
@@ -67,7 +7,7 @@ class Controller < Sinatra::Base
       json_error 200, {error: 'invalid_input', error_description: 'parameter "profile" must be email'}
     end
 
-    code = Login.generate_sms_code
+    code = Login.generate_verification_code
     R.set "indieauth::email::#{me}", code, :ex => 300 # valid for 300 seconds
     R.set "indieauth::email::#{me}::session", {
       redirect_uri: session[:redirect_uri],

@@ -9,7 +9,7 @@ class Controller < Sinatra::Base
       'Content-Type' => 'application/json;charset=UTF-8',
       'Cache-Control' => 'no-store',
       'Access-Control-Allow-Origin' => '*'
-    }, 
+    },
     data.to_json
   end
 
@@ -73,6 +73,12 @@ class Controller < Sinatra::Base
     Log.save login
 
     json_response 200, {:me => login['me']}
+  end
+
+  options '/auth' do
+    response.headers["Allow"] = "GET,POST,OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Cache-Control, Accept"
+    200
   end
 
   # This is the POST route that handles verifying auth codes. It needs to match the name of the authorization URL

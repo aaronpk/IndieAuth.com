@@ -130,7 +130,7 @@ h3 {
   margin-right: 8px;
 }
 
-input[type="text"].sms_code, input[type="text"].email_code {
+input[type="text"].email_code {
   margin-bottom: 0;
   margin-right: 6px;
 }

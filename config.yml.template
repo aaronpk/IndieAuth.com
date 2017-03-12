@@ -13,10 +13,6 @@ development:
   redis:
     host: 127.0.0.1
     port: 6379
-  twilio:
-    sid: 
-    token: 
-    number: 
   mailgun:
     api_key: xxx
     domain: mail.example.com
@@ -41,8 +37,5 @@ development:
       client_id: 
       client_secret: 
     eventbrite:
-      client_id: 
-      client_secret: 
-    clef:
       client_id: 
       client_secret: 

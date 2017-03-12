@@ -139,9 +139,7 @@ class RelParser
         href = link.attribute("href").value
         #href = URI.decode href
 
-        if href.match Provider.sms_regex
-          links << href
-        elsif href.match Provider.email_regex
+        if href.match Provider.email_regex
           # remove query string
           links << href.match(/(mailto:\/?\/?[^?]+@[^?]+\.[^?]+)/)[1]
         else
