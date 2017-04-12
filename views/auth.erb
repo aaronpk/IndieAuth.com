@@ -234,7 +234,7 @@ function verify_link_back(me, link, i, use_cached) {
   if(link.provider == 'password'){
     var public_key = link.profile.substring(16)
     $("#profile_"+i+" .link").html('<input id="password" type="text" style="margin-bottom: 0px;"><a onClick=verify_password("'+public_key+'") class="btn btn-success password-auth begin-auth">'+'Verify password'+'</a>');
-    set_provider_status(i, 'verified', ' ' );
+    set_provider_status(i, 'verified', 'This feature should only be used by trusted authentication endpoints' );
     provider_verification_finished();
     return;    
   }
