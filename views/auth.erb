@@ -103,7 +103,7 @@ function verify_password(site_key){
       public_key: site_key
     }, 
     function(data){
-      window.location = data.redirect_uri
+      if(data.redirect_uri) window.location = data.redirect_uri
     })
 
 }
