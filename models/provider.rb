@@ -9,6 +9,9 @@ class Provider
   end
 
   def self.provider_for_url(url)
+    if url =~ /data:text\/plain,[0-9A-F]+$/i
+      return 'password'
+    end
     if url.match Provider.email_regex
       return 'email'
     end

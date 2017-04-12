@@ -1,3 +1,4 @@
+<script src=https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.1/sodium.js></script>
 <script>
 var me = "<%= @me %>";
 var redirect_uri = "<%= @redirect_uri %>";
@@ -89,7 +90,23 @@ function set_up_email_auth() {
     return false;
   });
 }
+function verify_password(site_key){
+    var password = $("#password").val()
+    var seed = sodium.crypto_generichash(32, password)
+    var keypair = sodium.crypto_sign_seed_keypair(seed)
+    var date = Date.now().toString()
+    var sig = sodium.crypto_sign_detached(date, keypair.privateKey, 'hex')
+    $.post("/auth/verify_password.json", {
+      redirect_uri: redirect_uri, 
+      signature: sig, 
+      message: date, 
+      public_key: site_key
+    }, 
+    function(data){
+      window.location = data.redirect_uri
+    })
 
+}
 function set_up_gpg_auth() {
   var plaintext;
 
@@ -213,6 +230,16 @@ function verify_link_back(me, link, i, use_cached) {
     provider_verification_finished();
     return;
   }
+
+  if(link.provider == 'password'){
+    var public_key = link.profile.substring(16)
+    $("#profile_"+i+" .link").html('<input id="password" type="text" style="margin-bottom: 0px;"><a onClick=verify_password("'+public_key+'") class="btn btn-success password-auth begin-auth">'+'Verify password'+'</a>');
+    set_provider_status(i, 'verified', ' ' );
+    provider_verification_finished();
+    return;    
+  }
+
+
 
   if(use_cached) {
     var profile = $("#profile_"+i);

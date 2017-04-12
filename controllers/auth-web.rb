@@ -106,6 +106,7 @@ class Controller < Sinatra::Base
       puts "Found existing: #{provider}"
     end
 
+
     if provider == 'email'
       verified = true
       error_description = nil
@@ -121,6 +122,9 @@ class Controller < Sinatra::Base
       else
         verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
       end
+    elsif provider == 'password'
+      verified = true
+      error_description = nil
     else
       # This does an HTTP request
       puts "::=> verifying link"
@@ -144,7 +148,6 @@ class Controller < Sinatra::Base
     profile = verify_profile_param
 
     me_parser = RelParser.new me
-
     # Don't actually look for *all* links. Just look for the specific one we're looking for in #{profile} and stop there
     if !me_parser.links_to profile
       json_error 200, {error: 'invalid_input', error_description: "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\""}
@@ -199,7 +202,6 @@ class Controller < Sinatra::Base
     session[:state] = params[:state]
     session[:scope] = params[:scope]
     session[:redirect_uri] = URI.encode params[:redirect_uri]
-
     @redirect_uri = params[:redirect_uri]
     @client_id = params[:client_id]
     @state = params[:state]
@@ -289,7 +291,7 @@ class Controller < Sinatra::Base
     me = verify_me_param
 
     me_parser = RelParser.new me
-
+    password_hash = me_parser.password
     # Delete all cached providers
     Profile.delete_profile me
 
@@ -396,7 +398,10 @@ class Controller < Sinatra::Base
         }
       end
     end
-
+    if password_hash
+      provider = "password"
+      links_response = [{profile: password_hash, provider: "password", verfied: true}]
+    end
     json_response 200, {links: links_response}
   end
 
@@ -415,7 +420,6 @@ class Controller < Sinatra::Base
     rescue Exception => e
       json_error 200, {error: 'unknown', error_description: "Unknown error: #{e.message}"}
     end
-
     response = {
       me: me,
       profile: profile,
@@ -425,7 +429,6 @@ class Controller < Sinatra::Base
       error_description: error_description,
       auth_path: (verified ? Provider.auth_path(provider, profile, me) : false)
     }
-
     json_response 200, response
   end
 
@@ -449,7 +452,7 @@ class Controller < Sinatra::Base
 
     # TODO: if the user had only one auth endpoint and they were redirected here skipping the prompt,
     # then we need to clear the cache and re-check for an endpoint for them.
-    if !links.include?(profile) and !auth_endpoints.include?(profile) and !gpg_keys.map{|a| a[:href]}.include?(profile)
+    if !links.include?(profile) && !auth_endpoints.include?(profile) && !gpg_keys.map{|a| a[:href]}.include?(profile) && !me_parser.password
       @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."
       title "Error"
       return erb :error
@@ -459,6 +462,7 @@ class Controller < Sinatra::Base
 
     if params[:provider] == 'indieauth'
       attempted_username = me
+    elsif provider == "password"
     else
       match = profile.match(Regexp.new Provider.regexes[provider])
       attempted_username = match[1]

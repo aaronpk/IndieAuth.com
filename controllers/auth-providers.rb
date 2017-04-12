@@ -234,4 +234,28 @@ class Controller < Sinatra::Base
     end
   end
 
+  post "/auth/verify_password.json" do
+    message = params[:message]
+    puts params[:signature]
+    signature = RbNaCl::Util.hex2bin(params[:signature])
+    public_key = RbNaCl::Util.hex2bin(params[:public_key])
+    begin
+      verify_key = RbNaCl::Signatures::Ed25519::VerifyKey.new(public_key)
+      verification = verify_key.verify(signature, message)
+    rescue RbNaCl::BadSignatureError => e
+      json_error 200, {error: 'bad_signature', error_description: 'Could not verify signature'}
+    end
+    date = Time.at(message.to_i / 1000)
+    if (Time.now - date) > 15
+      json_error 200, {error: 'date_mismatch', error_description: "Signature was created in the past"}
+    end
+
+    redirect_uri = Login.build_redirect_uri({
+      :provider => 'password',
+      :redirect_uri => params[:redirect_uri],
+    })
+
+    json_response 200, {redirect_uri: redirect_uri}
+  end
+
 end

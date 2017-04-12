@@ -118,7 +118,7 @@ class RelParser
 
     @page.search("a,link").each do |link|
       rels = (link.attribute("rel").to_s || '').split(/ /)
-      if rels.include?('me') || rels.include?('authorization_endpoint') || rels.include?('pgpkey')
+      if rels.include?('me') || rels.include?('authorization_endpoint') || rels.include?('pgpkey') || rels.include?('password')
         return true if link.attribute("href").value == profile
       end
     end
@@ -170,6 +170,13 @@ class RelParser
     end
 
     endpoints
+  end
+
+  def password
+    load_page
+    return endpoints if @page.nil?
+    pass = @page.search("[rel=password]").first
+    pass && pass["href"]
   end
 
   def gpg_keys

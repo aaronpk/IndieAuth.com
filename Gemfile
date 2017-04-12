@@ -5,6 +5,9 @@ gem 'sinatra-namespace',   :require => 'sinatra/namespace'
 gem 'sinatra-support',     :require => 'sinatra/support'
 gem 'rack-accept',         :require => 'rack/accept'
 
+gem 'rbnacl'
+
+gem 'pry'
 gem 'erubis'
 gem 'rainbows', :require => nil
 gem 'rake',                     :require => nil
