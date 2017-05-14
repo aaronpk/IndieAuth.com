@@ -495,7 +495,7 @@ class Controller < Sinatra::Base
         :code => params[:code],
         :client_id => "#{SiteConfig.root}/",
         :redirect_uri => "#{SiteConfig.root}/auth/indieauth/redirect"
-      }, :accept => 'application/x-www-form-urlencoded'
+      }, :accept => 'application/json'
       puts "Session data"
       puts session.inspect
       puts
@@ -504,8 +504,13 @@ class Controller < Sinatra::Base
       puts data.inspect
       puts
 
-
-      response = CGI::parse data
+      # Only parse as JSON if the response looks like JSON
+      # This maintains fallback behavior of expecting form-encoded responses even if the server ignores the Accept header
+      if data[0] == '{'
+        response = JSON.parse data
+      else
+        response = CGI::parse data
+      end
       puts "Parsed response"
       puts response.inspect
       puts
