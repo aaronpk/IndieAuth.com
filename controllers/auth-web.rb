@@ -119,7 +119,7 @@ class Controller < Sinatra::Base
         verified = false
         error_description = 'This auth server cannot be used to authenticate to itself'
       else
-        verified, error_description = me_parser.verify_auth_endpoint profile, profile_parser
+        verified = true
       end
     else
       # This does an HTTP request

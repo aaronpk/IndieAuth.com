@@ -205,47 +205,6 @@ class RelParser
     return OmniAuth.provider_supported? provider
   end
 
-  def verify_auth_endpoint(link, site_parser=nil)
-    site_parser = RelParser.new link if site_parser.nil?
-    begin
-    rescue SocketError
-      return false, "Error trying to connect to #{link}"
-    rescue InsecureRedirectError => e
-      return false, e.message
-    end
-
-    puts "==========="
-    puts "Page: #{link}"
-
-    # Check the HTTP headers to see if the endpoint returns "IndieAuth: authorization_endpoint"
-    begin
-      @page = @agent.head link
-      puts "IndieAuth: #{@page.header['indieauth']}"
-      if @page.header['indieauth'] == 'authorization_endpoint'
-        return true, nil
-      else
-        return false, 'Endpoint did not acknowledge it is an authorization endpoint. The endpoint should return an "IndieAuth: authorization_endpoint" header.'
-      end
-    rescue OpenSSL::SSL::SSLError => e
-      puts "!!!! SSL ERROR: #{e.message}"
-      er = SSLError.new
-      er.url = link
-      raise er
-    rescue Mechanize::ResponseCodeError => e
-      if e.page && e.page.header && e.page.header['indieauth'] == 'authorization_endpoint'
-        puts "IndieAuth: #{e.page.header['indieauth']}"
-        return true, nil
-      end
-      return false, "Endpoint returned #{e.response_code} and did not include the 'IndieAuth' header"
-    rescue => e # catch all errors and return a blank list
-      puts "!!!!! #{e}"
-      puts e.class
-      raise e
-    end
-
-    return false, 'unknown error'
-  end
-
   def verify_link(link, site_parser=nil)
     # Scan the external site for rel="me" links
     site_parser = RelParser.new link if site_parser.nil?
