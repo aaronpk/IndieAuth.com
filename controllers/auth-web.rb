@@ -534,6 +534,7 @@ class Controller < Sinatra::Base
           me = response['me'].first
         else
           me = response['me']
+        end
         # Allow the response to indicate a different user, only if it's on the same domain as we were expecting
         meURI = URI.parse me
         attemptedURI = URI.parse attempted_uri
