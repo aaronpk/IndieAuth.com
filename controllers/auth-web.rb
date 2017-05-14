@@ -495,7 +495,7 @@ class Controller < Sinatra::Base
         :code => params[:code],
         :client_id => "#{SiteConfig.root}/",
         :redirect_uri => "#{SiteConfig.root}/auth/indieauth/redirect"
-      }
+      }, :accept => 'application/x-www-form-urlencoded'
       puts "Session data"
       puts session.inspect
       puts
