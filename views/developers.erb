@@ -20,7 +20,7 @@
   <input id="indie_auth_url" type="text" name="me" placeholder="yourdomain.com" />
   <p><button type="submit">Sign In</button></p>
   <input type="hidden" name="client_id" value="https://example.com/" />
-  <input type="hidden" name="redirect_uri" value="https://example.com/auth" />
+  <input type="hidden" name="redirect_uri" value="https://example.com/callback" />
 </form>' %></code></pre></p>
 
       <p>
@@ -43,7 +43,7 @@
 
       <h3>3. The user is redirected back to your site</h3>
 
-      <p><pre><code>https://example.com/auth?code=gk7n4opsyuUxhvF4</code></pre></p>
+      <p><pre><code>https://example.com/callback?code=gk7n4opsyuUxhvF4</code></pre></p>
 
       <p>If everything is successful, the user will be redirected back to the redirect_uri you specified in the form. There will be a token in a query string parameter, <code>code</code>.</p>
 
@@ -57,7 +57,7 @@
 Content-Type: application/x-www-form-urlencoded;charset=UTF-8
 
 code=gk7n4opsyuUxhvF4&amp;
-redirect_uri=https://example.com/auth&amp;
+redirect_uri=https://example.com/callback&amp;
 client_id=https://example.com/</code></pre></p>
 
       <p>An example successful response:</p>
