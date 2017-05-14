@@ -530,7 +530,10 @@ class Controller < Sinatra::Base
 
       # response['me'] is an array with the user's domain name. double check that's what we expected.
       if response && response['me']
-        me = response['me'].first
+        if response['me'].kind_of?(Array)
+          me = response['me'].first
+        else
+          me = response['me']
         # Allow the response to indicate a different user, only if it's on the same domain as we were expecting
         meURI = URI.parse me
         attemptedURI = URI.parse attempted_uri
