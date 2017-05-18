@@ -468,11 +468,20 @@ class Controller < Sinatra::Base
     session[:attempted_profile] = profile
     session[:attempted_provider] = provider
     session[:attempted_username] = attempted_username
+    session[:localstate] = SecureRandom.hex # generate a state value that will be checked on the redirect
 
     puts "Attempting authentication for #{session[:attempted_uri]} via #{provider} (Expecting #{session[:attempted_username]})"
 
     if provider == 'indieauth'
-      redirect "#{profile}?me=#{me}&scope=#{session[:scope]}&client_id=#{SiteConfig.root}%2F&redirect_uri=#{URI.encode_www_form_component(SiteConfig.root+'/auth/indieauth/redirect')}", 302
+      query = {
+        me: me,
+        scope: session[:scope],
+        client_id: "#{SiteConfig.root}/",
+        redirect_uri: "#{SiteConfig.root}/auth/indieauth/redirect",
+        state: session[:localstate]
+      }
+      query_string = URI.encode_www_form query
+      redirect "#{profile}?#{query_string}", 302
     else
       redirect "/auth/#{provider}", 302
     end
@@ -484,6 +493,19 @@ class Controller < Sinatra::Base
 
     if session[:attempted_profile].nil?
       return redirect '/'
+    end
+
+    title "Error"
+
+    # Check that the redirect includes the state parameter we set
+    if !params[:state]
+      @message = "The authorization server did not include the state parameter in the redirect"
+      return erb :error
+    end
+
+    if params[:state] != session[:localstate]
+      @message = "The authorization server returned a state value that did not match"
+      return erb :error
     end
 
     puts params.inspect
