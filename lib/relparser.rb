@@ -135,9 +135,9 @@ class RelParser
     @page.search("a,link").each do |link|
       rels = (link.attribute("rel").to_s || '').split(/ /)
       if rels.include? 'me' and link.attribute("href")
-        puts " --> #{link.attribute("href").value} rel=#{link.attribute("rel")}"
-        href = link.attribute("href").value
-        #href = URI.decode href
+        # Resolve the URL relative to the base
+        href = Addressable::URI.join(@url, link.attribute("href").value).to_s
+        puts " --> #{link.attribute("href").value} (#{href}) rel=#{link.attribute("rel")}"
 
         if href.match Provider.email_regex
           # remove query string
@@ -181,18 +181,18 @@ class RelParser
 
     @page.search("[rel~=pgpkey]").each do |link|
       href = link.attribute("href").value
-      puts " --> GPG Key: #{href} rel=#{link.attribute("rel")}"
+      absolute = Addressable::URI.join(@url, href)
+      puts " --> GPG Key: #{absolute} rel=#{link.attribute("rel")}"
       # Fetch the key. Assume the href links to a plaintext key
       begin
-        absolute = URI.join(@url, href)
         response = @agent.get absolute
         keys << {
-          :href => href,
+          :href => absolute,
           :key => response.body
         }
       rescue => e
         # just ignore errors
-        puts "Error retrieving key at #{href}"
+        puts "Error retrieving key at #{absolute}"
       end
     end
 
