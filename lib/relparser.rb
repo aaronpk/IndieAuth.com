@@ -166,7 +166,15 @@ class RelParser
 
     @page.search("[rel~=authorization_endpoint]").each do |link|
       puts " --> IndieAuth: #{link.attribute("href").value} rel=#{link.attribute("rel")}"
-      endpoints << link.attribute("href").value
+      href = link.attribute("href").value
+      begin
+        original = URI.parse href
+        if original.host != SiteConfig.this_server
+          endpoints << href
+        end
+      rescue => e
+        puts "Error parsing #{href}"
+      end
     end
 
     endpoints
