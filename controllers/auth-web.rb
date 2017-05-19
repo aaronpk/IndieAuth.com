@@ -383,13 +383,15 @@ class Controller < Sinatra::Base
       provider = 'indieauth'
 
       auth_endpoints.each do |endpoint|
-        # Store it now because when we verify it with the verify_link.json request, it doesn't know what provider it is and this will tell it
-        Profile.save({:me => me, :profile => endpoint}, {:provider => 'indieauth', :created_at => Time.now.to_i})
-        links_response << {
-          profile: endpoint,
-          provider: 'indieauth',
-          verified: nil
-        }
+        if "#{SiteConfig.root}/auth" != endpoint
+          Profile.save({:me => me, :profile => endpoint}, {:provider => 'indieauth', :created_at => Time.now.to_i})
+          links_response << {
+            profile: endpoint,
+            provider: 'indieauth',
+            verified: true,
+            auth_path: Provider.auth_path(provider, endpoint, me)
+          }
+        end
       end
     end
 
