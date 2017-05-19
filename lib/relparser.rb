@@ -120,6 +120,15 @@ class RelParser
       rels = (link.attribute("rel").to_s || '').split(/ /)
       if rels.include?('me') || rels.include?('authorization_endpoint') || rels.include?('pgpkey')
         return true if link.attribute("href").value == profile
+        # Allow the site to link to it with a protocol relative link
+        begin
+          hrefURI = Addressable::URI.parse link.attribute("href").value
+          hrefURI.scheme = 'https'
+          profileURI = Addressable::URI.parse profile
+          profileURI.scheme = 'https'
+          return true if hrefURI.normalize.to_s == profileURI.normalize.to_s
+        rescue
+        end
       end
     end
 
