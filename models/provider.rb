@@ -24,12 +24,12 @@ class Provider
 
   def self.regexes
     {
-      'beeminder' => 'https?:\/\/(?:www\.)?beeminder\.com\/(.+)',
-      'eventbrite' => 'https?:\/\/(.+)\.eventbrite\.com',
-      'flickr' => 'https?:\/\/(?:www\.)?flickr\.com\/(?:people\/)?([^\/]+)',
+      #'beeminder' => 'https?:\/\/(?:www\.)?beeminder\.com\/(.+)',
+      #'eventbrite' => 'https?:\/\/(.+)\.eventbrite\.com',
+      #'flickr' => 'https?:\/\/(?:www\.)?flickr\.com\/(?:people\/)?([^\/]+)',
       'github' => 'https?:\/\/(?:www\.)?github\.com\/([^\/]+)',
-      'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
-      'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
+      #'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
+      #'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
       'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'
     }
   end
