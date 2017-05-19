@@ -11,7 +11,19 @@ class Controller < Sinatra::Base
         uri.host = host
       end
 
-      uri.scheme = 'http' if uri.scheme.nil?
+      if uri.scheme.nil?
+        # If there is no scheme, first try HTTPS and fall back to HTTP if that doesn't work
+        tmp = uri
+        tmp.scheme = 'https'
+        begin
+          response = HTTParty.head tmp.normalize.to_s, {
+            :timeout => 6
+          }
+          uri.scheme = 'https'
+        rescue => e
+          uri.scheme = 'http'
+        end
+      end
 
       if !uri.host.nil? and ['http','https'].include? uri.scheme
         return uri.normalize.to_s
@@ -113,8 +125,6 @@ class Controller < Sinatra::Base
       verified = true
       error_description = nil
     elsif provider == 'indieauth'
-      # Make an HTTP request to the auth server and check that it responds with an "IndieAuth: authorization_endpoint" header
-      # But return verified=false if it's actually this server
       if "#{SiteConfig.root}/auth" == profile
         verified = false
         error_description = 'This auth server cannot be used to authenticate to itself'
