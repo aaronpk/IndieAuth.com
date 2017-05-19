@@ -469,19 +469,19 @@ function start_scan() {
   <div class="no_links_error" style="display: none;">
     <div class="alert alert-error">
       <span class="message">No rel="me" links were found on your site!</span>
-      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Refresh</a>
     </div>
   </div>
   <div class="unsupported_links_error" style="display: none;">
     <div class="alert alert-error">
       No supported rel="me" links were found on your site!
-      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Refresh</a>
     </div>
   </div>
   <div class="continue_message" style="display: none;">
     <div class="alert alert-success">
       <span id="num_providers">1</span> supported and verified providers were found!
-      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Re-Scan</a>
+      <a class="rescan-button" href="#" style="float:right;"><i class="icon-retweet"></i> Refresh</a>
       <span class="last-refresh"><%= (@me ? User.last_refresh(@me) : '') %></span>
     </div>
   </div>
