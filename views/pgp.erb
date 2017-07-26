@@ -12,17 +12,17 @@
     <p>You can sign in on indieauth.com without relying on any external providers by signing a challenge with your PGP key.</p>
 
     <div class="row">
-      <div class="span8">
+      <div class="col-lg-8">
         <h3>1. Link to your PGP key on your home page</h3>
 
         <p>On your home page, link to one or more PGP keys and add the <code>rel="pgpkey"</code> attribute to the links.</p>
         <p>This may look something like the following:
-        <pre><code><%== '<link rel="pgpkey" href="/key.pub">' %></code></pre>
+        <pre><%== '<link rel="pgpkey" href="/key.pub">' %></pre>
       </div><!-- span -->
     </div><!-- row -->
 
     <div class="row">
-      <div class="span8">
+      <div class="col-lg-8">
         <h3>2. Sign in on indieauth.com</h3>
 
         <p>Make sure to click "re-scan" if you've previously signed in before and have just added your key.</p>
@@ -39,7 +39,7 @@
 
         <h4>GnuPG</h4>
         <p>If you use gpg from the command line you can sign a text message with the following command.</p>
-        <p><code>$ echo '(challenge from indieauth.com)' | gpg --clearsign --armor </code></p>
+        <pre>$ echo '(challenge from indieauth.com)' | gpg --clearsign --armor </pre>
 
         <h4>Keybase.io</h4>
         <p>If you are using <a href="https://keybase.io">Keybase.io</a> you can sign it on the command line with <code>keybase sign -m 'challenge text from indieauth.com'</code></p>
@@ -48,7 +48,7 @@
     </div><!-- row -->
 
     <div class="row">
-      <div class="span8">
+      <div class="col-lg-8">
         <h3>3. Submit the signed text</h3>
 
         <p>Paste the signed text in the form field and click "Verify".</p>

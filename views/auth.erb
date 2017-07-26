@@ -28,13 +28,13 @@ function update_progress_bar() {
     success = success - 1;
   }
 
-  $("#progress_bar .bar-verified").css("width", success+"%");
-  $("#progress_bar .bar-info").css("width", warning+"%");
-  $("#progress_bar .bar-danger").css("width", error+"%");
+  $("#progress_bar .progress-bar-verified").css("width", success+"%");
+  $("#progress_bar .progress-bar-info").css("width", warning+"%");
+  $("#progress_bar .progress-bar-danger").css("width", error+"%");
 }
 
 function complete_progress_bar() {
-  $("#progress_bar").removeClass("active progress-striped");
+  $("#progress_bar").removeClass("active");
 }
 
 function set_up_email_auth() {
@@ -354,7 +354,7 @@ function unbind_keyboard_listeners() {
 }
 
 $(function(){
-  $("#progress_bar .bar").tooltip({placement: "bottom"});
+  $("#progress_bar .progress-bar").tooltip({placement: "bottom"});
   update_progress_bar();
 
   bind_keyboard_listeners();
@@ -366,10 +366,10 @@ $(function(){
     $("#profiles li").remove();
 
     // Re-set the notices
-    $("#progress_bar .bar-loading").css("width", "5%");
-    $("#progress_bar .bar-verified").css("width", "0");
-    $("#progress_bar .bar-info").css("width", "0");
-    $("#progress_bar .bar-danger").css("width", "0");
+    $("#progress_bar .progress-bar-loading").css("width", "5%");
+    $("#progress_bar .progress-bar-verified").css("width", "0");
+    $("#progress_bar .progress-bar-info").css("width", "0");
+    $("#progress_bar .progress-bar-danger").css("width", "0");
     $("#progress_bar").show();
 
     $(".loading_message").show();
@@ -390,7 +390,7 @@ function start_scan() {
   // Returning users will have a bunch of profiles already written to the HTML
   if($("#profiles li").length > 0) {
     // Skip loading links
-    $("#progress_bar .bar-loading").css("width", "15%");
+    $("#progress_bar .progress-bar-loading").css("width", "15%");
     update_progress_bar();
 
     // Run the "verify" function which will set up the JS hooks and add the buttons
@@ -405,7 +405,7 @@ function start_scan() {
   } else {
     $.get("/auth/supported_providers.json", {me: me}, function(data){
       if(data && data.links && data.links.length > 0) {
-        $("#progress_bar .bar-loading").css("width", "15%");
+        $("#progress_bar .progress-bar-loading").css("width", "15%");
         var template = $('#profile_link_template').html();
         $(data.links).each(function(i, link){
           var index = i;
@@ -496,11 +496,11 @@ function start_scan() {
     </div>
   </div>
 
-  <div id="progress_bar" class="progress progress-striped active">
-    <div class="bar bar-success bar-loading" style="width: 5%;" rel="tooltip" title="Loaded links from your site"></div>
-    <div class="bar bar-success bar-verified" style="width: 0%;" rel="tooltip" title="Verified profiles"></div>
-    <div class="bar bar-info" style="width: 0;" rel="tooltip" title="Unsupported providers"></div>
-    <div class="bar bar-danger" style="width: 0;" rel="tooltip" title="Error verifying provider"></div>
+  <div id="progress_bar" class="progress active">
+    <div class="progress-bar progress-bar-success progress-bar-loading" style="width: 5%;" rel="tooltip" title="Loaded links from your site"></div>
+    <div class="progress-bar progress-bar-success progress-bar-verified" style="width: 0%;" rel="tooltip" title="Verified profiles"></div>
+    <div class="progress-bar progress-bar-info" style="width: 0;" rel="tooltip" title="Unsupported providers"></div>
+    <div class="progress-bar progress-bar-danger" style="width: 0;" rel="tooltip" title="Error verifying provider"></div>
   </div>
 
   <ul id="profiles">

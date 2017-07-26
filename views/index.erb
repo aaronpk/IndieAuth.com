@@ -2,7 +2,7 @@
 
 <div class="container">
 
-  <div class="narrow">
+  <div class="narrow section">
     <div class="imgfloat">
         <div class="img"><img src="/img/indieauth-logo-color.png" width="159" height="200" class="u-logo" /></div>
 
@@ -13,41 +13,32 @@
     </div>
   </div>
 
-  <hr />
+  <div class="section">
+    <div class="row">
+      <div class="col-lg-6">
 
-  <div class="row">
-    <div class="span6">
+        <a class="img-thumbnail" href="#"><img src="/img/web-signin-splash.jpg" width="550" height="350" /></a>
 
-      <ul class="thumbnails">
-        <li>
-          <a class="thumbnail" href="#"><img src="/img/web-signin-splash.jpg" width="550" height="350" /></a>
-        </li>
-      </ul>
+      </div>
+      <div class="col-lg-6 intro">
 
-    </div>
-    <div class="span6 intro">
+        <h2>Why IndieAuth?</h2>
+        <p>IndieAuth is part of the <a href="https://indieweb.org/why">IndieWeb movement</a> to take back control of your online identity. Instead of logging in to websites as "you on Twitter" or "you on Facebook", <b>you should be able to log in as just "you".</b> We should not be relying on Twitter or Facebook to provide our authenticated identities, we should be able to use our own domain names to log in to sites everywhere.</p>
+        <p>IndieAuth was built to make it as easy as possible for users and for developers to start using this new way of signing in on the web, without the complexities of OpenID.</p>
 
-      <h2>Why IndieAuth?</h2>
-      <p>IndieAuth is part of the <a href="https://indieweb.org/why">IndieWeb movement</a> to take back control of your online identity. Instead of logging in to websites as "you on Twitter" or "you on Facebook", <b>you should be able to log in as just "you".</b> We should not be relying on Twitter or Facebook to provide our authenticated identities, we should be able to use our own domain names to log in to sites everywhere.</p>
-      <p>IndieAuth was built to make it as easy as possible for users and for developers to start using this new way of signing in on the web, without the complexities of OpenID.</p>
-
-    </div>
-  </div><!-- row -->
-
-  <br />
+      </div>
+    </div><!-- row -->
+  </div>
 
   <div class="section">
   <div class="row">
-    <div class="span4">
-      <h3>How to Set Up IndieAuth</h3>
+    <div class="col-lg-4">
+      <h3>How to Set Up IndieAuth.com</h3>
       
-      <ul class="thumbnails">
-        <li>
-          <a class="thumbnail" href="/setup">
-            <img src="/img/code-sample.png" width="370" height="154" />
-          </a>
-        </li>
-      </ul>
+      <a class="img-thumbnail" href="/setup">
+        <img src="/img/code-sample.png" width="100%">
+      </a>
+
       <ul>
         <li>Add a link on your home page to your various social profiles with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
         <li>Ensure your profiles link back to your home page</li>
@@ -55,33 +46,27 @@
       </ul>
       <a href="/setup">Full setup instructions</a>
 
-    </div><!-- span4 -->
-    <div class="span4">
+    </div><!-- col-lg-4 -->
+    <div class="col-lg-4">
       <h3>Try It!</h3>
 
       <form action="/auth" method="get" class="well">
-        <label for="indie_auth_url">Web Address:</label>
-        <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
-        <p><button type="submit" class="btn">Sign In</button></p>
+        <div class="form-group">
+          <label for="indie_auth_url">Web Address:</label>
+          <input id="indie_auth_url" type="text" name="me" class="form-control" placeholder="yourdomain.com" />
+        </div>
+        <p><button type="submit" class="btn btn-default">Sign In</button></p>
         <input type="hidden" name="client_id" value="<%= SiteConfig.root %>" />
         <input type="hidden" name="redirect_uri" value="<%= SiteConfig.root %>/success" />
       </form>
 
-    </div><!-- span4 -->
-    <div class="span4">
+    </div><!-- col-lg-4 -->
+    <div class="col-lg-4">
       <h3 id="community">Community</h3>
 
-      <ul class="thumbnails">
-        <li class="span1">
-          <a class="thumbnail" href="https://indieweb.org/IndieAuth"><img src="/img/wiki-button.png" width="114" height="114" /></a>
-        </li>
-        <li class="span1">
-          <a class="thumbnail" href="http://github.com/aaronpk/IndieAuth"><img src="/img/github-button.png" width="114" height="114" /></a>
-        </li>
-        <li class="span1">
-          <a class="thumbnail" href="https://twitter.com/indiewebcamp"><img src="/img/twitter-button.png" width="114" height="114" /></a>
-        </li>
-      </ul>
+      <a class="img-thumbnail" href="https://indieweb.org/IndieAuth"><img src="/img/wiki-button.png" width="100" height="100" /></a>
+      <a class="img-thumbnail" href="http://github.com/aaronpk/IndieAuth.com"><img src="/img/github-button.png" width="100" height="100" /></a>
+      <a class="img-thumbnail" href="https://twitter.com/indiewebcamp"><img src="/img/twitter-button.png" width="100" height="100" /></a>
 
       <h4>Join Us</h4>
       <ul>
@@ -89,7 +74,7 @@
         <li>Add your own IndieWeb projects to the <a href="https://indieweb.org/projects">Project List</a></li>
       </ul>
 
-    </div><!-- span4 -->
+    </div><!-- col-lg-4 -->
   </div><!-- row -->
   </div><!-- section -->
 

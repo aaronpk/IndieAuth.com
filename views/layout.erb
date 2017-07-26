@@ -1,17 +1,13 @@
 <!doctype html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
-
+<html lang="en">
   <head>
     <meta charset="utf-8">    
     <title><%= title %></title>
     <% if @_meta_description %><meta name="description" content="<%= @_meta_description %>"><% end %>
     <%= viewport %>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="/bootstrap-3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/bootstrap-3.3.7/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="redirect_uri" href="<%= SiteConfig.root %>/auth/indieauth/redirect" />
     <% if SiteConfig.ga_id %>
@@ -27,39 +23,40 @@
         })();
       </script>
     <% end %>
-    <script src="/js/jquery-1.7.1.min.js"></script>
-    <script src="/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/js/jquery-3.2.1.min.js"></script>
+    <script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="/js/mustache.js"></script>
   </head>
   <body class="h-x-app <%= browser.body_class %> <%= path_class %>">
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+    <nav class="navbar navbar-inverse navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-          </a>
-          <a class="brand p-name" href="/">IndieAuth.com</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li><a href="/setup">Setup</a></li>
-              <li><a href="/pgp">PGP</a></li>
-              <li><a href="/openid">OpenID</a></li>
-              <li><a href="/developers">Developers</a></li>
-              <li><a href="/faq">FAQ</a></li>
-              <li><a href="/history">History</a></li>
-            </ul>
-          </div>
+          </button>
+          <a class="navbar-brand" href="/">IndieAuth.com</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/setup">Setup</a></li>
+            <li><a href="/pgp">PGP</a></li>
+            <li><a href="/openid">OpenID</a></li>
+            <li><a href="/developers">Developers</a></li>
+            <li><a href="/faq">FAQ</a></li>
+            <li><a href="/history">History</a></li>
+          </ul>
         </div>
       </div>
-    </div>
+    </nav>
 
     <%= yield %>
 
     <div class="tinyfooter">
-      This server is hosted by <%= SiteConfig.credit %>. v17.139.1 <%= "#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}" %>
+      This server is hosted by <%= SiteConfig.credit %>. v17.207.1 <%= "#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}" %>
     </div>
   </body>
 </html>

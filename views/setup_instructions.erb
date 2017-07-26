@@ -7,7 +7,7 @@
   <h2>Setup Instructions</h2>
 
   <div class="row">
-    <div class="span8">
+    <div class="col-lg-8">
       <h3>1. Link to your various social profiles on your home page</h3>
 
       <p>On your home page, link to your profiles and add the <code>rel="me"</code> attribute to the links.</p>
@@ -30,15 +30,13 @@
       <p>You can also <a href="/pgp">sign in with a PGP key</a> if you don't wish to use a third party service.</p>
 
     </div><!-- span -->
-    <div class="span4">
-      <ul class="thumbnails">
-        <li><a class="thumbnail" href="#"><img src="/img/social-profiles.png" width="214" height="256" /></a></li>
-      </ul>
+    <div class="col-lg-4">
+      <a class="img-thumbnail" href="#"><img src="/img/social-profiles.png" width="214" height="256" /></a>
     </div>
   </div><!-- row -->
 
   <div class="row">
-    <div class="span8">
+    <div class="col-lg-8">
       <h3>2. On each service, ensure there is a link back to your home page</h3>
 
       <p>You'll need to verify that each service has a link back to your home page. For convenience the "edit profile" links for some supported services are below.</p>
@@ -47,7 +45,6 @@
 
       <ul>
         <li><a href="https://twitter.com/settings/profile">Twitter</a></li>
-        <li><a href="https://plus.google.com/me/about/edit/d">Google</a></li>
         <li><a href="https://github.com/settings/profile">Github</a></li>
       </ul>
 
@@ -57,14 +54,16 @@
   </div><!-- row -->
 
   <div class="row">
-    <div class="span8">
+    <div class="col-lg-8">
       <h3>3. You're done!</h3>
       <p>That's it! You're done! Now you can use your domain to sign in to any sites that support IndieAuth!</p>
 
       <h4>Try it now</h4>
       <form action="/auth" method="get" class="well">
-        <label for="indie_auth_url">Web Address:</label>
-        <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
+        <div class="form-group">
+          <label for="indie_auth_url">Web Address:</label>
+          <input id="indie_auth_url" type="text" name="me" class="form-control" placeholder="yourdomain.com" />
+        </div>
         <p><button type="submit" class="btn">Sign In</button></p>
         <input type="hidden" name="client_id" value="<%= SiteConfig.root %>" />
         <input type="hidden" name="redirect_uri" value="<%= SiteConfig.root %>/success" />

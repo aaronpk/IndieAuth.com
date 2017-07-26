@@ -40,7 +40,7 @@ h3 {
 }
 
 .navbar {
-  position: relative;
+  margin-bottom: 0;
 }
 
 
@@ -48,9 +48,8 @@ h3 {
   background: url(/img/title-bkg.jpg) top center no-repeat;
   padding: 20px 10px;
   text-align: center;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
   border-radius: 0;
+  margin-bottom: 30px;
 }
 .hero-unit h1 {
   color: #eee;
@@ -147,6 +146,14 @@ input[type="text"].email_code {
   padding-bottom: 10px;
 }
 
+.form-actions {
+  padding: 19px 20px 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #e5e5e5;
+}
+
 
 /**
  * Headers
@@ -178,37 +185,5 @@ hr {
  */
 code, pre {
   font: 12px Inconsolata,Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;
-}
-
-pre {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-}
-
-pre code {
-  display: block;
-  margin: 1.25em 0;
-  padding: 0.75em 1.0em;
-  overflow: auto;
-  white-space: pre;
-  background-color: rgba(155, 155, 155, 0.1);
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  -o-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -khtml-border-radius: 3px;
-  border-radius: 3px;
-  -moz-box-shadow: #ccc 1px 1px 3px 0 inset;
-  -webkit-box-shadow: #ccc 1px 1px 3px 0 inset;
-  -o-box-shadow: #ccc 1px 1px 3px 0 inset;
-  box-shadow: #ccc 1px 1px 3px 0 inset;
-}
-
-code {
-  color: #08C;
-  background: rgba(155, 155, 155, 0.1);
-  white-space: nowrap;
 }
 
