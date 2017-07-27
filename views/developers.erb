@@ -55,6 +55,7 @@
 
       <pre>POST https://indieauth.com/auth HTTP/1.1
 Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+Accept: application/json
 
 code=gk7n4opsyuUxhvF4&amp;
 redirect_uri=https://example.com/callback&amp;
@@ -63,17 +64,21 @@ client_id=https://example.com/</pre>
       <p>An example successful response:</p>
 
       <pre>HTTP/1.1 200 OK
-Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+Content-Type: application/json
 
-me=http://aaronparecki.com/</pre>
+{
+  "me": "https://aaronparecki.com/"
+}</pre>
 
       <p>An example error response:</p>
 
       <pre>HTTP/1.1 404 Not Found
-Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+Content-Type: application/json
 
-error=invalid_request&amp;
-error_description=The+code+provided+was+not+valid</pre>
+{
+  "error": "invalid_request",
+  "error_description": "The code provided was not valid"
+}</pre>
 
       <br />
 
