@@ -244,14 +244,17 @@ function update_provider_status(link, data, i) {
   if(data.error == "unsupported_provider") {
     set_provider_status(i, 'unsupported', 'This is not a supported authentication provider.');
   } else if(data.verified) {
+    var href = data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri);
+    var display_text;
     if(data.provider == 'indieauth') {
       msg = 'Ok! Click to authenticate using your IndieAuth server.';
+      display_text = 'IndieAuth';
     } else {
       msg = 'Ok! Click to authenticate using this provider.';
+      display_text = link.profile.replace(/^(https|http):\/\//, "");
     }
     set_provider_status(i, 'verified', msg);
-    var href = data.auth_path+'&redirect_uri='+encodeURIComponent(redirect_uri);
-    $("#profile_"+i+" .link").html('<a href="'+href+'" class="btn btn-success">'+link.profile.replace(/^(https|http):\/\//, "")+'</a>');
+    $("#profile_"+i+" .link").html('<a href="'+href+'" class="btn btn-success">'+display_text+'</a>');
   } else if(data.error) {
     var message;
     if(data.error_description) {
