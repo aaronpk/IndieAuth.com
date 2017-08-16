@@ -175,14 +175,14 @@ class Controller < Sinatra::Base
   # 1. Begin the auth process
   get '/auth' do
 
-    title "IndieAuth - Sign in with your domain name"
+    title "Sign in with your domain name"
     @me = params[:me]
 
     if @me.nil?
-      title "About IndieAuth"
+      title "Web Sign-In"
       halt 200, {
         'IndieAuth' => 'authorization_endpoint'  # tell clients this is an indieauth endpoint
-      }, erb(:auth_about)
+      }, erb(:sign_in)
     end
 
     @me = normalize_me @me

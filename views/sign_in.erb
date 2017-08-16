@@ -3,30 +3,30 @@
   <div class="narrow">
 
       <form action="<%= SiteConfig.root %>/auth" method="get" class="well" style="margin: 20px 0;">
-        <label for="indie_auth_url">Web Address:</label>
-        <input id="indie_auth_url" type="text" name="me" class="span3" placeholder="yourdomain.com" />
-        <p><button type="submit" class="btn">Sign In</button></p>
+        <div class="form-group">
+          <label for="indie_auth_url">Web Address:</label>
+          <input id="indie_auth_url" type="text" name="me" class="form-control" placeholder="yourdomain.com" />
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
         <input type="hidden" name="redirect_uri" value="<%= params['redirect_uri'] ? params['redirect_uri'] : "#{SiteConfig.root}/success" %>" />
         <input type="hidden" name="client_id" value="<%= params['client_id'] ? params['client_id'] : "" %>" />
+        <input type="hidden" name="state" value="<%= params['state'] ? params['state'] : "" %>" />
       </form>
 
 
 
       <h3>How to Set Up IndieAuth</h3>
       
-      <ul class="thumbnails">
-        <li>
-          <a class="thumbnail" href="https://indieauth.com/setup">
-            <img src="/img/code-sample.png" width="370" height="154" />
-          </a>
-        </li>
-      </ul>
+      <a class="thumbnail" href="https://indieauth.com/setup">
+        <img src="/img/code-sample.png"/>
+      </a>
+
       <ul>
         <li>Add a link on your home page to your various social profiles with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
         <li>Ensure your profiles link back to your home page</li>
       </ul>
       <a href="https://indieauth.com/setup">Full setup instructions</a>
 
-
+      <div style="margin-bottom: 200px;"></div>
   </div>
 </div>
