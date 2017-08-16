@@ -493,6 +493,10 @@ class Controller < Sinatra::Base
         state: session[:localstate]
       }
       query_string = URI.encode_www_form query
+
+      # Resolve relative IndieAuth URLs
+      profile = Addressable::URI.join(me, profile).to_s
+
       redirect "#{profile}?#{query_string}", 302
     else
       redirect "/auth/#{provider}", 302
