@@ -176,6 +176,13 @@ class Controller < Sinatra::Base
   get '/auth' do
 
     title "Sign in with your domain name"
+
+    if params[:redirect_uri].nil?
+      @error_title = "Invalid Request"
+      @message = "The request is missing the redirect_uri parameter so we don't know where to send you back after you sign in."
+      halt 400, erb(:error)
+    end
+
     @me = params[:me]
 
     if @me.nil?
