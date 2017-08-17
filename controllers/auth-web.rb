@@ -259,7 +259,7 @@ class Controller < Sinatra::Base
             :timeout => 3
           }
 
-          client = Microformats2.parse response.body
+          client = Microformats.parse response.body
           if client.x_app.name
             @app_name = client.x_app.name
           end

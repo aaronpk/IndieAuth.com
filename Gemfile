@@ -14,10 +14,10 @@ gem 'dalli'
 gem 'httparty'
 gem 'escape_utils'
 
-gem 'omniauth'
+gem 'omniauth', ">=1.5.0"
 gem 'omniauth-facebook'
 gem 'omniauth-flickr'
-gem 'omniauth-github'
+gem 'omniauth-github', ">=1.3.0"
 gem 'omniauth-google-oauth2'
 gem 'omniauth-twitter'
 gem 'omniauth-openid'
@@ -32,8 +32,10 @@ gem 'unshorten',	">=0.2.1"
 gem 'rest-client'
 gem 'twilio-ruby'
 gem 'mailgun'
+gem 'mail'
 gem 'redis'
 gem 'rufus-scheduler'
+gem 'http-cookie'
 
 gem 'base32'
 gem 'gpgme'
@@ -41,7 +43,7 @@ gem 'jwt'
 gem 'encryptor'
 gem 'addressable',  :require => 'addressable/uri'
 
-gem 'microformats2'
+gem 'microformats'
 
 group :development do
   gem 'shotgun',                :require => nil

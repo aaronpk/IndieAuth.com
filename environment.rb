@@ -62,6 +62,8 @@ class Controller < Sinatra::Base
         case code
         when 'google_oauth2'
           provider code.to_sym, p['client_id'], p['client_secret'], {access_type: 'online', approval_prompt: '', scope: 'profile,userinfo.profile,plus.me'} if p['client_id']
+        when 'github'
+          provider code.to_sym, p['client_id'], p['client_secret'], {client_options: {redirect_uri: SiteConfig.root+'/auth/github/callback'}}
         else
           provider code.to_sym, p['client_id'], p['client_secret'] if p['client_id']
         end
