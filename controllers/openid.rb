@@ -26,6 +26,8 @@ class Controller < Sinatra::Base
   end
 
   get_or_post '/openid' do
+    params.delete 'captures'
+
     if params.empty?
       title "OpenID"
       return erb :openid
