@@ -287,7 +287,7 @@ class Controller < Sinatra::Base
         }
       end
     end
-
+    
     # If only one profile is set, and it's an indieauth authorization endpoint, then skip directly to it
     if @profiles.length == 1 && @profiles[0]['provider'] == 'indieauth'
       profile = @profiles[0]
@@ -466,10 +466,11 @@ class Controller < Sinatra::Base
       return erb :error
     end
 
-    # TODO: if the user had only one auth endpoint and they were redirected here skipping the prompt,
-    # then we need to clear the cache and re-check for an endpoint for them.
+    # if the user had only one auth endpoint and they were redirected here skipping the prompt,
+    # then we need to clear the cache tell them to try again
     if !links.include?(profile) and !auth_endpoints.include?(profile) and !gpg_keys.map{|a| a[:href]}.include?(profile)
-      @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". Try re-scanning after checking your rel=me links on your site."
+      Profile.delete_profile me
+      @message = "\"#{params[:profile]}\" was not found on the site \"#{params[:me]}\". The cache has been cleared, please go back and try again."
       title "Error"
       return erb :error
     end
