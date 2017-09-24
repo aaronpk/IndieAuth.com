@@ -31,6 +31,7 @@ class RelParser
         end
       }
     }
+    @agent.keep_alive = false
     @agent.agent.http.ca_file = './lib/ca-bundle.crt'
     @url = opts
     @page = nil
