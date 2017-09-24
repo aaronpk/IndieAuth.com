@@ -507,6 +507,11 @@ class Controller < Sinatra::Base
 
       redirect "#{profile}?#{query_string}", 302
     else
+
+      if session[:redirect_uri] == "/openid/complete"
+        OmniAuth.config.full_host = SiteConfig.openid_root
+      end
+
       redirect "/auth/#{provider}", 302
     end
   end
