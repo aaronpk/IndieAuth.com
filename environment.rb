@@ -46,6 +46,7 @@ class Controller < Sinatra::Base
     helpers  Sinatra::UserAgentHelpers
 
     use Rack::Session::Cookie, :key => 'indieauth.com',
+                               :domian => SiteConfig.cookie_domain,
                                :path => '/',
                                :expire_after => 2592000,
                                :secret => SiteConfig.session_secret
