@@ -19,7 +19,7 @@ class RelParser
 
   def initialize(opts={})
     @agent = Mechanize.new {|agent|
-      agent.user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
+      agent.user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
       # Send an Accept header requesting HTML
       agent.request_headers = {
         'Accept' => 'text/html'
