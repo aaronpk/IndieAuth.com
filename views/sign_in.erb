@@ -4,7 +4,7 @@
 
       <form action="<%= SiteConfig.root %>/auth" method="get" class="well" style="margin: 20px 0;">
         <div class="form-group">
-          <label for="indie_auth_url">Web Address:</label>
+          <label for="indie_auth_url">Your Website:</label>
           <input id="indie_auth_url" type="text" name="me" class="form-control" placeholder="yourdomain.com" />
         </div>
         <button type="submit" class="btn btn-primary">Sign In</button>
@@ -15,17 +15,20 @@
 
 
 
-      <h3>How to Set Up IndieAuth</h3>
+      <h3>Sign in with your website</h3>
       
       <a class="thumbnail" href="https://indieauth.com/setup">
         <img src="/img/code-sample.png"/>
       </a>
 
+      <p>This is a <a href="https://indieweb.org/web_sign-in">web sign-in</a> prompt. To use it, you'll need to:</p>
+
       <ul>
-        <li>Add a link on your home page to your various social profiles with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
-        <li>Ensure your profiles link back to your home page</li>
+        <li>Add links on your website to your various social profiles (Twitter, Github, etc) with the attribute <a href="http://microformats.org/wiki/rel-me">rel="me"</a></li>
+        <li>Ensure these profiles link back to your website</li>
+        <li>Alternatively, you can <a href="https://indieweb.org/authorization-endpoint">set up your domain to support the IndieAuth protocol</a></li>
       </ul>
-      <a href="https://indieauth.com/setup">Full setup instructions</a>
+      <p>Read the <a href="https://indieweb.org/How_to_set_up_web_sign-in_on_your_own_domain">full setup instructions</a></p>
 
       <div style="margin-bottom: 200px;"></div>
   </div>
