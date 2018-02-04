@@ -6,13 +6,14 @@ class Login
       :created_at => Time.now.to_i
     }), SiteConfig.jwt_key)
 
-    salt = Time.now.to_i.to_s
-    iv = OpenSSL::Cipher::Cipher.new('aes-256-cbc').random_iv
+    salt = SecureRandom.random_bytes(16)
+    iv = OpenSSL::Cipher.new('aes-256-gcm').encrypt.random_iv
     encrypted = Encryptor.encrypt(jwt, :key => SiteConfig.jwt_key, :iv => iv, :salt => salt)
+    salt64 = Base64.urlsafe_encode64 salt
     iv64 = Base64.urlsafe_encode64 iv
     encrypted64 = Base64.urlsafe_encode64 encrypted
 
-    "#{salt}.#{encrypted64}.#{iv64}"
+    "#{salt64}.#{encrypted64}.#{iv64}"
   end
 
   def self.build_redirect_uri(params, response_type='code')
@@ -37,10 +38,11 @@ class Login
 
   def self.decode_auth_code(code)
     begin
-      salt, encrypted64, iv64 = code.split '.'
+      salt64, encrypted64, iv64 = code.split '.'
 
       encrypted = Base64.urlsafe_decode64 encrypted64
       iv = Base64.urlsafe_decode64 iv64
+      salt = Base64.urlsafe_decode64 salt64
 
       decrypted_code = Encryptor.decrypt(encrypted, :key => SiteConfig.jwt_key, :iv => iv, :salt => salt)
 
