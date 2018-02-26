@@ -610,7 +610,8 @@ class Controller < Sinatra::Base
       end
 
     rescue => e
-      @message = "Something went horribly wrong! I'm sorry, there's not much other information available. You should probably file an issue: https://github.com/aaronpk/IndieAuth.com/issues."
+      @message = "Something went horribly wrong!"
+      @error_details = "<pre>#{e.message}</pre> <p>I'm sorry, there's not much other information available. You should probably <a href=\"https://github.com/aaronpk/IndieAuth.com/issues\">file an issue</a>.</p>"
       puts e.inspect
       puts e.backtrace
     end
