@@ -180,10 +180,10 @@ class RelParser
       begin
         original = URI.parse href
         if original.host != SiteConfig.this_server
-          endpoints << href
+          endpoints << Addressable::URI.join(@meURI.to_s, href).to_s
         end
       rescue => e
-        puts "Error parsing #{href}"
+        puts "Error parsing #{href}: #{e.message}"
       end
     end
 
