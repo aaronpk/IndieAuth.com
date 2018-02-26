@@ -21,7 +21,6 @@ gem 'omniauth-github', ">=1.3.0"
 gem 'omniauth-google-oauth2'
 gem 'omniauth-twitter'
 gem 'omniauth-openid'
-gem 'omniauth-lastfm'
 gem 'omniauth-eventbrite'
 gem 'omniauth-beeminder', :git => 'https://github.com/aaronpk/omniauth-beeminder'
 
@@ -29,7 +28,7 @@ gem 'ruby-openid'
 
 gem 'mechanize'
 gem 'unshorten',	">=0.2.1"
-gem 'rest-client'
+gem 'rest-client',      ">=2.0.2"
 gem 'twilio-ruby'
 gem 'mailgun'
 gem 'mail'
