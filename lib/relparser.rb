@@ -120,13 +120,12 @@ class RelParser
     @page.search("a,link").each do |link|
       rels = (link.attribute("rel").to_s || '').split(/ /)
       if rels.include?('me') || rels.include?('authorization_endpoint') || rels.include?('pgpkey')
-        return true if link.attribute("href").value == profile
-        # Allow the site to link to it with a protocol relative link
+        thislink = link.attribute('href').value
+        return true if thislink == profile
+        # Allow the site to link to it with a relative link
         begin
-          hrefURI = Addressable::URI.parse link.attribute("href").value
-          hrefURI.scheme = 'https'
-          profileURI = Addressable::URI.parse profile
-          profileURI.scheme = 'https'
+          hrefURI = Addressable::URI.parse Addressable::URI.join(@meURI.to_s, thislink)
+          profileURI = Addressable::URI.parse Addressable::URI.join(@meURI.to_s, profile)
           return true if hrefURI.normalize.to_s == profileURI.normalize.to_s
         rescue
         end
