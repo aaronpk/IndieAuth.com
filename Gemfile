@@ -1,6 +1,6 @@
 source 'https://rubygems.org/'
 
-gem 'sinatra',             :require => 'sinatra/base'
+gem 'sinatra', ">=2.0.1",   :require => 'sinatra/base'
 gem 'sinatra-namespace',   :require => 'sinatra/namespace'
 gem 'sinatra-support',     :require => 'sinatra/support'
 gem 'rack-accept',         :require => 'rack/accept'
@@ -13,6 +13,7 @@ gem 'json'
 gem 'dalli'
 gem 'httparty'
 gem 'escape_utils'
+gem 'nokogiri', '>=1.8.1'
 
 gem 'omniauth', ">=1.5.0"
 gem 'omniauth-facebook'
