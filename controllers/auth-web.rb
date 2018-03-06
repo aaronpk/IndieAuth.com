@@ -549,15 +549,15 @@ class Controller < Sinatra::Base
       puts
 
       puts "Reply from auth server:"
-      puts data.inspect
+      puts data.body.inspect
       puts
 
       # Only parse as JSON if the response looks like JSON
       # This maintains fallback behavior of expecting form-encoded responses even if the server ignores the Accept header
       if data[0] == '{'
-        response = JSON.parse data
+        response = JSON.parse data.body
       else
-        response = CGI::parse data
+        response = CGI::parse data.body
       end
       puts "Parsed response"
       puts response.inspect
