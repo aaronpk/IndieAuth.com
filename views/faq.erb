@@ -7,8 +7,11 @@
 
       <h2 id="faq">Frequently Asked Questions</h2>
 
+      <h3 id="relmeauth"><a href="#relmeauth"></a>What is RelMeAuth?</h3>
+      <p><a href="https://indieweb.org/RelMeAuth">RelMeAuth</a> is a way to identify yourself as your domain name while using third party OAuth providers to authenticate.</p>
+
       <h3 id="faq-how-is-this-different-from-openid"><a href="#faq-how-is-this-different-from-openid"></a>How is this different from OpenID?</h3>
-      <p>The goals of OpenID and IndieAuth are similar. Both encourage you to sign in to a website using your own domain name. However, OpenID has failed to gain wide adoption, at least in part due to the complexities of the protocol. IndieAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
+      <p>The goals of OpenID and RelMeAuth are similar. Both encourage you to sign in to a website using your own domain name. However, <a href="https://indieweb.org/OpenID#Shutdowns">OpenID has been almost entirely abandoned</a>, at least in part due to the complexities of the protocol. RelMeAuth is a simpler implementation of a similar goal, by leveraging other OAuth providers and behaviors that people are already accustomed to.</p>
 
       <h3 id="faq-can-links-be-hidden">Can my rel="me" links be hidden on my home page?</h3>
       <p>Yes, your rel="me" links do not need to be visible, but the html does need to be on your home page. You can hide the links with CSS, or include them as &lt;link&gt; tags in your html head.</p>
@@ -24,23 +27,24 @@
 
       <h3 id="faq-how-to-be-added-to-supported-providers">I run an authentication provider, how can I be added to the "supported providers" list?</h3>
       <p>
-        We gladly welcome new providers! The goal is to support as many as possible so users are not reliant on any one in particular. Here is what you need to do to be supported by IndieAuth.
+        We gladly welcome new providers! The goal is to support as many as possible so users are not reliant on any one in particular. Here is what you need to do to be supported by IndieAuth.com.
         <ul>
           <li>Ensure your users have a way to enter their website address in the "profile" section of your website.</li>
           <li>When displaying the HTML rendering of a user's page, ensure the <a href="http://microformats.org/wiki/rel-me">rel="me"</a> attribute is set on the link.</li>
           <li>Write an <a href="http://www.omniauth.org/">Omniauth</a> plugin to handle authenticating with your API, and submit it to the <a href="https://github.com/intridea/omniauth/wiki/List-of-Strategies">List of Omniauth Strategies</a> page.</li>
-          <li>Integrate the new provider into the <a href="https://github.com/aaronpk/IndieAuth">IndieAuth source code</a>, or just <a href="https://github.com/aaronpk/IndieAuth/issues/new">open an issue</a> with your request.</li>
+          <li>Integrate the new provider into the <a href="https://github.com/aaronpk/IndieAuth">IndieAuth.com source code</a>, or just <a href="https://github.com/aaronpk/IndieAuth/issues/new">open an issue</a> with your request.</li>
         </ul>
       </p>
 
       <h3 id="why-isnt-google-plus-working">Why isn't Google+ working?</h3>
+      <p>Google+ profiles are no longer supported, due to Google continuing to change the behavior and markup of profiles.</p>
+      <!--
       <p>Google+ profiles only put the rel="me" attribute on links for personal pages, not for business/brand/place/community pages. The "Links" section on the "about" page of a Google+ profile contains several subsections including "other profiles", "contributor to", and "links".</p>
-      <p>For IndieAuth to work with Google+, the link back to your website must be in the "other profiles" subsection, which must be visible to the public, and you must also have the "Links" section visible to the public.</p>
+      <p>For IndieAuth.com to work with Google+, the link back to your website must be in the "other profiles" subsection, which must be visible to the public, and you must also have the "Links" section visible to the public.</p>
+      -->
 
       <h3 id="why-permissions">Why does IndieAuth.com need to see my tweets and see who I follow?</h3>
       <p>IndieAuth.com requests the minimum permissions from each OAuth provider. In some cases providers do not provide a scope that only verifies identity without also giving access to data such as public tweets.</p>
-
-
 
 
   </div><!-- section -->

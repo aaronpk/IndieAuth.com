@@ -13,7 +13,7 @@
       <p>On your home page, link to your profiles and add the <code>rel="me"</code> attribute to the links.</p>
 
       <p>This may look something like the following:
-      <pre><code><%== 
+      <pre><code><%==
 '<ul>
   <li><a href="https://twitter.com/aaronpk" rel="me">@aaronpk on Twitter</a></li>
   <li><a href="https://github.com/aaronpk" rel="me">Github</a></li>
@@ -23,7 +23,7 @@
 ' %></code></pre>
       </p>
 
-      <p>Note: If you don't want visible links on your home page, you can instead use <code>&lt;link&gt;</code> tags in your html header.</p>
+      <p>Note: If you don't want visible links on your home page, you can instead use <code>&lt;link&gt;</code> tags in your html head.</p>
 
       <pre><code><%=='<link href="https://twitter.com/aaronpk" rel="me">' %></code></pre>
 
@@ -56,7 +56,7 @@
   <div class="row">
     <div class="col-lg-8">
       <h3>3. You're done!</h3>
-      <p>That's it! You're done! Now you can use your domain to sign in to any sites that support IndieAuth!</p>
+      <p>That's it! You're done! Now you can use your domain to sign in to any sites that use IndieAuth.com!</p>
 
       <h4>Try it now</h4>
       <form action="/auth" method="get" class="well">
@@ -79,7 +79,7 @@
 
 <%= partial :'partials/_footer' %>
 
-<!-- 
+<!--
 <ul>
   <li><a href="https://twitter.com/aaronpk" rel="me">
     <img src="twitter.png" width="16" height="16" /> <span>@aaronpk on Twitter</span>

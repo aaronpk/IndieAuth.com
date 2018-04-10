@@ -10,10 +10,10 @@
 
     <div style="max-width: 600px; margin: 0 auto;">
       <h3>TOTP login (Google Authenticator) is no longer supported</h3>
-      <p>As part of the effort to be able to run indieauth.com on multiple servers, TOTP logins are no longer supported. This is because in order to support TOTP logins, the server needs to store the shared secret, and since this may be running on multiple completely separate servers, there isn't a good/easy way to synchronize the secrets between the servers.</p>
+      <p>TOTP is a good solution as a second factor of authentication, but should not be the only factor. Additionally, TOTP requires pre-registering a secret with the server, and IndieAuth.com is not supposed to have a trust relationship with the people signing in.</p>
     </div>
 
-  </div><!-- row -->  
+  </div><!-- row -->
   </div><!-- section -->
 
 </div><!-- container -->
