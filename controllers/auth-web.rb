@@ -288,7 +288,7 @@ class Controller < Sinatra::Base
         }
       end
     end
-    
+
     # If only one profile is set, and it's an indieauth authorization endpoint, then skip directly to it
     if @profiles.length == 1 && @profiles[0]['provider'] == 'indieauth'
       profile = @profiles[0]
@@ -501,12 +501,11 @@ class Controller < Sinatra::Base
         redirect_uri: "#{SiteConfig.root}/auth/indieauth/redirect",
         state: session[:localstate]
       }
-      query_string = URI.encode_www_form query
 
       # Resolve relative IndieAuth URLs
       profile = Addressable::URI.join(me, profile).to_s
 
-      redirect "#{profile}?#{query_string}", 302
+      redirect add_params_to_url(profile, query), 302
     else
 
       redirect "/auth/#{provider}", 302

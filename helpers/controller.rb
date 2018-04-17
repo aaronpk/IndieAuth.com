@@ -1,5 +1,5 @@
 class Controller < Sinatra::Base
-  helpers do 
+  helpers do
 
     def title(value=nil)
       return @_title if value.nil?
@@ -9,14 +9,21 @@ class Controller < Sinatra::Base
     def viewport
       '<meta name="viewport" content="width=device-width,initial-scale=1">' if @_mobile
     end
-    
+
     def partial(page, options={})
       erb page, options.merge!(:layout => false)
     end
 
-    def display_url(url) 
+    def display_url(url)
       return '' if url.nil?
       url.to_s.gsub(/https?:\/\//, '').gsub(/\/$/, '')
+    end
+
+    def add_params_to_url(urlstring, params)
+      url = URI.parse urlstring
+      query = URI.encode_www_form URI.decode_www_form(url.query || '').concat(params.to_a)
+      url.query = query
+      url.to_s
     end
 
     def path_class
