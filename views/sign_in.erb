@@ -5,7 +5,7 @@
       <form action="<%= SiteConfig.root %>/auth" method="get" class="well" style="margin: 20px 0;">
         <div class="form-group">
           <label for="indie_auth_url">Your Website:</label>
-          <input id="indie_auth_url" type="url" name="me" class="form-control" placeholder="yourdomain.com" />
+          <input id="indie_auth_url" type="url" name="me" class="form-control" placeholder="https://yourdomain.com/" />
         </div>
         <button type="submit" class="btn btn-primary">Sign In</button>
         <input type="hidden" name="redirect_uri" value="<%= params['redirect_uri'] ? params['redirect_uri'] : "#{SiteConfig.root}/success" %>" />
