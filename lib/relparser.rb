@@ -225,6 +225,11 @@ class RelParser
   end
 
   def verify_link(link, site_parser=nil)
+
+    if link.match(/twitter\.com/)
+      return false, error_description = "Twitter login no longer works due to a change on their website"
+    end
+
     # Scan the external site for rel="me" links
     site_parser = RelParser.new link if site_parser.nil?
 
