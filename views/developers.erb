@@ -3,9 +3,12 @@
 </div>
 
 <div class="container">
+
+  <div class="alert alert-danger" role="alert" style="margin-bottom: 2em;">
+    Due to confusion around the name, this service is being deprecated, and will eventually be shut down. Please visit <a href="https://indielogin.com/api">indielogin.com</a> for information about the replacement service.
+  </div>
+
   <div class="section narrow large h-entry">
-
-
 
     <h2 id="documentation" class="p-name">Using IndieAuth.com to sign users in to your website</h2>
 
@@ -14,7 +17,7 @@
 
       <h3>1. Create a Web Sign-in form</h3>
 
-      <pre style="word-wrap: normal;"><%== 
+      <pre style="word-wrap: normal;"><%==
 '<form action="https://indieauth.com/auth" method="get">
   <label for="indie_auth_url">Web Address:</label>
   <input id="indie_auth_url" type="text" name="me" placeholder="yourdomain.com" />
