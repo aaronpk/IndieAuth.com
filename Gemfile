@@ -20,7 +20,6 @@ gem 'omniauth-facebook'
 gem 'omniauth-flickr'
 gem 'omniauth-github', ">=1.3.0"
 gem 'omniauth-google-oauth2'
-gem 'omniauth-twitter'
 gem 'omniauth-openid'
 gem 'omniauth-eventbrite'
 gem 'omniauth-beeminder', :git => 'https://github.com/aaronpk/omniauth-beeminder'

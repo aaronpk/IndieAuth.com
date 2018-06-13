@@ -17,10 +17,6 @@ module OmniAuth
       exists = class_exists?('GitHub')
     when 'google_oauth2'
       exists = class_exists?('GoogleOauth2')
-    when 'twitter'
-      exists = class_exists?('Twitter')
-    when 'appnet'
-      exists = class_exists?('Appnet')
     else
       exists = false
     end
