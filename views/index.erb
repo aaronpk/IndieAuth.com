@@ -8,7 +8,7 @@
 
         <div class="text">
           <h2>What is <span class="p-name">IndieAuth.com</span>?</h2>
-          <p>IndieAuth.com is a way to <b>use your own domain name</b> to sign in to websites. It works by linking your website to one or more authentication providers such as Twitter or Google, then entering your domain name in the login form on websites that use this site to sign you in.</p>
+          <p>IndieAuth.com provides an IndieAuth server for your website that authenticates you using your existing social accounts. First you link from your website to one or more authentication providers such as GitHub or a PGP key, then when you enter your domain name in the web sign-in form on websites that support IndieAuth, you can sign in without using a password.</p>
         </div>
         <a href="/" class="u-url"></a>
     </div>
@@ -30,6 +30,32 @@
       </div>
     </div><!-- row -->
   </div>
+
+  <div class="alert alert-danger" role="alert" style="margin-bottom: 3em;">
+    Deprecation Notice: Due to the <a href="https://indieweb.org/IndieAuth#naming_confusion">naming confusion</a> around this service, it will eventually be replaced by two new services. See below for details.
+  </div>
+
+  <div class="section">
+    <div class="row">
+      <div class="col-lg-6">
+        <h4>For Developers</h4>
+
+        <p><a href="https://indielogin.com/developers">IndieLogin.com</a>, currently in beta, is a service for developers who are building apps and want their users to sign in with their own domain name. Users can authenticate via a variety of methods, including <a href="https://www.w3.org/TR/indieauth/">IndieAuth</a>, Twitter, GitHub, email address, or PGP key.</p>
+
+        <p>If you are a developer building an app, please either implement <a href="https://www.w3.org/TR/indieauth/#authentication">IndieAuth for authentication</a> directly, or use <a href="https://indielogin.com/developers">IndieLogin.com</a> to abstract that for you, while also supporting Twitter, GitHub, email and PGP authentication.</p>
+      </div>
+      <div class="col-lg-6">
+        <h4>For Users</h4>
+
+        <p>If you would like to quickly support <a href="https://www.w3.org/TR/indieauth/">IndieAuth</a> for your Micropub endpoint, and your website's software does not already have a built-in IndieAuth server, you can use IndieAuth.com as your IndieAuth authorization endpoint.</p>
+
+        <p>Eventually, this use of IndieAuth.com will be replaced by a new service, although it is not yet ready for use. In the mean time, you can continue to use this service, and you will be given plenty of notice before this service shuts down.</p>
+
+        <p>For alternatives to this service, please visit <a href="https://indieweb.org/IndieAuth">indieweb.org/IndieAuth</a></p>
+      </div>
+    </div>
+  </div>
+
 
   <div class="section">
   <div class="row">
@@ -77,57 +103,6 @@
 
     </div><!-- col-lg-4 -->
   </div><!-- row -->
-  </div><!-- section -->
-
-  <div class="section narrow providers">
-    <h2 id="supported-providers">Authentication providers currently supported</h2>
-
-    <ul class="" style="list-style-type: none;">
-      <li><div class="">
-        <a href="https://github.com/">
-          <img src="/img/providers/github.png" alt="Github" width="57" height="57" />
-        </a>
-      </div></li>
-<!--       <li><div class="">
-        <a href="https://twitter.com/">
-          <img src="/img/providers/twitter.png" alt="Twitter" width="57" height="57" />
-        </a>
-      </div></li>
- -->      <!--
-      <li><div class="">
-        <a href="https://beeminder.com/">
-          <img src="/img/providers/beeminder.png" alt="Beeminder" width="57" height="57" />
-        </a>
-      </div></li>
-      -->
-<!--
-      <li><div class="">
-        <img src="/img/providers/google.png" alt="Google" width="57" height="57" />
-      </div></li>
- -->
-      <li><div class="">
-        <img src="/img/providers/email.png" alt="Email" width="57" height="57" />
-      </div></li>
-      <li><div class="">
-        <a href="https://indieauth.com/gpg">
-          <img src="/img/providers/gpg.png" alt="GPG" width="57" height="57" />
-        </a>
-      </div></li>
-<!--
-      <li><div class="thumbnail">
-        <img src="/img/providers/flickr.png" alt="Flickr" width="57" height="57" />
-      </div></li>
--->
-<!--
-      <li><div class="thumbnail">
-        <img src="/img/providers/foursquare.png" alt="Foursquare" width="57" height="57" />
-      </div></li>
-      <li><div class="thumbnail">
-        <img src="/img/providers/facebook.png" alt="Facebook" width="57" height="57" />
-      </div></li>
--->
-      </ul>
-    <div style="clear: both;"></div>
   </div><!-- section -->
 
 </div><!-- container -->
