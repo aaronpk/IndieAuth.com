@@ -3,7 +3,8 @@ class Login
   def self.generate_auth_code(params)
     jwt = JWT.encode(params.merge({
       :nonce => Random.rand(100000..999999),
-      :created_at => Time.now.to_i
+      :created_at => Time.now.to_i,
+      :id => "#{Time.now.to_i}.#{Random.rand(10000..99999)}"
     }), SiteConfig.jwt_key)
 
     salt = SecureRandom.random_bytes(16)
@@ -53,8 +54,16 @@ class Login
     end
   end
 
+  def self.used?(login)
+    # When a code is used, the ID cached in Redis for 2 minutes. If it's present, it has been used.
+    return R.get "indieauth::code::#{login['id']}"
+  end
+  
+  def self.mark_used(login)
+    R.setex "indieauth::code::#{login['id']}", 120, Time.now.to_i
+  end
+
   def self.expired?(login)
-    return false
     # Auth codes are only valid for 60 seconds
     return login['created_at'] < Time.now.to_i - 60
   end

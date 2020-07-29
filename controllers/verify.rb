@@ -102,13 +102,20 @@ class Controller < Sinatra::Base
 
     if Login.expired? login
       puts "The auth code expired"
-      http_error 400, {error: "invalid_request", error_description: "The auth code has expired (valid for 60 seconds)"}
+      http_error 400, {error: "invalid_request", error_description: "The authorization code has expired (valid for 60 seconds)"}
+    end
+    
+    if Login.used? login
+      puts "The auth code has been used"
+      http_error 400, {error: "invalid_request", error_description: "The authorization code has already been used"}
     end
 
     if login['redirect_uri'] != params[:redirect_uri]
       puts "The redirect_uri parameter did not match"
       http_error 400, {error: "invalid_request", error_description: "The 'redirect_uri' parameter did not match"}
     end
+
+    Login.mark_used login
 
     Log.save login
     
