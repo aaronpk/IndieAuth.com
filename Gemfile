@@ -19,6 +19,7 @@ gem 'omniauth', ">=1.5.0"
 gem 'omniauth-facebook'
 gem 'omniauth-flickr'
 gem 'omniauth-github', ">=1.3.0"
+gem 'omniauth-gitlab'
 gem 'omniauth-google-oauth2'
 gem 'omniauth-openid'
 gem 'omniauth-eventbrite'

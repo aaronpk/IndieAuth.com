@@ -15,6 +15,8 @@ module OmniAuth
       exists = class_exists?('Foursquare')
     when 'github'
       exists = class_exists?('GitHub')
+    when 'gitlab'
+      exists = class_exists?('GitLab')
     when 'google_oauth2'
       exists = class_exists?('GoogleOauth2')
     else
