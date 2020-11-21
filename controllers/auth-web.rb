@@ -261,10 +261,14 @@ class Controller < Sinatra::Base
           }
 
           client = Microformats.parse response.body
-          if client.x_app.name
+          if client.app.name
+            @app_name = client.app.name
+          elsif client.x_app.name
             @app_name = client.x_app.name
           end
-          if client.x_app.logo
+          if client.app.logo
+            @app_logo = client_id + URI.parse(client.app.logo.to_s)
+          elsif client.x_app.logo
             @app_logo = client_id + URI.parse(client.x_app.logo.to_s)
           end
         end
