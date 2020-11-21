@@ -28,12 +28,12 @@ class Login
       p['me'] = params[:me]
       p['state'] = params[:state] if params[:state]
       redirect_uri.query = Rack::Utils.build_query p
-      redirect_uri = redirect_uri.to_s 
+      redirect_uri = redirect_uri.to_s
     else
-      redirect_uri = "/success?#{response_type}=#{auth_code}&me=#{URI.encode_www_form_component(params[:me])}"
+      redirect_uri = "/success?#{response_type}=#{auth_code}"
       redirect_uri = "#{redirect_uri}&state=#{params[:state]}" if params[:state]
     end
-    
+
     redirect_uri
   end
 
@@ -58,7 +58,7 @@ class Login
     # When a code is used, the ID cached in Redis for 2 minutes. If it's present, it has been used.
     return R.get "indieauth::code::#{login['id']}"
   end
-  
+
   def self.mark_used(login)
     R.setex "indieauth::code::#{login['id']}", 120, Time.now.to_i
   end
