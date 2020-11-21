@@ -28,6 +28,7 @@ class Provider
       #'eventbrite' => 'https?:\/\/(.+)\.eventbrite\.com',
       #'flickr' => 'https?:\/\/(?:www\.)?flickr\.com\/(?:people\/)?([^\/]+)',
       'github' => 'https?:\/\/(?:www\.)?github\.com\/([^\/]+)',
+      'gitlab' => 'https?:\/\/(?:www\.)?gitlab\.com\/([^\/]+)',
       #'google_oauth2' => 'https?:\/\/(?:www\.)?(?:profiles\.|plus\.|)google\.com\/([^\/]+)',
       #'lastfm' => 'https?:\/\/(?:www\.)?last\.fm\/user\/(.+)',
       'twitter' => 'https?:\/\/(?:www\.)?twitter\.com\/([^\/]+)'

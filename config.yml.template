@@ -23,7 +23,10 @@ development:
       client_secret: 
     github:
       client_id: 
-      client_secret: 
+      client_secret:
+    gitlab:
+      client_id:
+      client_secret:
     google_oauth2:
       client_id: 
       client_secret: 

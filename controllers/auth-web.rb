@@ -636,7 +636,7 @@ class Controller < Sinatra::Base
         actual_username = match[1]
       end
     else
-      actual_username = auth['info']['nickname']
+      actual_username = auth['info']['nickname'] || auth['info']['username']
     end
 
     puts "Auth complete!"
