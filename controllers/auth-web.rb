@@ -634,7 +634,7 @@ class Controller < Sinatra::Base
     profile = Profile.find :me => session[:attempted_uri], :profile => session[:attempted_profile]
     attempted_username = session[:attempted_username]
     actual_username = ''
-    if profile['provider'] == 'google_oauth2'
+    if profile && profile['provider'] == 'google_oauth2'
       authed_url = auth['extra']['raw_info']['profile']
       if authed_url && (match=authed_url.match(Regexp.new Provider.regexes[profile['provider']]))
         actual_username = match[1]
