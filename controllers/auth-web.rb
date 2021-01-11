@@ -226,6 +226,23 @@ class Controller < Sinatra::Base
     @app_name = 'Unknown App'
     @app_logo = nil
 
+    valid_redirect = false
+    if params[:redirect_uri]
+      begin
+        redirect_uri = URI.parse params[:redirect_uri]
+        if ['http','https'].include? redirect_uri.scheme and redirect_uri.host
+          valid_redirect = true
+        end
+      rescue
+      end
+    end
+    if !valid_redirect
+      @error_title = "Invalid redirect_uri"
+      @message = "The redirect_uri must be a valid URL."
+      @error_details = "The redirect_uri provided was:<br><code>#{CGI.escapeHTML params[:redirect_uri]}</code>"
+      halt 400, erb(:error)
+    end
+
     if params[:client_id]
       # Check for valid client ID. Must be either a URL or a string
       valid = false

@@ -1,7 +1,7 @@
 <script>
-var me = "<%= @me %>";
-var redirect_uri = "<%= @redirect_uri %>";
-var client_id = "<%= @client_id %>";
+var me = "<%= EscapeUtils.escape_javascript @me %>";
+var redirect_uri = "<%= EscapeUtils.escape_javascript @redirect_uri %>";
+var client_id = "<%= EscapeUtils.escape_javascript @client_id %>";
 var state = "<%= EscapeUtils.escape_javascript @state %>";
 var scope = "<%= EscapeUtils.escape_javascript @scope %>";
 var email_verification;
@@ -536,12 +536,12 @@ function start_scan() {
       <p>Click on one of the highlighed providers above to authenticate. The site you are logging in to will not have access to your account on any of the providers.</p>
 
       <% if @redirect_uri %>
-        <div class="redirect">You will be redirected to <%= @redirect_uri %> to finish logging in to the site.</div>
+        <div class="redirect">You will be redirected to <%= CGI.escapeHTML @redirect_uri %> to finish logging in to the site.</div>
       <% end %>
     </div>
   <% else %>
     <% if @redirect_uri %>
-      <div class="redirect">You will be redirected to <code><%= @redirect_uri %></code> after authorizing this application.</div>
+      <div class="redirect">You will be redirected to <code><%= CGI.escapeHTML @redirect_uri %></code> after authorizing this application.</div>
     <% end %>
   <% end %>
 
