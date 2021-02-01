@@ -518,8 +518,8 @@ class Controller < Sinatra::Base
       query = {
         me: me,
         scope: session[:scope],
-        client_id: "#{SiteConfig.root}/",
-        redirect_uri: "#{SiteConfig.root}/auth/indieauth/redirect",
+        client_id: "https://#{request.host}/",
+        redirect_uri: "https://#{request.host}/auth/indieauth/redirect",
         state: session[:localstate]
       }
 
@@ -561,8 +561,8 @@ class Controller < Sinatra::Base
     begin
       data = RestClient.post session[:attempted_profile], {
         :code => params[:code],
-        :client_id => "#{SiteConfig.root}/",
-        :redirect_uri => "#{SiteConfig.root}/auth/indieauth/redirect"
+        :client_id => "https://#{request.host}/",
+        :redirect_uri => "https://#{request.host}/auth/indieauth/redirect"
       }, :accept => 'application/json'
       puts "Session data"
       puts session.inspect
