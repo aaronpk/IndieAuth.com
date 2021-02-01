@@ -53,7 +53,7 @@ class Controller < Sinatra::Base
       puts "Length: #{params.to_json.length}"
       session[:openid_params] = params.to_json
 
-      redirect "/auth?me=#{params['openid.identity']}&redirect_uri=#{URI.encode_www_form_component("#{SiteConfig.root}/openid/complete")}"
+      redirect "/auth?me=#{params['openid.identity']}&redirect_uri=#{URI.encode_www_form_component("#{SiteConfig.openid_root}/openid/complete")}"
     else
       oidresp = @server.handle_request oidreq
       puts "oidresp"
