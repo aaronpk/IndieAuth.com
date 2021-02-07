@@ -24,7 +24,7 @@ GEM
       domain_name (~> 0.5)
     httparty (0.15.6)
       multi_xml (>= 0.5.2)
-    json (2.1.0)
+    json (2.3.0)
     jwt (1.5.6)
     kgio (2.11.0)
     libxml-ruby (3.0.0)
