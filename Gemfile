@@ -13,7 +13,7 @@ gem 'json'
 gem 'dalli'
 gem 'httparty'
 gem 'escape_utils'
-gem 'nokogiri', '>=1.8.1'
+gem 'nokogiri', '>=1.10.1'
 
 gem 'omniauth', ">=1.5.0"
 gem 'omniauth-github', ">=1.4.0"
