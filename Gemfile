@@ -16,14 +16,9 @@ gem 'escape_utils'
 gem 'nokogiri', '>=1.8.1'
 
 gem 'omniauth', ">=1.5.0"
-gem 'omniauth-facebook'
-gem 'omniauth-flickr'
-gem 'omniauth-github', ">=1.3.0"
+gem 'omniauth-github', ">=1.4.0"
 gem 'omniauth-gitlab'
-gem 'omniauth-google-oauth2'
 gem 'omniauth-openid'
-gem 'omniauth-eventbrite'
-gem 'omniauth-beeminder', :git => 'https://github.com/aaronpk/omniauth-beeminder'
 
 gem 'ruby-openid'
 

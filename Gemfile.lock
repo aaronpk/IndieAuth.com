@@ -1,10 +1,3 @@
-GIT
-  remote: https://github.com/aaronpk/omniauth-beeminder
-  revision: feeb76cc20ae0dfb3f3a5729296357120d3e9ec1
-  specs:
-    omniauth-beeminder (0.1.0)
-      omniauth-oauth2 (>= 1.1.1)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -64,7 +57,6 @@ GEM
     nokogiri (1.10.8)
       mini_portile2 (~> 2.4.0)
     ntlm-http (0.1.1)
-    oauth (0.5.3)
     oauth2 (1.4.0)
       faraday (>= 0.8, < 0.13)
       jwt (~> 1.0)
@@ -74,27 +66,12 @@ GEM
     omniauth (1.6.1)
       hashie (>= 3.4.6, < 3.6.0)
       rack (>= 1.6.2, < 3)
-    omniauth-eventbrite (0.0.6)
-      omniauth-oauth2 (~> 1.0)
-    omniauth-facebook (4.0.0)
-      omniauth-oauth2 (~> 1.2)
-    omniauth-flickr (0.0.19)
-      multi_json (~> 1.11.0)
-      omniauth-oauth (~> 1.0)
-    omniauth-github (1.3.0)
+    omniauth-github (1.4.0)
       omniauth (~> 1.5)
       omniauth-oauth2 (>= 1.4.0, < 2.0)
     omniauth-gitlab (1.0.3)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.0)
-    omniauth-google-oauth2 (0.5.2)
-      jwt (~> 1.5)
-      multi_json (~> 1.3)
-      omniauth (>= 1.1.1)
-      omniauth-oauth2 (>= 1.3.1)
-    omniauth-oauth (1.1.0)
-      oauth
-      omniauth (~> 1.0)
     omniauth-oauth2 (1.4.0)
       oauth2 (~> 1.0)
       omniauth (~> 1.2)
@@ -186,13 +163,8 @@ DEPENDENCIES
   microformats
   nokogiri (>= 1.8.1)
   omniauth (>= 1.5.0)
-  omniauth-beeminder!
-  omniauth-eventbrite
-  omniauth-facebook
-  omniauth-flickr
-  omniauth-github (>= 1.3.0)
+  omniauth-github (>= 1.4.0)
   omniauth-gitlab
-  omniauth-google-oauth2
   omniauth-openid
   puma
   rack-accept
@@ -211,4 +183,4 @@ DEPENDENCIES
   unshorten (>= 0.2.1)
 
 BUNDLED WITH
-   1.16.1
+   1.16.6
