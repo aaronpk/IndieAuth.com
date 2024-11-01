@@ -73,6 +73,7 @@ class Login
   end
 
   def self.generate_verification_code
-    Random.rand(1000..9999)
+    characters = ('2'..'9').to_a + ('A'..'Z').to_a - %w[I O]
+    (0...6).map { characters[SecureRandom.random_number(characters.size)] }.join
   end
 end
