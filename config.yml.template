@@ -6,8 +6,8 @@ development:
   # The service that replaces the user-facing side of IndieAuth.com. Leave it
   # out and no replacement is advertised anywhere.
   replacement:
-    name: Example
-    url: https://example.com/
+    name: IndieKey
+    url: https://indiekey.id/
   stats:
     server: https://stats.example.com
     token: "000000"
