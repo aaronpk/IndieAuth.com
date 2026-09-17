@@ -3,6 +3,11 @@ development:
   openid_root: https://openid.example.com
   this_server: primary.example.com
   cookie_domain: ".example.com"
+  # The service that replaces the user-facing side of IndieAuth.com. Leave it
+  # out and no replacement is advertised anywhere.
+  replacement:
+    name: Example
+    url: https://example.com/
   stats:
     server: https://stats.example.com
     token: "000000"

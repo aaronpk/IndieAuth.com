@@ -52,6 +52,10 @@
       </div>
     </nav>
 
+    <% unless request.path == '/' %>
+      <%= partial :'partials/_migration_notice' %>
+    <% end %>
+
     <%= yield %>
 
     <div class="tinyfooter">

@@ -1,0 +1,31 @@
+<% if (replacement = replacement_service) %>
+<div class="container">
+  <div class="alert alert-warning" role="alert" style="margin-bottom: 2em;">
+    <% if @me && indieauth_server_user?(@scope) %>
+      <%# A scope beyond profile can only come from a site that names this
+          service as its own authorization server: that is where the access
+          token has to come from. So this visitor definitely has work to do. %>
+      <strong><%= display_url @me %> uses IndieAuth.com as its IndieAuth server.</strong>
+      This service is being replaced. You can move your site to
+      <a href="<%= replacement.url %>migrate"><%= replacement.name %></a>, which signs you in with a
+      passkey rather than a linked GitHub or email account. Signing in here keeps working in the
+      meantime.
+    <% elsif @me %>
+      <%# Without such a scope this may be a site that names us, or simply an
+          app using this service to sign a visitor in. Say what each should do
+          rather than guessing. %>
+      <strong>IndieAuth.com is being replaced.</strong>
+      If your own website points here as its IndieAuth server, see
+      <a href="<%= replacement.url %>migrate">how to move to <%= replacement.name %></a>.
+      If you are only here because an app sent you, nothing on your site needs to change — that
+      app should switch to <a href="https://indielogin.com/api">IndieLogin.com</a>.
+    <% else %>
+      <strong>IndieAuth.com is being replaced.</strong>
+      Websites using it as their IndieAuth server can move to
+      <a href="<%= replacement.url %>migrate"><%= replacement.name %></a>; developers signing users
+      in should use <a href="https://indielogin.com/api">IndieLogin.com</a>. You will be given
+      plenty of notice before this service shuts down.
+    <% end %>
+  </div>
+</div>
+<% end %>
