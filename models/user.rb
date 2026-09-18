@@ -3,6 +3,12 @@ class User
     R.set "indieauth::refreshed::#{me}", time
   end
 
+  # Whether this domain has used the service before. The key is never
+  # expired, so its absence means a genuinely new site.
+  def self.known?(me)
+    !R.get("indieauth::refreshed::#{me}").nil?
+  end
+
   def self.last_refresh(me)
     timestamp = R.get "indieauth::refreshed::#{me}"
     if timestamp.nil?

@@ -201,6 +201,29 @@ class Controller < Sinatra::Base
       halt 400, erb(:error)
     end
 
+    # Both sides of this service are closed to newcomers before they are shut
+    # down, so nobody starts relying on it now. Neither check affects anyone
+    # already using it, and both are off unless config.yml turns them on.
+    #
+    # The app check comes first: a visitor arriving through an app that was
+    # never accepted here has nothing to fix on their own site, and telling
+    # them to move their website would be the wrong instruction entirely.
+    if closed_to_new_apps? && !Client.seen?(params[:redirect_uri])
+      @closed = :app
+      @app_host = Client.host_of params[:redirect_uri]
+      halt 403, erb(:closed)
+    end
+
+    # A scope beyond profile means the app wants access to the website itself,
+    # which only that site's own authorization server can grant — so this
+    # visitor's site must name IndieAuth.com, and a site not seen before is a
+    # new adopter. Without such a scope it may be either audience, so the
+    # benefit of the doubt goes to letting the sign-in through.
+    if closed_to_new_sites? && !User.known?(@me) && indieauth_server_user?(params[:scope])
+      @closed = :site
+      halt 403, erb(:closed)
+    end
+
     @profiles = []
     # Look up their cached profiles
     profiles = Profile.all :me => @me

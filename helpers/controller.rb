@@ -14,6 +14,38 @@ class Controller < Sinatra::Base
       erb page, options.merge!(:layout => false)
     end
 
+    # The replacement for the user-facing side of this service, when one is
+    # configured. Until config.yml names it, nothing is advertised.
+    def replacement_service
+      r = SiteConfig.replacement
+      r if r && r.url && r.name
+    end
+
+    # Whether this request can only have come from a site that names
+    # IndieAuth.com as its own authorization server.
+    #
+    # A scope beyond profile means the app wants an access token for the
+    # user's website, and only the site's own authorization server can issue
+    # one — so the site must declare this service. Without such a scope the
+    # request may instead be an app using IndieAuth.com to sign a visitor in,
+    # whose site need not mention this service at all.
+    def indieauth_server_user?(scope)
+      return false if scope.nil?
+      (scope.to_s.split(/\s+/) - ['', 'profile', 'email']).any?
+    end
+
+    # Whether this service still accepts websites, and apps, it has not seen
+    # before. Both default to open: closing them changes what a live service
+    # does, so it is a deliberate switch rather than a side effect of
+    # deploying.
+    def closed_to_new_sites?
+      SiteConfig.closed_to_new_sites ? true : false
+    end
+
+    def closed_to_new_apps?
+      SiteConfig.closed_to_new_apps ? true : false
+    end
+
     def display_url(url)
       return '' if url.nil?
       url.to_s.gsub(/https?:\/\//, '').gsub(/\/$/, '')
