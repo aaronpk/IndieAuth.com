@@ -133,7 +133,7 @@ GEM
       faraday (~> 0.9)
       jwt (~> 1.5)
       libxml-ruby (= 3.0.0)
-    tzinfo (1.2.3)
+    tzinfo (1.2.11)
       thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext

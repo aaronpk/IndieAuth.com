@@ -25,7 +25,7 @@ class Client
     host = host_of redirect_uri
     return false if host.nil?
 
-    R.exists?(key(host)) ? true : false
+    !R.get(key(host)).nil?
   end
 
   def self.host_of(redirect_uri)

@@ -7,9 +7,7 @@
           token has to come from. So this visitor definitely has work to do. %>
       <strong><%= display_url @me %> uses IndieAuth.com as its IndieAuth server.</strong>
       This service is being replaced. You can move your site to
-      <a href="<%= replacement.url %>migrate"><%= replacement.name %></a>, which signs you in with a
-      passkey rather than a linked GitHub or email account. Signing in here keeps working in the
-      meantime.
+      <a href="<%= replacement.url %>migrate"><%= replacement.name %></a>.
     <% elsif @me %>
       <%# Without such a scope this may be a site that names us, or simply an
           app using this service to sign a visitor in. Say what each should do
@@ -23,8 +21,7 @@
       <strong>IndieAuth.com is being replaced.</strong>
       Websites using it as their IndieAuth server can move to
       <a href="<%= replacement.url %>migrate"><%= replacement.name %></a>; developers signing users
-      in should use <a href="https://indielogin.com/api">IndieLogin.com</a>. You will be given
-      plenty of notice before this service shuts down.
+      in should use <a href="https://indielogin.com/api">IndieLogin.com</a>.
     <% end %>
   </div>
 </div>

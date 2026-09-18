@@ -6,7 +6,7 @@ class User
   # Whether this domain has used the service before. The key is never
   # expired, so its absence means a genuinely new site.
   def self.known?(me)
-    R.exists?("indieauth::refreshed::#{me}") ? true : false
+    !R.get("indieauth::refreshed::#{me}").nil?
   end
 
   def self.last_refresh(me)
