@@ -1,0 +1,41 @@
+<div class="hero-unit">
+  <h1><%== @closed == :app ? "This app needs to move" : "This service is closed to new websites" %></h1>
+</div>
+
+<div class="container">
+
+  <div class="section narrow large">
+    <% if @closed == :app %>
+      <p>
+        IndieAuth.com no longer signs people in for apps it has not seen before, ahead of being shut
+        down. <strong><%= @app_host || 'The app that sent you here' %></strong> is not one of the apps
+        already using it, so this sign-in cannot be completed.
+      </p>
+      <p>
+        <strong>Nothing on your own website needs to change.</strong> This is the app's to fix: its
+        developer should use <a href="https://indielogin.com/api">IndieLogin.com</a>, which signs
+        people in the same way and is the replacement for this part of IndieAuth.com. Passing that
+        on is the most useful thing you can do.
+      </p>
+    <% else %>
+      <p>
+        IndieAuth.com is being replaced and no longer takes on websites it has not seen before.
+        <% if (replacement = replacement_service) %>
+          Your website can use <a href="<%= replacement.url %>"><%= replacement.name %></a> instead,
+          which does the same job and signs you in with a passkey rather than a linked GitHub or
+          email account.
+        <% else %>
+          See <a href="https://indieweb.org/IndieAuth">indieweb.org/IndieAuth</a> for the current
+          options.
+        <% end %>
+      </p>
+      <p>
+        Websites already signing in through this service keep working, and will be given plenty of
+        notice before it shuts down.
+      </p>
+    <% end %>
+  </div>
+
+</div><!-- container -->
+
+<%= partial :'partials/_footer' %>

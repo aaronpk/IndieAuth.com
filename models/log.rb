@@ -3,6 +3,11 @@ class Log
   def self.save(login)
     # login is the payload decoded from Login.decode_auth_code
     R.rpush "indieauth::logs", login.to_json
+
+    # A sign-in completed, so this app is one of the ones already relying on
+    # this service. See Client. The payload is the decoded auth code, which
+    # carries the redirect_uri it was issued for.
+    Client.record login['redirect_uri'] if login.is_a? Hash
   end
 
   def self.flush

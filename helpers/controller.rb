@@ -34,6 +34,18 @@ class Controller < Sinatra::Base
       (scope.to_s.split(/\s+/) - ['', 'profile', 'email']).any?
     end
 
+    # Whether this service still accepts websites, and apps, it has not seen
+    # before. Both default to open: closing them changes what a live service
+    # does, so it is a deliberate switch rather than a side effect of
+    # deploying.
+    def closed_to_new_sites?
+      SiteConfig.closed_to_new_sites ? true : false
+    end
+
+    def closed_to_new_apps?
+      SiteConfig.closed_to_new_apps ? true : false
+    end
+
     def display_url(url)
       return '' if url.nil?
       url.to_s.gsub(/https?:\/\//, '').gsub(/\/$/, '')

@@ -2,3 +2,5 @@
 vendor/
 log/
 config.yml
+*.sql
+

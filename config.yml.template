@@ -3,6 +3,13 @@ development:
   openid_root: https://openid.example.com
   this_server: primary.example.com
   cookie_domain: ".example.com"
+  # Stop accepting websites, and apps, that have not used this service
+  # before, ahead of shutting it down. Both sides are closed separately:
+  # closing to new sites alone would break new users of apps that sign people
+  # in here, who have nothing of their own to move.
+  closed_to_new_sites: false
+  closed_to_new_apps: false
+
   # The service that replaces the user-facing side of IndieAuth.com. Leave it
   # out and no replacement is advertised anywhere.
   replacement:
