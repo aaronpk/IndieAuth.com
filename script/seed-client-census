@@ -1,0 +1,138 @@
+#!/usr/bin/env ruby
+
+# Seed the census of apps that have signed people in here, from history.
+#
+# Client.record only learns about an app when a sign-in completes, so on a
+# fresh deploy the census is empty. Switching on closed_to_new_apps at that
+# point would refuse every app that simply had not been used yet — which is
+# most of them, since a long tail of apps sign someone in a few times a year.
+# This backfills it from the logins table so the ratchet only ever turns away
+# apps that are genuinely new.
+#
+# The logins table lives on the stats server, which this app has no connection
+# to, so the two halves are separate on purpose: produce the list wherever the
+# database is, then pipe it in wherever Redis is.
+#
+#   mysql -N -B indieauth -e "
+#     SELECT DISTINCT redirect_uri FROM logins
+#     WHERE redirect_uri IS NOT NULL AND redirect_uri <> ''" > clients.txt
+#
+#   script/seed-client-census --dry-run < clients.txt
+#   script/seed-client-census < clients.txt
+#
+# Each line is a redirect_uri or a bare host, optionally followed by
+# whitespace and a last-used timestamp to record instead of now. Running it
+# again is harmless: hosts already in the census are left alone.
+
+require 'optparse'
+require 'time'
+require 'uri'
+require 'yaml'
+require 'redis'
+
+options = {
+  dry_run: false,
+  config: File.expand_path('../config.yml', __dir__),
+  env: ENV['RACK_ENV'] || 'production',
+  include_local: false,
+}
+
+OptionParser.new do |opts|
+  opts.banner = 'Usage: script/seed-client-census [options] [file]   (reads stdin when no file is given)'
+
+  opts.on('-n', '--dry-run', 'Report what would be recorded, write nothing') { options[:dry_run] = true }
+  opts.on('--config=PATH', 'config.yml to read Redis settings from') { |v| options[:config] = v }
+  opts.on('--env=NAME', 'Section of config.yml to use (default: RACK_ENV or production)') { |v| options[:env] = v }
+  opts.on('--include-local', 'Also seed localhost and .test/.invalid hosts') { options[:include_local] = true }
+  opts.on('-h', '--help') { puts opts; exit 0 }
+end.parse!
+
+unless File.exist?(options[:config])
+  abort "Cannot read #{options[:config]}. Pass --config=PATH."
+end
+
+config = YAML.load_file(options[:config])[options[:env]]
+abort "No '#{options[:env]}' section in #{options[:config]}." if config.nil?
+
+redis_config = config['redis'] || {}
+
+# environment.rb names this R, and models/client.rb expects it.
+connection = { host: redis_config['host'] || '127.0.0.1', port: redis_config['port'] || 6379 }
+connection[:db] = redis_config['db'] if redis_config['db']
+
+R = Redis.new(**connection)
+
+require_relative '../models/client'
+
+# An app reachable only on the developer's own machine, or on a private
+# network, is not an app anyone else can be signed in by. Seeding those would
+# leave the door open for exactly the new adopters the ratchet exists to stop,
+# and the old logs are full of them.
+LOCAL = %r{
+  \A(
+    localhost | .*\.localhost |
+    .*\.(local|test|invalid|example) |
+    127\.\d+\.\d+\.\d+ | 0\.\d+\.\d+\.\d+ | 0\.0\.0\.0.* |
+    10\.\d+\.\d+\.\d+ | 192\.168\.\d+\.\d+ | 169\.254\.\d+\.\d+ |
+    172\.(1[6-9]|2\d|3[01])\.\d+\.\d+ |
+    \[.*\]
+  )\z
+}xi.freeze
+
+# A host appears once per redirect_uri path it has ever used, so the input is
+# aggregated by host before anything is written. Taking the first line's date
+# would record whichever path happened to come first — for a busy app with
+# several callback URLs that can be years out of date.
+last_used = {}
+malformed = 0
+
+ARGF.each_line do |line|
+  line = line.strip
+  next if line.empty? || line.start_with?('#')
+
+  value, timestamp = line.split(/\t/, 2)
+  value = value.to_s.strip
+
+  host = value.include?('://') ? Client.host_of(value) : value.downcase
+
+  if host.nil? || host.empty? || !host.include?('.') && host != 'localhost'
+    malformed += 1
+    next
+  end
+
+  seen_at = begin
+    timestamp.nil? || timestamp.strip.empty? ? nil : Time.parse(timestamp.strip).to_i
+  rescue ArgumentError
+    nil
+  end
+
+  last_used[host] = [last_used[host], seen_at].compact.max
+end
+
+seeded = 0
+already = 0
+skipped = 0
+
+last_used.each do |host, seen_at|
+  if !options[:include_local] && host.match?(LOCAL)
+    skipped += 1
+    next
+  end
+
+  if Client.seen?("https://#{host}/")
+    already += 1
+    next
+  end
+
+  seeded += 1
+  next if options[:dry_run]
+
+  R.set Client.key(host), seen_at || Time.now.to_i
+end
+
+puts(options[:dry_run] ? 'Dry run, nothing written.' : 'Census updated.')
+puts "  would record: #{seeded}" if options[:dry_run]
+puts "  recorded:     #{seeded}" unless options[:dry_run]
+puts "  already knew: #{already}"
+puts "  local or unreachable: #{skipped}" if skipped.positive?
+puts "  unusable lines:       #{malformed}" if malformed.positive?
