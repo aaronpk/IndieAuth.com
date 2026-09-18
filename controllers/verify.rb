@@ -26,17 +26,18 @@ class Controller < Sinatra::Base
   end
 
   def http_response(code, data)
-    accept = env['rack-accept.request']
-    if accept.media_type? 'application/x-www-form-urlencoded'
-      # First check for form-encoded accept, which matches `Accept: */*` first
-      form_encoded_response code, data
-    elsif accept.media_type? 'application/json'
-      # If they explicitly request application/json then return json
-      json_response code, data
-    else
-      # Otherwise fall back to form-encoded
-      form_encoded_response code, data
-    end
+    json_response code, data
+    #accept = env['rack-accept.request']
+    #if accept.media_type? 'application/x-www-form-urlencoded'
+    #  # First check for form-encoded accept, which matches `Accept: */*` first
+    #  form_encoded_response code, data
+    #elsif accept.media_type? 'application/json'
+    #  # If they explicitly request application/json then return json
+    #  json_response code, data
+    #else
+    #  # Otherwise fall back to form-encoded
+    #  json_response code, data
+    #end
   end
 
   get '/session' do
