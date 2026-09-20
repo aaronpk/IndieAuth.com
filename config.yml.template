@@ -15,6 +15,9 @@ development:
   replacement:
     name: IndieKey
     url: https://indiekey.id/
+    # The day everyone still using this service is moved over to it. Once set,
+    # every page counts down to it; leave it out until the date is settled.
+    # migrate_on: 2026-10-15
   stats:
     server: https://stats.example.com
     token: "000000"

@@ -21,6 +21,19 @@ class Controller < Sinatra::Base
       r if r && r.url && r.name
     end
 
+    # The day everyone still using this service is moved over to the
+    # replacement, while it is still ahead. Once it has passed the notice
+    # stops counting down to it, rather than announcing something that has
+    # already happened.
+    def migration_date
+      r = replacement_service
+      return nil unless r && r.migrate_on
+      date = Date.parse(r.migrate_on.to_s)
+      date if date >= Date.today
+    rescue ArgumentError
+      nil
+    end
+
     # Whether this request can only have come from a site that names
     # IndieAuth.com as its own authorization server.
     #

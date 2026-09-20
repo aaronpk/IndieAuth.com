@@ -52,7 +52,10 @@
       </div>
     </nav>
 
-    <% unless request.path == '/' %>
+    <%# The home page explains the replacement in its own words further down,
+        but once there is a date for the switchover it goes at the top of
+        every page, so nobody finds out on the day. %>
+    <% if request.path != '/' || migration_date %>
       <%= partial :'partials/_migration_notice' %>
     <% end %>
 
